@@ -1,0 +1,46 @@
+/* Theme system - CSS custom properties for dynamic theming */
+
+/* Color theme (default) - Navy/cyan/coral */
+:root,
+:root[data-theme="color"] {
+  --bg-main: #f5f5f5;
+  --bg-window: #ffffff;
+  --bg-panel: #e8e8e8;
+  --bg-hover: #ffb0a3;
+  --bg-active: #00b9be;
+  --bg-dark: #2a1a2a;
+
+  --text-primary: #46425e;
+  --text-secondary: #15788c;
+  --text-tertiary: #999999;
+
+  --color-accent: #00b9be;
+  --color-error: #ff6973;
+
+  --border-color: #46425e;
+
+  --titlebar-bg: repeating-linear-gradient(90deg, #15788c 0px, #15788c 1px, #1a5a70 1px, #1a5a70 2px);
+  --titlebar-text: #ffffff;
+}
+
+/* Mono theme - High contrast #222323 / #f0f6f0 only */
+:root[data-theme="mono"] {
+  --bg-main: #f0f6f0;
+  --bg-window: #f0f6f0;
+  --bg-panel: #e6ebe6;
+  --bg-hover: #dce2dc;
+  --bg-active: #222323;
+  --bg-dark: #222323;
+
+  --text-primary: #222323;
+  --text-secondary: #222323;
+  --text-tertiary: #888888;
+
+  --color-accent: #222323;
+  --color-error: #222323;
+
+  --border-color: #222323;
+
+  --titlebar-bg: #222323;
+  --titlebar-text: #f0f6f0;
+}
