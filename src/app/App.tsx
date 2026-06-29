@@ -14,6 +14,8 @@ const GLOBAL_CSS = `
   @keyframes eq-pulse { from { height: 8% } to { height: 94% } }
   @keyframes marquee-scroll { 0% { transform: translateX(0) } 100% { transform: translateX(-50%) } }
   @keyframes led-blink { 0%,100% { opacity: 1 } 50% { opacity: 0.2 } }
+  @keyframes splash-fadein { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: translateY(0) } }
+  @keyframes splash-exit { from { opacity: 1 } to { opacity: 0 } }
 
   input[type=range] {
     -webkit-appearance: none; appearance: none;
@@ -265,9 +267,9 @@ function Modal({ title, onClose, children, width = 360 }: { title: string; onClo
 
 // ── Music Visualizer ──────────────────────────────────────────────────────────
 
-function MusicVisualizer({ zIndex, onFocus, open, onClose, volume, onVolumeChange }: {
+function MusicVisualizer({ zIndex, onFocus, open, onClose, volume, onVolumeChange, autoplay }: {
   zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void;
-  volume: number; onVolumeChange: (v: number) => void;
+  volume: number; onVolumeChange: (v: number) => void; autoplay?: boolean;
 }) {
   const scopeRef = useRef<HTMLCanvasElement>(null);
   const barsRef = useRef<HTMLCanvasElement>(null);
@@ -347,6 +349,10 @@ function MusicVisualizer({ zIndex, onFocus, open, onClose, volume, onVolumeChang
     if (playing) { audio.pause(); setPlaying(false); }
     else { await audio.play(); setPlaying(true); }
   };
+
+  useEffect(() => {
+    if (autoplay && ready && !playing) { togglePlay(); }
+  }, [autoplay, ready]); // eslint-disable-line
 
   const skipPrev = () => { if (activeIdx >= 0) loadTrack((activeIdx - 1 + BUILTIN_TRACKS.length) % BUILTIN_TRACKS.length); };
   const skipNext = () => { if (activeIdx >= 0) loadTrack((activeIdx + 1) % BUILTIN_TRACKS.length); };
@@ -1302,6 +1308,103 @@ function bgStyle(pattern: BgPattern): React.CSSProperties {
   return {};
 }
 
+// ── Splash Screen ─────────────────────────────────────────────────────────────
+
+function SplashScreen({ onEnter, exiting }: { onEnter: (withSound: boolean) => void; exiting: boolean }) {
+  const [progress, setProgress] = useState(0);
+  const [phase, setPhase] = useState<"loading" | "ready">("loading");
+
+  useEffect(() => {
+    let p = 0;
+    const iv = setInterval(() => {
+      p += Math.random() * 9 + 3;
+      if (p >= 100) {
+        p = 100;
+        clearInterval(iv);
+        setTimeout(() => setPhase("ready"), 400);
+      }
+      setProgress(Math.floor(p));
+    }, 55);
+    return () => clearInterval(iv);
+  }, []);
+
+  const blocks = Math.round(progress / 5);
+  const bar = "█".repeat(blocks) + "░".repeat(20 - blocks);
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 9999,
+      background: "#04040a",
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      animation: exiting ? "splash-exit 0.5s ease forwards" : undefined,
+    }}>
+      {/* Scanlines */}
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "repeating-linear-gradient(0deg,rgba(0,0,0,0.18) 0,rgba(0,0,0,0.18) 1px,transparent 1px,transparent 3px)" }}/>
+      {/* Noise */}
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.04, backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundSize: "140px" }}/>
+
+      <div style={{ position: "relative", zIndex: 1, textAlign: "center", width: "100%", maxWidth: 440, padding: "0 32px" }}>
+        <div style={{ ...PX, fontSize: 11, color: "var(--bg-active)", letterSpacing: 3, marginBottom: 6 }}>
+          ALEJANDRO SANCHO
+        </div>
+        <div style={{ ...MONO, fontSize: 11, color: "rgba(255,255,255,0.25)", letterSpacing: 8, marginBottom: 52 }}>
+          PORTFOLIO
+        </div>
+
+        {phase === "loading" ? (
+          <div style={{ animation: "splash-fadein 0.3s ease" }}>
+            <div style={{ ...MONO, fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 18, letterSpacing: 1 }}>
+              INITIALIZING SYSTEM...
+            </div>
+            <div style={{ ...MONO, fontSize: 13, color: "var(--bg-active)", letterSpacing: 2, marginBottom: 10 }}>
+              [{bar}]
+            </div>
+            <div style={{ ...MONO, fontSize: 10, color: "rgba(255,255,255,0.2)" }}>{progress}%</div>
+          </div>
+        ) : (
+          <div style={{ animation: "splash-fadein 0.4s ease" }}>
+            <div style={{ ...MONO, fontSize: 11, color: "#4dffaa", marginBottom: 36, letterSpacing: 2 }}>
+              ▶  SYSTEM READY
+            </div>
+            <button
+              onClick={() => onEnter(true)}
+              style={{
+                display: "block", width: "100%", marginBottom: 12, cursor: "pointer",
+                ...PX, fontSize: 7, letterSpacing: 1,
+                background: "var(--bg-active)", color: "#fff",
+                border: "2px solid var(--bg-active)", padding: "16px 0",
+                transition: "opacity 0.15s",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = "0.82")}
+              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+            >
+              [ ENABLE SOUND + ENTER ]
+            </button>
+            <button
+              onClick={() => onEnter(false)}
+              style={{
+                display: "block", width: "100%", cursor: "pointer",
+                ...MONO, fontSize: 11,
+                background: "transparent", color: "rgba(255,255,255,0.3)",
+                border: "1px solid rgba(255,255,255,0.1)", padding: "11px 0",
+                transition: "color 0.15s, border-color 0.15s",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = "rgba(255,255,255,0.6)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.3)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+            >
+              enter without sound
+            </button>
+          </div>
+        )}
+
+        <div style={{ ...MONO, fontSize: 9, color: "rgba(255,255,255,0.1)", marginTop: 52, letterSpacing: 2 }}>
+          3D ARTIST · ENVIRONMENT & PROPS · GRAPHIC DESIGN · WEB DESIGN
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const clock = useClock();
   const [layoutKey, setLayoutKey] = useState(0);
@@ -1324,9 +1427,20 @@ export default function App() {
   const [contactOpen,  setContactOpen]  = useState(false);
   const [networkOpen,  setNetworkOpen]  = useState(false);
 
+  // Splash + audio unlock
+  const [splashVisible, setSplashVisible] = useState(true);
+  const [splashExiting, setSplashExiting] = useState(false);
+  const [autoplay,      setAutoplay]      = useState(false);
+
+  const handleEnter = (withSound: boolean) => {
+    if (withSound) setAutoplay(true);
+    setSplashExiting(true);
+    setTimeout(() => setSplashVisible(false), 480);
+  };
+
   // Global preferences
   const [palette,    setPalette]    = useState("Y2K");
-  const [bgPattern,  setBgPattern]  = useState<BgPattern>("flat");
+  const [bgPattern,  setBgPattern]  = useState<BgPattern>("dots");
   const [volume,     setVolume]     = useState(0.8);
 
   // Apply palette CSS vars
@@ -1410,7 +1524,7 @@ export default function App() {
 
           <React.Fragment key={layoutKey}>
             <MyProjectsWin   zIndex={z.projects}   onFocus={() => focus("projects")}   open={projOpen}    onClose={() => setProjOpen(false)} />
-            <MusicVisualizer zIndex={z.visualizer} onFocus={() => focus("visualizer")} open={vizOpen}     onClose={() => setVizOpen(false)}     volume={volume} onVolumeChange={setVolume} />
+            <MusicVisualizer zIndex={z.visualizer} onFocus={() => focus("visualizer")} open={vizOpen}     onClose={() => setVizOpen(false)}     volume={volume} onVolumeChange={setVolume} autoplay={autoplay} />
             <PhotoViewer     zIndex={z.photo}       onFocus={() => focus("photo")}      open={photoOpen}   onClose={() => setPhotoOpen(false)} />
             <NotesWin        zIndex={z.notes}       onFocus={() => focus("notes")}      open={notesOpen}   onClose={() => setNotesOpen(false)} />
             <SysInfo         zIndex={z.sysinfo}     onFocus={() => focus("sysinfo")}    open={sysinfoOpen} onClose={() => setSysinfoOpen(false)} />
@@ -1423,6 +1537,9 @@ export default function App() {
         {/* Modals */}
         {contactOpen && <ContactModal onClose={() => setContactOpen(false)} />}
         {networkOpen && <NetworkModal onClose={() => setNetworkOpen(false)} />}
+
+        {/* Splash */}
+        {splashVisible && <SplashScreen onEnter={handleEnter} exiting={splashExiting} />}
 
         {/* Dock */}
         <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 58, background: "var(--bg-panel)", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", gap: 18, zIndex: 100 }}>
