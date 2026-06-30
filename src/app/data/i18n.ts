@@ -150,14 +150,15 @@ const ES: Strings = {
     backToList: "← volver al listado", noImage: "SIN IMAGEN",
     posts: [
       {
-        title: "Sustituye por un título real", date: "2026.01.01",
-        excerpt: "Sustituye por un extracto breve — esto es solo un ejemplo de cómo se ve una entrada larga con imágenes intercaladas.",
+        title: "Cómo construí este sitio (y por qué tiene pinta de Windows 98)", date: "2026.06.30",
+        excerpt: "La idea, las referencias y las decisiones técnicas detrás de este portafolio — por qué un escritorio retro, por qué React monolítico, y por qué no hay ni un solo archivo de audio en toda la web.",
         body: [
-          { type: "p", text: "Sustituye este texto por tu artículo real. Esta entrada de ejemplo muestra cómo se comporta el blog cuando hay texto largo: varios párrafos, alguna imagen intercalada y un pie de foto opcional. Puedes escribir tanto como quieras — el contenido hace scroll dentro de la ventana." },
-          { type: "p", text: "Por ejemplo, aquí podrías contar el proceso detrás de uno de tus proyectos: de dónde viene la idea, qué referencias usaste, qué decisiones tomaste por el camino y qué problemas tuviste que resolver. Cuanto más concreto y técnico, mejor encaja con el tono del resto de la web." },
-          { type: "img", src: "", caption: "Sustituye por una imagen real (ej. un work-in-progress o un detalle de textura)." },
-          { type: "p", text: "Después de una imagen puedes seguir con más texto — comentar el render de arriba, explicar una decisión de diseño, o simplemente continuar la historia. El formato soporta tantos párrafos e imágenes como necesites, en el orden que quieras." },
-          { type: "p", text: "Para terminar, un cierre breve: qué aprendiste, qué harías diferente la próxima vez, o un enlace a dónde ver el proyecto completo." },
+          { type: "p", text: "Llevaba tiempo dándole vueltas a cómo quería presentar mi trabajo, y los portafolios típicos — grid de imágenes, scroll infinito, tipografía minimalista — no terminaban de representarme. Quería algo con personalidad, algo en lo que se notara que detrás hay alguien a quien le gustan los videojuegos, los sistemas operativos viejos y la estética de cuando internet todavía sonaba a módem. De ahí salió la idea: un escritorio Y2K funcional, con ventanas que se arrastran, un dock, una barra de sistema y un easter egg de error fatal si te quedas demasiado tiempo sin entrar en mis proyectos." },
+          { type: "p", text: "A nivel técnico fue React + TypeScript con Vite y Tailwind, pero la decisión más rara — y la que mejor ha funcionado — fue mantener casi todo en un único archivo, App.tsx. En cualquier proyecto \"serio\" eso suena a mala práctica, pero aquí el sitio entero es básicamente un solo sistema interconectado: un contador de z-index compartido por todas las ventanas, un sistema de paletas de color que se aplica en caliente sobre variables CSS, y un gestor de archivos virtual para MIS PROYECTOS. Separarlo en quince componentes habría significado pasar las mismas props por todos lados sin ganar claridad real." },
+          { type: "img", src: "", caption: "Pendiente — captura del escritorio con alguna paleta de color aplicada." },
+          { type: "p", text: "Otra decisión que me gusta especialmente: no hay ni un solo archivo de sonido en el proyecto. Todos los clics, aperturas y cierres de ventana son beeps sintetizados en tiempo real con la Web Audio API. Es una tontería técnica, pero encaja perfecto con la estética — esos pitidos cuadrados de sistema operativo de los 2000 no suenan a nada que puedas grabar, hay que generarlos." },
+          { type: "p", text: "El sistema de paletas también merece mención: cinco paletas de color (Y2K, DUSK, FOREST, SUNSET, MONO), cada una con su versión clara y oscura ajustada a mano, no invertida automáticamente. Cambiar de paleta o de modo aplica las variables CSS al instante sin recargar nada — toda la web reacciona en vivo." },
+          { type: "p", text: "Lo que más me ha costado hasta ahora no es código, es contenido: escribir mis propios textos, decidir cómo sonar en español sin parecer un folleto corporativo, y elegir qué proyectos enseñar primero. Esa parte va más lenta que el código, pero es la que de verdad importa." },
         ],
       },
       {
@@ -312,14 +313,15 @@ const EN: Strings = {
     backToList: "← back to list", noImage: "NO IMAGE SET",
     posts: [
       {
-        title: "Replace with a real post title", date: "2026.01.01",
-        excerpt: "Replace with a short excerpt — this is just a sample showing what a long post with inline images looks like.",
+        title: "How I built this site (and why it looks like Windows 98)", date: "2026.06.30",
+        excerpt: "The idea, the references and the technical decisions behind this portfolio — why a retro desktop, why a monolithic React file, and why there isn't a single audio file anywhere on the site.",
         body: [
-          { type: "p", text: "Replace this with your real article. This sample post shows how the blog handles long-form content: multiple paragraphs, an inline image, and an optional caption. Write as much as you want — the content scrolls inside the window." },
-          { type: "p", text: "For example, this is a good place to walk through the process behind one of your projects: where the idea came from, what references you used, what decisions you made along the way, and what problems you had to solve. The more concrete and technical, the better it fits the tone of the rest of the site." },
-          { type: "img", src: "", caption: "Replace with a real image (e.g. a work-in-progress shot or a texture detail)." },
-          { type: "p", text: "After an image you can keep writing — comment on the render above, explain a design decision, or just continue the story. The format supports as many paragraphs and images as you need, in whatever order you want." },
-          { type: "p", text: "Wrap up with a short close: what you learned, what you'd do differently next time, or a link to see the full project." },
+          { type: "p", text: "I'd been turning over how I wanted to present my work for a while, and the typical portfolio format — image grid, infinite scroll, minimal typography — never quite felt like me. I wanted something with personality, something that made it obvious there's someone behind it who grew up on video games, old operating systems, and that early-internet aesthetic from back when the web still sounded like a modem handshake. That's where the idea came from: a working Y2K desktop, with draggable windows, a dock, a system bar, and a fatal-error easter egg if you wander around too long without checking out my projects." },
+          { type: "p", text: "On the technical side it's React + TypeScript with Vite and Tailwind, but the strangest decision — and the one that's worked out best — was keeping almost everything in a single file, App.tsx. In most \"serious\" projects that screams bad practice, but here the whole site is essentially one interconnected system: a z-index counter shared across every window, a color-palette system applied live over CSS variables, and a virtual file manager for MY PROJECTS. Splitting it into fifteen components would have meant threading the same props everywhere without any real gain in clarity." },
+          { type: "img", src: "", caption: "Pending — screenshot of the desktop with one of the color palettes applied." },
+          { type: "p", text: "Another decision I'm especially fond of: there isn't a single audio file anywhere in the project. Every click, window open, and window close is a beep synthesized live with the Web Audio API. It's a small technical indulgence, but it fits the aesthetic perfectly — those square-wave system beeps from early-2000s operating systems aren't something you record, you have to generate them." },
+          { type: "p", text: "The palette system is worth mentioning too: five color palettes (Y2K, DUSK, FOREST, SUNSET, MONO), each with a hand-tuned light and dark version rather than an auto-inverted one. Switching palette or mode applies the CSS variables instantly with no reload — the whole site reacts live." },
+          { type: "p", text: "What's actually been the hardest part so far isn't code, it's content: writing my own copy, figuring out how to sound like myself in Spanish without it reading like a corporate brochure, and deciding which projects to lead with. That part moves a lot slower than the code, but it's the part that actually matters." },
         ],
       },
       {
