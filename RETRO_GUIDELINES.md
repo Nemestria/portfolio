@@ -29,7 +29,7 @@
 - **No oversized typography:** Text should be readable at 6–9px (snappy, not airy)
 - **No color psychology push:** Don't use colors to manipulate emotion (retro was straightforward)
 - **No animated flourishes:** No entrance animations, no confetti, no page transitions
-- **No dark mode by default:** Light beige/tan is the retro standard
+- **Light mode is the default**, but a dark mode toggle now exists (PREFERENCES → Display Mode) — every palette has a tuned dark variant. Default-on-load is still light; don't change that default without asking.
 - **No slick polish:** Intentional quirks (blinking cursor, typewriter effect, loading bars) are better than smooth transitions
 
 ## Visual References
@@ -84,11 +84,11 @@
 - `led-blink`: Status indicators pulse (alive signal, Y2K aesthetic)
 - No page transitions, no route animations
 
-**Sound (if added):**
-- Floppy disk click (save)
-- Modem dial-up tone (connect)
-- Pop/beep (alert)
-- Retro chiptune (bg music, optional)
+**Sound (implemented ✅):**
+- Synthesized square-wave UI blips via Web Audio API (no audio asset files) — open (rising chirp), close (falling chirp), click (short tick)
+- Wired into every generic button, window open/close, modal close
+- Independent "Effects Volume" slider in PREFERENCES (separate from Music Volume)
+- Splash screen offers an explicit "enable sound" choice before autoplaying music — never autoplay audio without that opt-in
 
 ## Typography Specifics
 
@@ -188,6 +188,7 @@ If adding new sections, ask: "Would this exist on a 2001 desktop?"
 - ✗ Collaboration tool, real-time chat, analytics dashboard
 - ✓ Contact form (old HTML form), guestbook
 - ✗ Live notifications, push alerts
+- ✓ **Shipped since:** fake browser window (BLOG), boot/splash screen with loading bar, FATAL ERROR crash-screen nag (a deliberately jarring, theme-independent easter egg — this is the one place "no anachronism" bends on purpose, since a crash screen reads as *more* period-authentic the more it breaks the polished UI around it)
 
 ## References & Resources
 

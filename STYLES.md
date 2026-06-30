@@ -10,21 +10,21 @@ Rationale: Retro aesthetic needs pixel-perfect control; Tailwind handles spacing
 
 ## Color Usage
 
-**NEVER hardcode hex colors.** Always reference theme:
+**NEVER hardcode hex colors.** This migration is now complete — App.tsx uses CSS vars exclusively (see [THEMES.md](THEMES.md)). Always reference theme vars:
 ```tsx
 // ❌ Wrong
 style={{ background: "#e8e8e8" }}
 
 // ✅ Right
-style={{ background: "#e8e8e8" }} // From DESIGN.md palette, documented reason
-// OR use a constant if reused:
-const BTN_HOVER = "#d8d0cc";
+style={{ background: "var(--bg-panel)" }}
 ```
 
+**Deliberate exceptions** (don't theme these — see THEMES.md "Caveats"): the splash screen and the FATAL ERROR modal use hardcoded colors on purpose, so they read as theme-independent system events.
+
 For new sections/components:
-1. Check DESIGN.md for closest match
-2. Add to constant at top of component
-3. Leave inline comment linking to DESIGN.md section if non-obvious
+1. Check the CSS Variables list in [THEMES.md](THEMES.md) for the right var
+2. If you need a genuinely new color, add it to **every** entry (light + dark) in the `PALETTES` array in App.tsx, not just one
+3. Remember: plain `<button>` elements need an explicit `color` for non-default states — the global `button { color: var(--text-primary) }` rule only covers the default case
 
 ## Font Sizes
 
@@ -35,7 +35,7 @@ const MONO = { fontFamily: "'Share Tech Mono', monospace" };
 const SERIF = { fontFamily: "'IM Fell English', Georgia, serif" };
 
 // Apply
-style={{ ...PX, fontSize: 7, color: "#46425e" }}
+style={{ ...PX, fontSize: 7, color: "var(--text-primary)" }}
 ```
 
 **Size mapping:**
@@ -60,30 +60,32 @@ style={{ ...PX, fontSize: 7, color: "#46425e" }}
 
 ## Borders
 
-All interactive elements: `border: "1px solid #46425e"`
+All interactive elements: `border: "1px solid var(--border-color)"`
 
 ```tsx
 // ✅ Consistent
 style={{
-  border: "1px solid #46425e",
-  borderBottom: "1px solid #46425e",
-  borderTop: "1px solid #46425e",
+  border: "1px solid var(--border-color)",
+  borderBottom: "1px solid var(--border-color)",
+  borderTop: "1px solid var(--border-color)",
 }}
 ```
 
 ## Button Styling
 
-**Template:**
+**Template** (this is the real `CtrlBtn` component in App.tsx):
 ```tsx
 <button
+  onClick={() => { playClick(); onClick?.(); }}   // SFX — see below
   style={{
     width: 28, height: 22,
-    background: pressed ? "#c8c0bc" : "#e8e8e8",
-    border: "1px solid #46425e",
+    background: down ? "var(--bg-active)" : "var(--bg-panel)",
+    color: down ? "var(--bg-window)" : "var(--text-primary)",   // explicit color, see Color Usage
+    border: "1px solid var(--border-color)",
     cursor: "pointer",
     display: "flex", alignItems: "center", justifyContent: "center",
-    boxShadow: pressed ? "inset 1px 1px 0 rgba(0,0,0,0.25)" : "none",
-    transform: pressed ? "translateY(1px)" : "none",
+    boxShadow: down ? "inset 1px 1px 0 rgba(0,0,0,0.25)" : "none",
+    transform: down ? "translateY(1px)" : "none",
     transition: "background 0.05s, transform 0.05s",
     flexShrink: 0,
   }}
@@ -94,36 +96,50 @@ style={{
 
 Key points:
 - Always include `flexShrink: 0` (prevent squishing)
-- Pressed: darker bg + inset shadow + translateY(1px)
+- Pressed/active: brighter bg (`--bg-active`) + inset shadow + translateY(1px)
 - Smooth 0.05s transition (snappy, not sluggish)
+- `CtrlBtn` plays a click SFX automatically (see Sound Effects below) — use it instead of a raw `<button>` for any generic control
 
 ## Windows
 
 **Structure:**
 ```tsx
-<div style={{ position: "absolute", left: pos.x, top: pos.y, width, zIndex }}>
+<div style={{ position: "absolute", left: pos.x, top: pos.y, width, zIndex, transition: "width 0.15s" }}>
   {/* Title bar */}
-  <div style={{ ...TITLEBAR, height: 22, borderBottom: "1px solid #46425e", /* rest */ }}>
+  <div style={{ ...TITLEBAR, height: 22, borderBottom: "1px solid var(--border-color)", /* rest */ }}>
     <span>{title}</span>
     <div>{closeButtons}</div>
   </div>
 
   {/* Content */}
-  <div style={{ border: "1px solid #46425e", background: "#ffffff" }}>
+  <div style={{ border: "1px solid var(--border-color)", background: "var(--bg-window)" }}>
     {/* ... */}
   </div>
 
   {/* Status bar (optional) */}
-  {statusBar && <div style={{ borderTop: "1px solid #46425e", /* ... */ }}>{statusBar}</div>}
+  {statusBar && <div style={{ borderTop: "1px solid var(--border-color)", /* ... */ }}>{statusBar}</div>}
 </div>
 ```
 
+`width` can be a computed value (e.g. driven by a zoom level) — the real `Win` component has `transition: "width 0.15s"` on its outer wrapper so resizing animates smoothly. See the image/photo viewers in `App.tsx` for the pattern: window grows/shrinks with zoom rather than just scrolling internally.
+
 **Title bar pattern:**
 ```tsx
-const TITLEBAR = {
-  background: "repeating-linear-gradient(90deg, #15788c 0px, #15788c 1px, #709e96 1px, #709e96 2px)",
-};
+const TITLEBAR: React.CSSProperties = { background: "var(--titlebar-bg)" };
 ```
+`--titlebar-bg` is itself a striped `repeating-linear-gradient(...)` string defined per-palette in `PALETTES` (App.tsx) — don't hardcode the gradient in the component.
+
+## Sound Effects
+
+Every generic button (`CtrlBtn`), window open/close (`toggle()` in App, `Win`'s close/minimize, `Modal`), plays a short synthesized SFX via Web Audio API — no audio files:
+
+```tsx
+const playClick = () => beep(1100, 850, 0.04, "square", 0.18);
+const playOpen  = () => beep(480, 1200, 0.1, "square", 0.22);
+const playClose = () => beep(900, 320, 0.1, "square", 0.22);
+```
+
+Volume controlled by the `sfxVolume` state → "Effects Volume" slider in PREFERENCES. When adding a new interactive element, call the appropriate `play*()` before/alongside the action — see `CtrlBtn`'s `onClick` wrapper for the pattern.
 
 ## Animations
 
@@ -165,25 +181,25 @@ style={{
 
 ## Range Inputs (Sliders)
 
-**Global CSS:**
+There are now 3 sliders in the app (Music Volume, Effects Volume, BG Gen controls) — all share this global CSS in `GLOBAL_CSS`:
 ```tsx
 input[type=range] {
   -webkit-appearance: none; appearance: none;
   background: transparent; cursor: pointer; width: 100%;
 }
 input[type=range]::-webkit-slider-runnable-track {
-  background: #d8d0cc; height: 4px; border: 1px solid #46425e;
+  background: var(--bg-panel); height: 4px; border: 1px solid var(--border-color);
 }
 input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none; width: 10px; height: 14px;
-  background: #ede5e5; border: 1px solid #46425e; margin-top: -6px; cursor: ew-resize;
+  background: var(--bg-window); border: 1px solid var(--border-color); margin-top: -6px; cursor: ew-resize;
 }
-/* + moz versions */
+/* + moz versions, same var names */
 ```
 
 **In component:**
 ```tsx
-<input type="range" min={0} max={100} value={val} onChange={...} style={{ width: 64, height: 14 }} />
+<input type="range" min={0} max={1} step={0.01} value={val} onChange={e => onChange(Number(e.target.value))} style={{ width: 64, height: 14 }} />
 ```
 
 ## Scrollbar
@@ -191,8 +207,8 @@ input[type=range]::-webkit-slider-thumb {
 **Global CSS:**
 ```tsx
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #ede5e5; }
-::-webkit-scrollbar-thumb { background: #c8c0bc; border: 1px solid black; }
+::-webkit-scrollbar-track { background: var(--bg-panel); }
+::-webkit-scrollbar-thumb { background: var(--text-secondary); border: 1px solid var(--border-color); }
 ```
 
 ## Responsive Images
@@ -209,7 +225,7 @@ input[type=range]::-webkit-slider-thumb {
 
 Before commit:
 1. All states: default, hover, pressed, active, disabled
-2. Text contrast: #46425e readable on all backgrounds
+2. Text contrast: readable on all backgrounds, **in all 5 palettes × light/dark (10 combos)** — not just the default Y2K light
 3. Pixel alignment: no sub-pixel rendering (should be crisp)
 4. Animation smoothness: 60fps in DevTools
 5. Cross-browser: Chrome, Firefox, Safari
@@ -217,6 +233,7 @@ Before commit:
 ## Common Gotchas
 
 **Flexshrink:** Always add `flexShrink: 0` to prevent buttons/icons from squishing
-**Border rendering:** Use exactly `1px solid #46425e`, avoid 0.5px or rgb()
+**Border rendering:** Use exactly `1px solid var(--border-color)`, avoid 0.5px or rgb()
 **Font fallbacks:** Always include fallback (e.g., `monospace`, `Georgia`)
-**Z-index:** Reserve 10-100 for UI (windows, buttons); 998+ for overlays (noise, scanlines)
+**Z-index:** Don't invent a new local z-counter for a sub-window — thread `getNextZ()`/`focus()` from App so every window (including file-viewer popups) shares one monotonic counter. Reserve ~10-30 for desktop windows, 300+ used historically for MY PROJECTS file viewers before the unification (now just uses the shared counter too); 900 for Modal overlays; 998+ for visual-only overlays (noise, scanlines); 9000 for FATAL ERROR; 9999 for splash.
+**Button color:** Never assume a bare `<button>` is visible by default — set `color` explicitly for any non-default state (the global rule only covers the unstated default).

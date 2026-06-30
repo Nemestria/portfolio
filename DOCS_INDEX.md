@@ -30,28 +30,27 @@ Quick reference for all portfolio project docs. Read in this order when starting
 ## Implementation Docs
 
 ### [PORTFOLIO.md](PORTFOLIO.md)
-**Portfolio structure & content roadmap.** Data schemas, content organization, feature map.
-- When to read: Before building portfolio sections
-- Use for: Understanding window → content mapping, data structure design
-- Quick ref: Projects, skills, experiences object schemas; content gathering checklist
+**Actual portfolio structure & content status.** What each window really does, what's real content vs. placeholder.
+- When to read: Before touching any window's content or data
+- Use for: Understanding the file-system metaphor (`PROJECTS` as `FsFolder` tree), what's wired vs. still placeholder
+- Quick ref: 3 real projects with renders, videos still missing; BLOG/AboutWin bio still placeholder
 
 ### [TASKS.md](TASKS.md)
-**Work breakdown by phase.** 6 phases, task list, blockers, timeline estimates.
+**Actual completion status + remaining content gaps.** Most of the original 6-phase plan shipped, in a different shape than planned.
 - When to read: To plan what to work on next
-- Use for: Tracking progress, quick wins, definition of done
-- Quick ref: Phase 1 (foundation) done, Phase 2 next (data structures + content)
+- Use for: Tracking progress, content gaps (videos, bio reconciliation, blog posts)
+- Quick ref: Desktop shell, theming, MY PROJECTS, FATAL ERROR easter egg all done; remaining work is mostly content (videos, real blog posts)
 
 ### [THEMES.md](THEMES.md)
-**Theme system overview.** 2 themes (Color + Mono), CSS variables, implementation guide.
-- When to read: When adding new color styles or implementing theming
-- Use for: Understanding how themes work, theme toggle mechanism
-- Quick ref: CSS var names, both theme color sets, how to add new themes
+**Actual theme system.** 5 palettes (Y2K/DUSK/FOREST/SUNSET/MONO) × light/dark variants, CSS variables, implementation guide.
+- When to read: When adding new color styles, palettes, or touching dark mode
+- Use for: Understanding how palettes/dark-mode work, how to add a new palette
+- Quick ref: Switched in PREFERENCES window (not system bar), no localStorage persistence, `button { color: var(--text-primary) }` safety net for dark-mode visibility
 
 ### [THEME_MIGRATION.md](THEME_MIGRATION.md)
-**How to migrate components to CSS variables.** Step-by-step examples, priority components.
-- When to read: When migrating a component to use theme vars
-- Use for: Actual migration steps, testing checklist, pitfalls to avoid
-- Quick ref: Before/after code examples, priority components list
+**Historical.** Original migration plan — now complete and superseded by THEMES.md, kept for the CSS variable reference and pitfalls (e.g. invisible buttons in dark mode) it documents.
+- When to read: Rarely — THEMES.md is the current source of truth
+- Use for: CSS var name reference, lessons learned from the real migration
 
 ---
 
@@ -110,5 +109,7 @@ CLAUDE.md (project overview)
 ## Quick Links
 
 - **Figma source:** https://www.figma.com/design/0HsdMumJ7joRvlpwfK3KTw/Y2K-inspired-Retro-Website-Design
-- **GitHub:** [Your repo URL here when ready]
-- **Live:** [Deployed URL here when ready]
+- **GitHub:** https://github.com/Nemestria/portfolio
+- **Live:** https://portfolio-ashen-sigma-63gx2gi92g.vercel.app
+
+Vercel is linked to GitHub — every push to `master` auto-deploys to the live URL.

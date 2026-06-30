@@ -2,41 +2,27 @@
 
 ## Color Palette
 
+**The site ships 5 selectable palettes, each with a light and dark variant — see [THEMES.md](THEMES.md) for the full system and implementation.** The values below are the **Y2K palette's light variant** (the default on load) — useful as the reference palette when designing new UI, since all new components should use CSS vars (`var(--bg-window)` etc.) rather than these hex values directly.
+
 ### Primary (Navy/Dark Purple — UI chrome & borders)
-- **#46425e** — Dark purple (borders, primary text, emphasis)
-- **#15788c** — Navy blue (secondary text, inactive states)
-- **#f5f5f5** — Off-white background (desktop, windows, light panels)
-- **#ffffff** — Pure white (card backgrounds, high contrast areas)
-- **#e8e8e8** — Light gray (secondary panels, hover states)
+- **#46425e** — Dark purple (`--text-primary`, `--border-color`)
+- **#15788c** — Navy blue (`--text-secondary`)
+- **#f5f5f5** — Off-white background (`--bg-main`)
+- **#ffffff** — Pure white (`--bg-window`)
+- **#e8e8e8** — Light gray (`--bg-panel`)
 
 ### Accent (Cyan & Coral — highlights, interactions)
-- **#00b9be** — Bright cyan (active states, highlights, focus, EQ bars)
-- **#ffb0a3** — Salmon (hover states, secondary highlights, warm accent)
-- **#ff6973** — Coral red (error, warning, close button, strong action)
+- **#00b9be** — Bright cyan (`--bg-active`, `--color-accent` — active states, highlights, focus, EQ bars)
+- **#ffb0a3** — Salmon (`--bg-hover`)
+- **#ff6973** — Coral red (`--color-error`)
 
-### Neutral/Secondary
-- **#7a7a7a** — Medium gray (secondary text, disabled states)
-- **#999999** — Light gray (tertiary text, placeholders)
-- **#1a1a1a** — Near-black (strong text, fallback dark)
+### Other Palettes (quick reference, light variant accent only)
+- **DUSK** — `#9b72cf` (purple)
+- **FOREST** — `#2e8b57` (green)
+- **SUNSET** — `#e05d2e` (orange)
+- **MONO** — `#222323` (strict duotone, ink/paper inverts in dark mode)
 
-### System/Dark Backgrounds
-- **#2a2a2a** — Dark charcoal (album art bg, image viewer bg, dark panels)
-- **#1a1a1a** — Near-black (deepest backgrounds)
-
-## Color Mapping (Old → New)
-
-For reference if updating existing code:
-
-| Old | New | Use Case |
-|-----|-----|----------|
-| #1a1212 | #46425e | Borders, text, dark accents |
-| #5f8a7e, #709e96 | #15788c | Secondary elements, muted accents |
-| #a8c4d4 | #00b9be | Active states, highlights, focus |
-| #f7dede, #faf6f0 | #f5f5f5 | Background, window bg |
-| #e8e0dc | #e8e8e8 | Hover states, secondary bg |
-| #c8c0bc | #15788c | Pressed states (or darken active color) |
-| (new) | #ffb0a3 | Hover, soft accents |
-| (new) | #ff6973 | Errors, warnings, close buttons |
+Each palette's full light + dark color sets live in the `PALETTES` array in `App.tsx`. Dark variants are hand-tuned per palette, not auto-inverted.
 
 ## Typography
 
@@ -144,19 +130,19 @@ Target: 1024×768 (Y2K standard), but flexible to browser viewport
 - Windows: positioned absolute (draggable)
 - No media queries (retro desktop doesn't shrink; scroll if needed)
 
-## Theme Toggle (Active ✅)
-Two themes available, toggle via system bar button (🎨 ↔ ⚫⚪):
+## Palette + Dark Mode (Active ✅)
+5 palettes (Y2K default, DUSK, FOREST, SUNSET, MONO) × light/dark — toggled inside the **PREFERENCES** window, not the system bar:
+- "Display Mode" section: Light (Sun) / Dark (Moon) buttons
+- "Color Palette" section: 5 swatches
 
-1. **Color** (default) — Navy/cyan/coral palette, vibrant & engaging
-2. **Mono** (high-contrast) — #222323 & #f0f6f0, bold & minimal, accessibility-focused
+No localStorage persistence — resets to Y2K + light on every reload (not yet implemented, see TASKS.md).
 
-Persistence: Theme choice saved to localStorage, persists on reload.
-
-Implementation: CSS custom properties in `src/styles/themes.css`. Gradual migration to vars in App.tsx (see THEME_MIGRATION.md).
+Implementation: `PALETTES` array in `App.tsx`, applied via `document.documentElement.style.setProperty()` in a `useEffect`. `src/styles/themes.css` still exists as a static pre-hydration fallback but the in-JS system always overrides it. Full detail in [THEMES.md](THEMES.md).
 
 ## Accessibility Notes
-- High contrast text (#46425e on #f5f5f5 or #ffffff)
+- High contrast text (`--text-primary` on `--bg-main`/`--bg-window`)
 - Large clickable areas (26×20px minimum)
 - No color-only info (e.g., use text labels + icons)
-- Hover states visible (salmon #ffb0a3, cyan #00b9be backgrounds)
-- Error states use #ff6973 (red) with text label, not just color
+- Hover states visible (`--bg-hover`, `--bg-active` backgrounds)
+- Error states use `--color-error` with text label, not just color
+- **Every `<button>` must resolve a visible `color` in all 10 palette/mode combinations.** A global `button { color: var(--text-primary) }` rule covers the default case, but custom-colored buttons (active states, etc.) should set `color` explicitly per state — don't assume the browser default is visible, it broke silently in dark mode once already.
