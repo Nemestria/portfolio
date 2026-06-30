@@ -112,6 +112,7 @@ const playClose = () => beep(900, 320, 0.1, "square", 0.22);
 const PHOTOS = [
   { src: "/photos/001.png", label: "001.PNG", date: "2026.06.30", size: "—", cam: "ASANCHO" },
   { src: "/photos/002.png", label: "002.PNG", date: "2025.10.31", size: "—", cam: "ASANCHO" },
+  { src: "/photos/003-screenshot.png", label: "003.PNG", date: "2026.06.30", size: "—", cam: "ASANCHO" },
 ];
 
 // ── Color palettes ────────────────────────────────────────────────────────────
