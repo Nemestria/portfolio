@@ -3,7 +3,7 @@ import {
   Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
   Folder, Music, Image, Info, Home, Monitor,
   Mail, Rss, SlidersHorizontal, User, ExternalLink, Paintbrush,
-  ArrowLeft, ArrowRight, RotateCw, File, Film, Globe, Sun, Moon,
+  ArrowLeft, ArrowRight, RotateCw, File, Film, Globe, Sun, Moon, AlertTriangle,
 } from "lucide-react";
 import "../styles/themes.css";
 import { BUILTIN_TRACKS } from "./data/tracks";
@@ -303,6 +303,38 @@ function Modal({ title, onClose, children, width = 360 }: { title: string; onClo
   );
 }
 
+// ── Fatal Error Modal ─────────────────────────────────────────────────────────
+
+function FatalErrorModal({ onGoToProjects }: { onGoToProjects: () => void }) {
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 9000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.65)" }}>
+      <div style={{ width: 340, background: "#1a0000", border: "2px solid #ff3b3b", boxShadow: "0 0 0 4px #000, 6px 6px 0 rgba(0,0,0,0.4)" }}>
+        <div style={{ background: "repeating-linear-gradient(90deg,#ff3b3b 0,#ff3b3b 1px,#8a0000 1px,#8a0000 2px)", height: 24, display: "flex", alignItems: "center", padding: "0 8px", gap: 6 }}>
+          <AlertTriangle size={12} strokeWidth={2} style={{ color: "#fff" }}/>
+          <span style={{ ...PX, fontSize: 9, color: "#fff", letterSpacing: 1 }}>FATAL ERROR</span>
+        </div>
+        <div style={{ padding: "20px 20px 22px" }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+            <AlertTriangle size={36} strokeWidth={1.5} style={{ color: "#ff3b3b", animation: "led-blink 1.2s ease-in-out infinite" }}/>
+          </div>
+          <div style={{ ...PX, fontSize: 9, color: "#ff6a6a", textAlign: "center", marginBottom: 14, lineHeight: 1.7 }}>
+            UNACCEPTABLE BEHAVIOR DETECTED
+          </div>
+          <div style={{ ...MONO, fontSize: 12, color: "#ffd9d9", lineHeight: 1.8, textAlign: "center", marginBottom: 22 }}>
+            Hey! You've been wandering this page a lot without checking my projects. That's unacceptable!
+          </div>
+          <button onClick={onGoToProjects}
+            style={{ display: "block", width: "100%", padding: "12px 0", background: "#ff3b3b", border: "2px solid #ff3b3b", cursor: "pointer", ...PX, fontSize: 8, color: "#1a0000", letterSpacing: 1 }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = "0.85"; }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}>
+            → GO TO MY PROJECTS
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Music Visualizer ──────────────────────────────────────────────────────────
 
 function MusicVisualizer({ zIndex, onFocus, open, onClose, volume, onVolumeChange, autoplay }: {
@@ -516,11 +548,20 @@ function MusicVisualizer({ zIndex, onFocus, open, onClose, volume, onVolumeChang
 
 function PhotoViewer({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
   const [idx, setIdx] = useState(0);
+  const [zoom, setZoom] = useState(1);
   const photo = PHOTOS[idx];
   return (
-    <Win title={`PHOTO_VIEWER — ${photo.label}`} width={254} initX={672} initY={106} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar={`${idx + 1} OF ${PHOTOS.length} · RGB · 24BIT`}>
-      <div style={{ height: 172, borderBottom: "1px solid var(--border-color)", overflow: "hidden", background: "var(--bg-dark)" }}>
-        <img src={photo.src} alt={photo.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+    <Win title={`PHOTO_VIEWER — ${photo.label}`} width={254} initX={672} initY={106} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar={`${idx + 1} OF ${PHOTOS.length} · ${zoom}× · RGB · 24BIT`}>
+      <div style={{ height: 172, borderBottom: "1px solid var(--border-color)", overflow: "auto", background: "var(--bg-dark)" }}>
+        <img src={photo.src} alt={photo.label} style={{ width: `${zoom * 100}%`, height: zoom === 1 ? "100%" : "auto", objectFit: "cover", display: "block" }} />
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 8px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
+        <span style={{ ...PX, fontSize: 7, color: "var(--text-secondary)", marginRight: "auto" }}>ZOOM</span>
+        {[1, 2, 3, 4].map(zVal => (
+          <CtrlBtn key={zVal} onClick={() => setZoom(zVal)} active={zoom === zVal} w={24} h={16}>
+            <span style={{ ...PX, fontSize: 6 }}>{zVal}×</span>
+          </CtrlBtn>
+        ))}
       </div>
       <div style={{ padding: "5px 8px", borderBottom: "1px solid var(--border-color)" }}>
         {([["FILE", photo.label], ["DATE", photo.date], ["DIMS", photo.size], ["CAMERA", photo.cam]] as [string, string][]).map(([k, v]) => (
@@ -530,9 +571,9 @@ function PhotoViewer({ zIndex, onFocus, open, onClose }: { zIndex: number; onFoc
         ))}
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 8px" }}>
-        <CtrlBtn onClick={() => setIdx(i => (i - 1 + PHOTOS.length) % PHOTOS.length)} w={56} h={18}><span style={{ ...PX, fontSize: 8 }}>◀ PREV</span></CtrlBtn>
+        <CtrlBtn onClick={() => { setIdx(i => (i - 1 + PHOTOS.length) % PHOTOS.length); setZoom(1); }} w={56} h={18}><span style={{ ...PX, fontSize: 8 }}>◀ PREV</span></CtrlBtn>
         <span style={{ ...PX, fontSize: 8, color: "var(--text-secondary)" }}>{idx + 1} / {PHOTOS.length}</span>
-        <CtrlBtn onClick={() => setIdx(i => (i + 1) % PHOTOS.length)} w={56} h={18}><span style={{ ...PX, fontSize: 8 }}>NEXT ▶</span></CtrlBtn>
+        <CtrlBtn onClick={() => { setIdx(i => (i + 1) % PHOTOS.length); setZoom(1); }} w={56} h={18}><span style={{ ...PX, fontSize: 8 }}>NEXT ▶</span></CtrlBtn>
       </div>
     </Win>
   );
@@ -629,14 +670,23 @@ function VideoViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { 
 }
 
 function ImageViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { entry: FsImage } & ViewerProps) {
+  const [zoom, setZoom] = useState(1);
   return (
     <Win title={`${entry.name} — IMAGE VIEWER`} width={400} initX={570 + offsetIndex * 22} initY={90 + offsetIndex * 22} zIndex={zIndex} onFocus={onFocus} open onClose={onClose}
-      statusBar={`${entry.name} · JPG`}>
-      <div style={{ background: "#0a060f", minHeight: 260, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      statusBar={`${entry.name} · JPG · ${zoom}×`}>
+      <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 8px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
+        <span style={{ ...PX, fontSize: 7, color: "var(--text-secondary)", marginRight: "auto" }}>ZOOM</span>
+        {[1, 2, 3, 4].map(zVal => (
+          <CtrlBtn key={zVal} onClick={() => setZoom(zVal)} active={zoom === zVal} w={26} h={18}>
+            <span style={{ ...PX, fontSize: 7 }}>{zVal}×</span>
+          </CtrlBtn>
+        ))}
+      </div>
+      <div style={{ background: "#0a060f", height: 320, display: "flex", alignItems: zoom === 1 ? "center" : "flex-start", justifyContent: zoom === 1 ? "center" : "flex-start", overflow: "auto" }}>
         {entry.src ? (
-          <img src={entry.src} alt={entry.name} style={{ maxWidth: "100%", maxHeight: 400, display: "block" }}/>
+          <img src={entry.src} alt={entry.name} style={{ width: `${zoom * 100}%`, maxWidth: zoom === 1 ? "100%" : "none", display: "block", flexShrink: 0 }}/>
         ) : (
-          <div style={{ textAlign: "center", padding: 40 }}>
+          <div style={{ textAlign: "center", padding: 40, margin: "auto" }}>
             <div style={{ width: 56, height: 56, border: "1px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
               <Image size={24} strokeWidth={1} style={{ color: "rgba(255,255,255,0.25)" }}/>
             </div>
@@ -653,11 +703,12 @@ function ImageViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { 
 
 interface OpenWin { id: string; entry: FsEntry; z: number }
 
-function MyProjectsWin({ zIndex, onFocus, open, onClose, getNextZ }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void; getNextZ: () => number }) {
+function MyProjectsWin({ zIndex, onFocus, open, onClose, getNextZ, autoNavigate }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void; getNextZ: () => number; autoNavigate?: number }) {
   const [path, setPath] = useState<string[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [openWins, setOpenWins] = useState<OpenWin[]>([]);
   const stackCount = useRef(0);
+  const lastAutoNav = useRef(autoNavigate);
 
   const currentFolder = path.reduce((node: FsFolder, seg) => {
     const child = node.children.find(c => c.name === seg);
@@ -680,6 +731,23 @@ function MyProjectsWin({ zIndex, onFocus, open, onClose, getNextZ }: { zIndex: n
     const z = getNextZ();
     setOpenWins(prev => prev.map(w => w.id === id ? { ...w, z } : w));
   };
+
+  // Triggered by the FATAL ERROR modal's "GO TO MY PROJECTS" button — jumps
+  // straight to the first project folder and opens its first render.
+  useEffect(() => {
+    if (autoNavigate === undefined || autoNavigate === lastAutoNav.current) return;
+    lastAutoNav.current = autoNavigate;
+    const firstProject = PROJECTS.children.find(c => c.type === "folder") as FsFolder | undefined;
+    if (!firstProject) return;
+    setPath([firstProject.name]);
+    setSelected(null);
+    const firstImage = firstProject.children.find(c => c.type === "image");
+    if (firstImage) {
+      const id = [firstProject.name, firstImage.name].join("/");
+      const z = getNextZ();
+      setOpenWins(prev => prev.some(w => w.id === id) ? prev : [...prev, { id, entry: firstImage, z }]);
+    }
+  }, [autoNavigate]); // eslint-disable-line
 
   const goBack = () => { setPath(p => p.slice(0, -1)); setSelected(null); };
 
@@ -1582,6 +1650,33 @@ export default function App() {
     else { setOpen(true); focus(id); }
   };
 
+  // FATAL ERROR nag — fires once if the visitor hasn't opened MY PROJECTS
+  // within a while of the splash screen dismissing.
+  const [showFatalError, setShowFatalError] = useState(false);
+  const [autoNavSignal,  setAutoNavSignal]  = useState(0);
+  const fatalShownRef = useRef(false);
+  const projectsEverOpenedRef = useRef(false);
+
+  useEffect(() => { if (projOpen) projectsEverOpenedRef.current = true; }, [projOpen]);
+
+  useEffect(() => {
+    if (splashVisible) return;
+    const t = setTimeout(() => {
+      if (!projectsEverOpenedRef.current && !fatalShownRef.current) {
+        fatalShownRef.current = true;
+        setShowFatalError(true);
+      }
+    }, 40000);
+    return () => clearTimeout(t);
+  }, [splashVisible]);
+
+  const handleGoToProjects = () => {
+    setShowFatalError(false);
+    setProjOpen(true);
+    focus("projects");
+    setAutoNavSignal(s => s + 1);
+  };
+
   const resetLayout = () => {
     setVizOpen(true); setPhotoOpen(true); setNotesOpen(true);
     setSysinfoOpen(false); setPrefsOpen(false); setAboutOpen(false);
@@ -1646,7 +1741,7 @@ export default function App() {
           <DesktopIcon icon={Globe}      label="BLOG"        x={18} y={434} onOpen={() => toggle("blog",      blogOpen,  setBlogOpen)} />
 
           <React.Fragment key={layoutKey}>
-            <MyProjectsWin   zIndex={z.projects}   onFocus={() => focus("projects")}   open={projOpen}    onClose={() => setProjOpen(false)} getNextZ={nextZ} />
+            <MyProjectsWin   zIndex={z.projects}   onFocus={() => focus("projects")}   open={projOpen}    onClose={() => setProjOpen(false)} getNextZ={nextZ} autoNavigate={autoNavSignal} />
             <MusicVisualizer zIndex={z.visualizer} onFocus={() => focus("visualizer")} open={vizOpen}     onClose={() => setVizOpen(false)}     volume={volume} onVolumeChange={setVolume} autoplay={autoplay} />
             <PhotoViewer     zIndex={z.photo}       onFocus={() => focus("photo")}      open={photoOpen}   onClose={() => setPhotoOpen(false)} />
             <NotesWin        zIndex={z.notes}       onFocus={() => focus("notes")}      open={notesOpen}   onClose={() => setNotesOpen(false)} />
@@ -1661,6 +1756,9 @@ export default function App() {
         {/* Modals */}
         {contactOpen && <ContactModal onClose={() => setContactOpen(false)} />}
         {networkOpen && <NetworkModal onClose={() => setNetworkOpen(false)} />}
+
+        {/* Fatal error nag */}
+        {showFatalError && <FatalErrorModal onGoToProjects={handleGoToProjects} />}
 
         {/* Splash */}
         {splashVisible && <SplashScreen onEnter={handleEnter} exiting={splashExiting} />}
