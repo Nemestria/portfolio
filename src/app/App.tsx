@@ -17,6 +17,8 @@ const GLOBAL_CSS = `
   @keyframes splash-fadein { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: translateY(0) } }
   @keyframes splash-exit { from { opacity: 1 } to { opacity: 0 } }
 
+  button { color: var(--text-primary); font-family: inherit; }
+
   input[type=range] {
     -webkit-appearance: none; appearance: none;
     background: transparent; cursor: pointer; width: 100%;
