@@ -17,12 +17,22 @@ pnpm build
 ```
 
 ## Key Files
-- `src/app/App.tsx` — main desktop, all windows, dock, system bar, SFX engine, palette system (~1850 lines, monolithic)
-- `src/app/data/tracks.ts` — music playlist (`public/music/song1.mp3`, `song2.mp3`)
+- `src/app/App.tsx` — main desktop, all windows, dock, system bar, SFX engine, palette system (~1900+ lines, monolithic)
+- `src/app/data/i18n.ts` — bilingual (ES/EN) strings, `LanguageContext`/`useLang()`, blog posts, project descriptions, notes content
+- `src/app/data/tracks.ts` — music playlist (`public/music/song1–4.mp3`)
 - `src/app/components/ui/` — shadcn/ui (read-only, pre-built)
 - `src/styles/` — Tailwind config, base theme CSS (mostly superseded by the in-App.tsx palette system, see below)
 - `public/projects/PROJECT_0X/` — real renders + (pending) overview videos per project
 - `public/photos/` — PHOTOS window images
+
+## Auto-Wire Standing Instruction
+Per Alejandro: any file dropped into `public/music/`, `public/photos/`, or `public/projects/PROJECT_0X/` should be detected and wired into the corresponding data (`tracks.ts`, `PHOTOS` array, `PROJECTS`/`getProjects()` tree) proactively — don't wait to be asked. Flag ambiguous cases (unclear naming, which project a render belongs to) rather than guessing silently.
+
+## i18n (ES/EN)
+- `src/app/data/i18n.ts`: `Lang`, `Strings` interface, `STRINGS: Record<Lang, Strings>` (`ES`/`EN`)
+- `LanguageContext`/`useLang()` in App.tsx — every component pulls `const { t } = useLang()` for copy
+- Spanish is default (`lang` initial `"es"`), picked on splash screen, switchable via system-bar ES/EN toggle
+- **Personal-voice content** (NotesWin bio, `projectContent.project01/02/03`, `blog.posts[*]`) has draft Spanish written by Claude — explicitly pending Alejandro's own wording. Don't treat it as final; translate UI chrome freely, but flag personal-voice edits as drafts.
 
 ## Before Starting
 1. Read [DESIGN.md](DESIGN.md) — palette, fonts, retro rules

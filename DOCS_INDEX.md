@@ -32,14 +32,14 @@ Quick reference for all portfolio project docs. Read in this order when starting
 ### [PORTFOLIO.md](PORTFOLIO.md)
 **Actual portfolio structure & content status.** What each window really does, what's real content vs. placeholder.
 - When to read: Before touching any window's content or data
-- Use for: Understanding the file-system metaphor (`PROJECTS` as `FsFolder` tree), what's wired vs. still placeholder
-- Quick ref: 3 real projects with renders, videos still missing; BLOG/AboutWin bio still placeholder
+- Use for: Understanding the file-system metaphor (`PROJECTS` as `FsFolder` tree), the i18n system, what's wired vs. still placeholder
+- Quick ref: 3 real projects with renders, videos/YouTube IDs still missing; bilingual ES/EN (Spanish default); BLOG post #1 real, #2/#3 placeholder; AboutWin bio still placeholder
 
 ### [TASKS.md](TASKS.md)
-**Actual completion status + remaining content gaps.** Most of the original 6-phase plan shipped, in a different shape than planned.
+**Actual completion status + remaining content gaps + checkpoints to call the site done.**
 - When to read: To plan what to work on next
-- Use for: Tracking progress, content gaps (videos, bio reconciliation, blog posts)
-- Quick ref: Desktop shell, theming, MY PROJECTS, FATAL ERROR easter egg all done; remaining work is mostly content (videos, real blog posts)
+- Use for: Tracking progress, content gaps (videos, bio reconciliation, blog posts, real Spanish copy), the 5-step completion checklist
+- Quick ref: Desktop shell, theming, MY PROJECTS, i18n, BLOG, FATAL ERROR easter egg all done; remaining work is content (videos, real blog posts, Alejandro's own Spanish voice)
 
 ### [THEMES.md](THEMES.md)
 **Actual theme system.** 5 palettes (Y2K/DUSK/FOREST/SUNSET/MONO) × light/dark variants, CSS variables, implementation guide.

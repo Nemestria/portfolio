@@ -24,29 +24,29 @@ Navigate folders by double-click; opening a file (image/video/txt) spawns a **ne
 **Real content, 3 projects:**
 | Folder | Subject | Tools | Year | Images | Video |
 |---|---|---|---|---|---|
-| PROJECT_01 | Sword set (game-ready, low→high, retopo, UE5-optimized, concept by Maeve) | 3DS Max, Blender, ZBrush, Substance Painter/Designer, UE5.7 | 2025 | 3 real renders in `public/projects/PROJECT_01/` | `OVERVIEW.MP4` — **placeholder, no file yet** |
+| PROJECT_01 | Sword set (game-ready, low→high, retopo, UE5-optimized, concept by Maeve) | 3DS Max, Blender, ZBrush, Substance Painter/Designer, UE5.7 | 2025 | 3 real renders in `public/projects/PROJECT_01/` | `OVERVIEW.MP4` — **placeholder, no file/YouTube ID yet** |
 | PROJECT_02 | Axe set (Darksiders-style stylized, ref by Jakob Gavelli, mentorship by Visual Architects) | same | 2025 | 3 real renders | same — **placeholder** |
 | PROJECT_03 | Street environment (Bloodborne-inspired kit, FAB-library decals/foliage only) | same | 2026 | 4 real renders | same — **placeholder** |
 
-Image viewer has 1×–4× zoom that grows/shrinks the **window itself** (not just an internal scroll area).
+Image viewer has 1×–4× zoom that grows/shrinks the **window itself** (not just an internal scroll area). Project copy (`projectContent.project01/02/03` in i18n.ts) is bilingual, Spanish is a draft translation pending Alejandro's own wording. Video viewer supports a YouTube embed (`youtube-nocookie.com`) as an alternative to an uploaded `.mp4`, via an optional `youtubeId` field on `FsVideo` — falls back to native `<video>` if `src` is set, or a "no video" placeholder if neither is set.
 
 ### MUSIC → `MusicVisualizer`
-EQ-bar visualizer, real playlist (`src/app/data/tracks.ts` → `public/music/song1.mp3`, `song2.mp3` — names/artists still generic "SONG 01"/"SONG 02", not yet retitled). Drag-and-drop local file support. Autoplay only if the visitor chose "ENABLE SOUND" on the splash screen.
+EQ-bar visualizer, real playlist (`src/app/data/tracks.ts` → `public/music/song1–4.mp3`, 4 tracks — names/artists still generic "SONG 01"–"SONG 04", not yet retitled). Drag-and-drop local file support. Autoplay only if the visitor chose "ENABLE SOUND" on the splash screen.
 
 ### PHOTOS → `PhotoViewer`
-Real photos (`public/photos/001.png`, `002.png`) replacing the original Unsplash placeholders. Zoom 1×–4×, same window-grows-with-zoom behavior as the image viewer. A third file (`003-screenshot.png`, an apparent accidental upload) sits in the folder unwired — confirm with Alejandro whether to use or delete.
+Real photos (`public/photos/001.png`, `002.png`, `003-screenshot.png`), all 3 wired into the `PHOTOS` array. Zoom 1×–4×, same window-grows-with-zoom behavior as the image viewer.
 
 ### ABOUT (desktop icon) → `NotesWin`
-`README.TXT — NOTEPAD` styled diary/bio. Real content: Wittgenstein quote, intro paragraph (based near Barcelona, 3D artist), and a "here you will find: — my portfolio" list that's **intentionally incomplete** — Alejandro only gave one bullet; ask for the rest or leave as-is.
+`README.TXT — NOTEPAD` styled diary/bio, **bilingual** (`notes.lines` in `src/app/data/i18n.ts`, ES + EN). Real content: Wittgenstein quote, intro paragraph (based near Barcelona, 3D artist), and a "here you will find: — my portfolio" list that's **intentionally incomplete** — Alejandro only gave one bullet; ask for the rest or leave as-is. Spanish copy is a draft translation pending his own wording.
 
 ### ABOUT (dock) → `AboutWin`
-Separate, more compact card: avatar placeholder, short tagline, social links (LinkedIn, Instagram, email). Bio text here (`"Crafting worlds between pixels and polygons..."`) is still the **original placeholder** — never updated to match the NotesWin bio. Worth reconciling.
+Separate, more compact card: avatar placeholder, short tagline, social links (LinkedIn, Instagram, email). Bio text here (`t.about.bio`) is still the **original placeholder** — never updated to match the NotesWin bio. Worth reconciling.
 
 ### BG GEN → `BgGenWin`
 Procedural animated SVG background generator (plasma/mesh/noise/poly/waves/dots), seeded RNG, live preview, Apply button sets it as the desktop background. Fully built, not placeholder.
 
 ### BLOG → `BlogWin`
-New addition (not in the original plan). Fake browser chrome (back/forward/refresh/URL bar), collapsible post list. **3 placeholder posts**, generic titles/excerpts — needs real content + decision on whether `http://asancho.dev/blog` is the real intended URL to display.
+New addition (not in the original plan), **bilingual** (`blog.posts` in `src/app/data/i18n.ts`). Fake browser chrome (back/forward/refresh/URL bar), collapsible post list, long-form posts with paragraph + inline-image blocks (`BlogBlock` union type, supports arbitrary length). **Post #1 is real content** ("Cómo construí este sitio…" / "How I built this site…" — a making-of writeup covering the Y2K concept, the monolithic App.tsx decision, synthesized SFX, and the palette system), with one pending image placeholder for a desktop screenshot. **Posts #2 and #3 are still single-paragraph stubs**, need real content. URL shown is `http://asancho.dev/blog` — confirm if that's the real intended domain.
 
 ## Splash / Boot Sequence
 
@@ -62,13 +62,25 @@ HOME (reset layout) · CONTACT (modal) · NETWORK (modal) · PREFS · SYSTEM (te
 ## Desktop Icons (6, left column)
 MY PROJECTS · MUSIC · PHOTOS · ABOUT · BG GEN · BLOG
 
+## Language System (ES/EN)
+Not in the original plan. `src/app/data/i18n.ts` exports `Lang` (`"es" | "en"`), a `Strings` interface covering every piece of UI copy, and `STRINGS: Record<Lang, Strings>` (`ES`/`EN` objects). Consumed via a `LanguageContext`/`useLang()` hook (`{ lang, setLang, t }`) — a deliberate exception to the project's general prop-drilling convention, since `t` is needed almost everywhere.
+
+- **Language picked on the splash screen** (first thing a visitor sees, before the loading bar) and switchable anytime via an ES/EN toggle in the system bar.
+- **Spanish is the default language** (`lang` initial state `"es"`) since Alejandro is Spanish — English is the secondary/translated language.
+- All UI chrome (labels, buttons, window titles, menus) is fully translated both ways.
+- Personal-voice content (NotesWin bio, project descriptions, blog posts) currently has **draft Spanish translations written by Claude**, explicitly pending Alejandro rewriting them in his own voice — not meant to ship as final copy.
+- `MyProjectsWin` re-resolves open file-viewer content live from the current-language `PROJECTS` tree (`resolveEntry(id)`) so switching language with a file already open updates its text without needing to reopen it.
+
+## Auto-Wire Workflow (standing instruction)
+Per Alejandro's request, any file dropped into `public/music/`, `public/photos/`, or `public/projects/PROJECT_0X/` gets proactively wired into the corresponding data (`tracks.ts`, `PHOTOS` array in App.tsx, `PROJECTS`/`getProjects()` tree) when detected — no need to ask each time. Ambiguous cases (unclear track titles, which project a new render belongs to) get a sensible guess flagged for confirmation rather than silently skipped.
+
 ## Content Gaps (see [TASKS.md](TASKS.md) for the actionable list)
-- `OVERVIEW.MP4` videos missing for all 3 projects (PDF was explicitly replaced with video per Alejandro's request — folders/UI ready, files not)
-- Music track names still generic
+- `OVERVIEW.MP4` / YouTube IDs missing for all 3 projects (folders/UI ready, no source set)
+- Music track names still generic ("SONG 01"–"SONG 04")
 - AboutWin (dock) bio is stale placeholder vs. NotesWin's real bio
 - NotesWin "here you will find" list incomplete
-- BLOG posts are placeholder
-- `003-screenshot.png` in `public/photos/` unconfirmed/unwired
+- BLOG: post #1 is real content, posts #2/#3 still placeholder stubs; post #1 has a pending image placeholder
+- Spanish copy for notes/project descriptions/blog is a draft translation, pending Alejandro's own wording
 
 ## Deployment
 
