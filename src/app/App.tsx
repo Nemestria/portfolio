@@ -3,7 +3,7 @@ import {
   Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
   Folder, Music, Image, Info, Home, Monitor,
   Mail, Rss, SlidersHorizontal, User, ExternalLink, Paintbrush,
-  ArrowLeft, FileText, File, Film,
+  ArrowLeft, ArrowRight, RotateCw, File, Film, Globe,
 } from "lucide-react";
 import "../styles/themes.css";
 import { BUILTIN_TRACKS } from "./data/tracks";
@@ -60,9 +60,8 @@ const SERIF: React.CSSProperties = { fontFamily: "'IM Fell English', Georgia, se
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const PHOTOS = [
-  { src: "https://images.unsplash.com/photo-1637825891028-564f672aa42c?w=256&h=176&fit=crop&auto=format", label: "001.JPG", date: "1999.06.21", size: "3200 × 2400", cam: "PENTAX K1000" },
-  { src: "https://images.unsplash.com/photo-1563089145-599997674d42?w=256&h=176&fit=crop&auto=format", label: "002.JPG", date: "2000.09.14", size: "2048 × 1365", cam: "CANON AE-1" },
-  { src: "https://images.unsplash.com/photo-1615574147299-779f12013e04?w=256&h=176&fit=crop&auto=format", label: "003.JPG", date: "2001.03.07", size: "2160 × 2632", cam: "NIKON FM2" },
+  { src: "/photos/001.png", label: "001.PNG", date: "2026.06.30", size: "—", cam: "ASANCHO" },
+  { src: "/photos/002.png", label: "002.PNG", date: "2025.10.31", size: "—", cam: "ASANCHO" },
 ];
 
 // ── Color palettes ────────────────────────────────────────────────────────────
@@ -615,11 +614,10 @@ function ImageViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { 
 
 interface OpenWin { id: string; entry: FsEntry; z: number }
 
-function MyProjectsWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
+function MyProjectsWin({ zIndex, onFocus, open, onClose, getNextZ }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void; getNextZ: () => number }) {
   const [path, setPath] = useState<string[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [openWins, setOpenWins] = useState<OpenWin[]>([]);
-  const zCounter = useRef(300);
   const stackCount = useRef(0);
 
   const currentFolder = path.reduce((node: FsFolder, seg) => {
@@ -630,8 +628,7 @@ function MyProjectsWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onF
   const openEntry = (entry: FsEntry) => {
     if (entry.type === "folder") { setPath(p => [...p, entry.name]); setSelected(null); return; }
     const id = [...path, entry.name].join("/");
-    zCounter.current += 1;
-    const z = zCounter.current;
+    const z = getNextZ();
     setOpenWins(prev => {
       if (prev.some(w => w.id === id)) return prev.map(w => w.id === id ? { ...w, z } : w);
       stackCount.current += 1;
@@ -641,8 +638,7 @@ function MyProjectsWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onF
 
   const closeWin = (id: string) => setOpenWins(prev => prev.filter(w => w.id !== id));
   const focusWin = (id: string) => {
-    zCounter.current += 1;
-    const z = zCounter.current;
+    const z = getNextZ();
     setOpenWins(prev => prev.map(w => w.id === id ? { ...w, z } : w));
   };
 
@@ -1006,6 +1002,57 @@ function AboutWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
   );
 }
 
+// ── Blog Window (fake browser) ───────────────────────────────────────────────
+
+const BLOG_POSTS = [
+  { title: "Replace with a real post title", date: "2026.01.01", excerpt: "Replace with a short excerpt — workflow notes, project breakdowns, whatever you want the blog to cover." },
+  { title: "Replace with a real post title", date: "2025.12.01", excerpt: "Replace with a short excerpt — workflow notes, project breakdowns, whatever you want the blog to cover." },
+  { title: "Replace with a real post title", date: "2025.11.01", excerpt: "Replace with a short excerpt — workflow notes, project breakdowns, whatever you want the blog to cover." },
+];
+
+function BlogWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
+  const [openPost, setOpenPost] = useState<number | null>(null);
+
+  return (
+    <Win title="BLOG.EXE — BROWSER" width={360} initX={140} initY={70} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
+      statusBar="DONE">
+      {/* Browser toolbar */}
+      <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 8px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
+        <CtrlBtn w={22} h={18}><ArrowLeft size={9} strokeWidth={2}/></CtrlBtn>
+        <CtrlBtn w={22} h={18}><ArrowRight size={9} strokeWidth={2}/></CtrlBtn>
+        <CtrlBtn w={22} h={18}><RotateCw size={9} strokeWidth={2}/></CtrlBtn>
+        <div style={{ flex: 1, ...MONO, fontSize: 10, color: "var(--text-secondary)", background: "var(--bg-window)", border: "1px solid var(--border-color)", padding: "3px 7px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          http://asancho.dev/blog
+        </div>
+      </div>
+
+      {/* Page content */}
+      <div style={{ padding: "14px 14px 16px", minHeight: 240, maxHeight: 380, overflowY: "auto" }}>
+        <div style={{ ...PX, fontSize: 11, color: "var(--text-primary)", marginBottom: 4 }}>THE BLOG</div>
+        <div style={{ ...MONO, fontSize: 10, color: "var(--text-tertiary)", marginBottom: 18 }}>notes on 3d art, design & process</div>
+
+        {BLOG_POSTS.map((post, i) => {
+          const isOpen = openPost === i;
+          return (
+            <div key={i} style={{ borderTop: "1px solid var(--border-color)", padding: "12px 0", cursor: "pointer" }}
+              onClick={() => setOpenPost(isOpen ? null : i)}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+                <span style={{ ...PX, fontSize: 9, color: "var(--text-primary)" }}>{post.title}</span>
+                <span style={{ ...MONO, fontSize: 9, color: "var(--text-tertiary)", flexShrink: 0 }}>{post.date}</span>
+              </div>
+              {isOpen && (
+                <div style={{ ...MONO, fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.7, marginTop: 8 }}>
+                  {post.excerpt}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </Win>
+  );
+}
+
 // ── Background Generator — SVG ────────────────────────────────────────────────
 
 function mulberry32(seed: number) {
@@ -1314,9 +1361,9 @@ function DesktopIcon({ icon: Icon, label, x, y, onOpen }: { icon: React.ElementT
 
 // ── App ───────────────────────────────────────────────────────────────────────
 
-type WinId = "visualizer" | "photo" | "notes" | "sysinfo" | "prefs" | "about" | "bggen" | "projects";
+type WinId = "visualizer" | "photo" | "notes" | "sysinfo" | "prefs" | "about" | "bggen" | "projects" | "blog";
 
-const DEFAULT_Z: Record<WinId, number> = { visualizer: 12, photo: 13, notes: 14, sysinfo: 10, prefs: 9, about: 8, bggen: 7, projects: 15 };
+const DEFAULT_Z: Record<WinId, number> = { visualizer: 12, photo: 13, notes: 14, sysinfo: 10, prefs: 9, about: 8, bggen: 7, projects: 15, blog: 11 };
 
 function bgStyle(pattern: BgPattern): React.CSSProperties {
   if (pattern === "grid") return { backgroundImage: "repeating-linear-gradient(0deg,rgba(0,0,0,0.04) 0,rgba(0,0,0,0.04) 1px,transparent 1px,transparent 32px),repeating-linear-gradient(90deg,rgba(0,0,0,0.04) 0,rgba(0,0,0,0.04) 1px,transparent 1px,transparent 32px)" };
@@ -1436,6 +1483,7 @@ export default function App() {
   const [prefsOpen,   setPrefsOpen]   = useState(false);
   const [aboutOpen,   setAboutOpen]   = useState(false);
   const [bggenOpen,   setBggenOpen]   = useState(false);
+  const [blogOpen,    setBlogOpen]    = useState(false);
 
   // SVG background from generator
   const [bgSvg, setBgSvg] = useState<BgSvgCfg | null>(null);
@@ -1467,11 +1515,13 @@ export default function App() {
     Object.entries(p.vars).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
   }, [palette]);
 
-  const focus = (id: WinId) => setZ(prev => {
-    const max = Math.max(...Object.values(prev));
-    if (prev[id] === max) return prev;
-    return { ...prev, [id]: max + 1 };
-  });
+  // Single monotonic z-counter shared by every window in the app, including
+  // file-viewer popups spawned inside MyProjectsWin — guarantees whatever was
+  // clicked last is always strictly on top, regardless of window type.
+  const zCounterRef = useRef(Math.max(...Object.values(DEFAULT_Z)));
+  const nextZ = () => { zCounterRef.current += 1; return zCounterRef.current; };
+
+  const focus = (id: WinId) => setZ(prev => ({ ...prev, [id]: nextZ() }));
 
   const toggle = (id: WinId, isOpen: boolean, setOpen: (v: boolean) => void) => {
     if (isOpen) setOpen(false);
@@ -1481,9 +1531,10 @@ export default function App() {
   const resetLayout = () => {
     setVizOpen(true); setPhotoOpen(true); setNotesOpen(true);
     setSysinfoOpen(false); setPrefsOpen(false); setAboutOpen(false);
-    setProjOpen(false); setBggenOpen(false); setContactOpen(false); setNetworkOpen(false);
+    setProjOpen(false); setBggenOpen(false); setContactOpen(false); setNetworkOpen(false); setBlogOpen(false);
     setBgSvg(null);
     setZ(DEFAULT_Z);
+    zCounterRef.current = Math.max(...Object.values(DEFAULT_Z));
     setLayoutKey(k => k + 1);
   };
 
@@ -1538,9 +1589,10 @@ export default function App() {
           <DesktopIcon icon={Image}      label="PHOTOS"      x={18} y={206} onOpen={() => toggle("photo",      photoOpen, setPhotoOpen)} />
           <DesktopIcon icon={Info}       label="ABOUT"       x={18} y={282} onOpen={() => toggle("notes",      notesOpen, setNotesOpen)} />
           <DesktopIcon icon={Paintbrush} label="BG GEN"      x={18} y={358} onOpen={() => toggle("bggen",     bggenOpen, setBggenOpen)} />
+          <DesktopIcon icon={Globe}      label="BLOG"        x={18} y={434} onOpen={() => toggle("blog",      blogOpen,  setBlogOpen)} />
 
           <React.Fragment key={layoutKey}>
-            <MyProjectsWin   zIndex={z.projects}   onFocus={() => focus("projects")}   open={projOpen}    onClose={() => setProjOpen(false)} />
+            <MyProjectsWin   zIndex={z.projects}   onFocus={() => focus("projects")}   open={projOpen}    onClose={() => setProjOpen(false)} getNextZ={nextZ} />
             <MusicVisualizer zIndex={z.visualizer} onFocus={() => focus("visualizer")} open={vizOpen}     onClose={() => setVizOpen(false)}     volume={volume} onVolumeChange={setVolume} autoplay={autoplay} />
             <PhotoViewer     zIndex={z.photo}       onFocus={() => focus("photo")}      open={photoOpen}   onClose={() => setPhotoOpen(false)} />
             <NotesWin        zIndex={z.notes}       onFocus={() => focus("notes")}      open={notesOpen}   onClose={() => setNotesOpen(false)} />
@@ -1548,6 +1600,7 @@ export default function App() {
             <PrefsWin        zIndex={z.prefs}       onFocus={() => focus("prefs")}      open={prefsOpen}   onClose={() => setPrefsOpen(false)}   palette={palette} onPalette={setPalette} volume={volume} onVolumeChange={setVolume} bgPattern={bgPattern} onBgPattern={setBgPattern} />
             <AboutWin        zIndex={z.about}       onFocus={() => focus("about")}      open={aboutOpen}   onClose={() => setAboutOpen(false)} />
             <BgGenWin        zIndex={z.bggen}       onFocus={() => focus("bggen")}      open={bggenOpen}   onClose={() => setBggenOpen(false)} bgSvg={bgSvg} onApplyBg={cfg => { setBgSvg(cfg); if (cfg) setBgPattern("flat"); }} />
+            <BlogWin         zIndex={z.blog}        onFocus={() => focus("blog")}       open={blogOpen}    onClose={() => setBlogOpen(false)} />
           </React.Fragment>
         </div>
 
