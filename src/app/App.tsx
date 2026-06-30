@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useContext, createContext } from "react";
 import {
   Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
   Folder, Music, Image, Info, Home, Monitor,
@@ -7,6 +7,14 @@ import {
 } from "lucide-react";
 import "../styles/themes.css";
 import { BUILTIN_TRACKS } from "./data/tracks";
+import { STRINGS, type Lang, type Strings } from "./data/i18n";
+
+// ── Language Context ─────────────────────────────────────────────────────────
+
+const LanguageContext = createContext<{ lang: Lang; setLang: (l: Lang) => void; t: Strings }>({
+  lang: "es", setLang: () => {}, t: STRINGS.es,
+});
+const useLang = () => useContext(LanguageContext);
 
 // ── Global styles ─────────────────────────────────────────────────────────────
 
@@ -349,28 +357,29 @@ function Modal({ title, onClose, children, width = 360 }: { title: string; onClo
 // ── Fatal Error Modal ─────────────────────────────────────────────────────────
 
 function FatalErrorModal({ onGoToProjects }: { onGoToProjects: () => void }) {
+  const { t } = useLang();
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 9000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.65)" }}>
       <div style={{ width: 340, background: "#1a0000", border: "2px solid #ff3b3b", boxShadow: "0 0 0 4px #000, 6px 6px 0 rgba(0,0,0,0.4)" }}>
         <div style={{ background: "repeating-linear-gradient(90deg,#ff3b3b 0,#ff3b3b 1px,#8a0000 1px,#8a0000 2px)", height: 24, display: "flex", alignItems: "center", padding: "0 8px", gap: 6 }}>
           <AlertTriangle size={12} strokeWidth={2} style={{ color: "#fff" }}/>
-          <span style={{ ...PX, fontSize: 9, color: "#fff", letterSpacing: 1 }}>FATAL ERROR</span>
+          <span style={{ ...PX, fontSize: 9, color: "#fff", letterSpacing: 1 }}>{t.fatalError.title}</span>
         </div>
         <div style={{ padding: "20px 20px 22px" }}>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
             <AlertTriangle size={36} strokeWidth={1.5} style={{ color: "#ff3b3b", animation: "led-blink 1.2s ease-in-out infinite" }}/>
           </div>
           <div style={{ ...PX, fontSize: 9, color: "#ff6a6a", textAlign: "center", marginBottom: 14, lineHeight: 1.7 }}>
-            UNACCEPTABLE BEHAVIOR DETECTED
+            {t.fatalError.subtitle}
           </div>
           <div style={{ ...MONO, fontSize: 12, color: "#ffd9d9", lineHeight: 1.8, textAlign: "center", marginBottom: 22 }}>
-            Hey! You've been wandering this page a lot without checking my projects. That's unacceptable!
+            {t.fatalError.body}
           </div>
           <button onClick={() => { playOpen(); onGoToProjects(); }}
             style={{ display: "block", width: "100%", padding: "12px 0", background: "#ff3b3b", border: "2px solid #ff3b3b", cursor: "pointer", ...PX, fontSize: 8, color: "#1a0000", letterSpacing: 1 }}
             onMouseEnter={e => { e.currentTarget.style.opacity = "0.85"; }}
             onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}>
-            → GO TO MY PROJECTS
+            {t.fatalError.cta}
           </button>
         </div>
       </div>
@@ -403,6 +412,7 @@ function MusicVisualizer({ zIndex, onFocus, open, onClose, volume, onVolumeChang
   const [ready, setReady] = useState(false);
   const [dropping, setDropping] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
+  const { t } = useLang();
 
   useEffect(() => {
     const sync = () => {
@@ -526,20 +536,20 @@ function MusicVisualizer({ zIndex, onFocus, open, onClose, volume, onVolumeChang
   };
 
   return (
-    <Win title="VISUALIZER.EXE" width={480} initX={90} initY={55} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
-      statusBar={ready ? `${playing ? "▶" : "■"} ${trackName.slice(0, 26)} · ${fmtSecs(elapsed)} / ${fmtSecs(duration)}` : "NO SIGNAL · DROP AUDIO FILE OR SELECT TRACK"}>
+    <Win title={t.music.title} width={480} initX={90} initY={55} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
+      statusBar={ready ? `${playing ? "▶" : "■"} ${trackName.slice(0, 26)} · ${fmtSecs(elapsed)} / ${fmtSecs(duration)}` : t.music.noSignal}>
       <div style={{ position: "relative", background: "#0a060f", borderBottom: "1px solid var(--border-color)" }}>
         <canvas ref={scopeRef} width={478} height={120} style={{ display: "block", width: "100%", height: 120 }} />
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.18) 2px,rgba(0,0,0,0.18) 3px)" }} />
-        <span style={{ position: "absolute", top: 4, left: 6, ...PX, fontSize: 7, color: "rgba(0,185,190,0.4)" }}>OSCILLOSCOPE</span>
+        <span style={{ position: "absolute", top: 4, left: 6, ...PX, fontSize: 7, color: "rgba(0,185,190,0.4)" }}>{t.music.oscilloscope}</span>
       </div>
       <div style={{ position: "relative", background: "#0a060f", borderBottom: "1px solid var(--border-color)" }}>
         <canvas ref={barsRef} width={478} height={80} style={{ display: "block", width: "100%", height: 80 }} />
-        <span style={{ position: "absolute", top: 4, left: 6, ...PX, fontSize: 7, color: "rgba(0,185,190,0.4)" }}>SPECTRUM</span>
+        <span style={{ position: "absolute", top: 4, left: 6, ...PX, fontSize: 7, color: "rgba(0,185,190,0.4)" }}>{t.music.spectrum}</span>
       </div>
       <div style={{ padding: "6px 8px 4px", borderBottom: "1px solid var(--border-color)" }}>
         <div style={{ ...MONO, fontSize: 11, color: "var(--text-secondary)", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {trackName || "// NO TRACK LOADED"}
+          {trackName || t.music.noTrack}
         </div>
         <input type="range" min={0} max={duration || 1} value={elapsed} step={0.1} onChange={seek} style={{ height: 14, opacity: ready ? 1 : 0.3 }} disabled={!ready} />
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2, ...PX, fontSize: 7, color: "var(--text-tertiary)" }}>
@@ -558,7 +568,7 @@ function MusicVisualizer({ zIndex, onFocus, open, onClose, volume, onVolumeChang
           <Volume2 size={9} strokeWidth={1.5} style={{ color: "var(--text-secondary)" }} />
         </div>
         <span style={{ ...PX, fontSize: 7, color: playing ? "var(--bg-active)" : "var(--text-tertiary)" }}>
-          {playing ? "▶ LIVE" : ready ? "■ READY" : "○ IDLE"}
+          {playing ? t.music.live : ready ? t.music.ready : t.music.idle}
         </span>
       </div>
       {BUILTIN_TRACKS.length > 0 && (
@@ -580,7 +590,7 @@ function MusicVisualizer({ zIndex, onFocus, open, onClose, volume, onVolumeChang
         <input ref={fileInputRef} type="file" accept="audio/*,.mp3,.wav,.ogg,.flac,.aac,.m4a" style={{ display: "none" }}
           onChange={e => { const f = e.target.files?.[0]; if (f) loadFile(f); e.target.value = ""; }} />
         <div style={{ ...PX, fontSize: 7, color: dropping ? "var(--text-primary)" : "var(--text-secondary)" }}>
-          {dropping ? "DROP TO LOAD ↓" : "DROP FILE · CLICK TO BROWSE"}
+          {dropping ? t.music.dropToLoad : t.music.dropFile}
         </div>
       </div>
     </Win>
@@ -592,6 +602,7 @@ function MusicVisualizer({ zIndex, onFocus, open, onClose, volume, onVolumeChang
 function PhotoViewer({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
   const [idx, setIdx] = useState(0);
   const [zoom, setZoom] = useState(1);
+  const { t } = useLang();
   const photo = PHOTOS[idx];
   const baseWidth = 254;
   const baseImgHeight = 172;
@@ -603,7 +614,7 @@ function PhotoViewer({ zIndex, onFocus, open, onClose }: { zIndex: number; onFoc
         <img src={photo.src} alt={photo.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 8px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
-        <span style={{ ...PX, fontSize: 7, color: "var(--text-secondary)", marginRight: "auto" }}>ZOOM</span>
+        <span style={{ ...PX, fontSize: 7, color: "var(--text-secondary)", marginRight: "auto" }}>{t.photo.zoom}</span>
         {[1, 2, 3, 4].map(zVal => (
           <CtrlBtn key={zVal} onClick={() => setZoom(zVal)} active={zoom === zVal} w={24} h={16}>
             <span style={{ ...PX, fontSize: 6 }}>{zVal}×</span>
@@ -611,16 +622,16 @@ function PhotoViewer({ zIndex, onFocus, open, onClose }: { zIndex: number; onFoc
         ))}
       </div>
       <div style={{ padding: "5px 8px", borderBottom: "1px solid var(--border-color)" }}>
-        {([["FILE", photo.label], ["DATE", photo.date], ["DIMS", photo.size], ["CAMERA", photo.cam]] as [string, string][]).map(([k, v]) => (
+        {([[t.photo.lblFile, photo.label], [t.photo.lblDate, photo.date], [t.photo.lblDims, photo.size], [t.photo.lblCamera, photo.cam]] as [string, string][]).map(([k, v]) => (
           <div key={k} style={{ display: "flex", justifyContent: "space-between", ...PX, fontSize: 8, lineHeight: "2.2", color: "var(--text-primary)" }}>
             <span style={{ color: "var(--text-secondary)" }}>{k}</span><span>{v}</span>
           </div>
         ))}
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 8px" }}>
-        <CtrlBtn onClick={() => { setIdx(i => (i - 1 + PHOTOS.length) % PHOTOS.length); setZoom(1); }} w={56} h={18}><span style={{ ...PX, fontSize: 8 }}>◀ PREV</span></CtrlBtn>
+        <CtrlBtn onClick={() => { setIdx(i => (i - 1 + PHOTOS.length) % PHOTOS.length); setZoom(1); }} w={56} h={18}><span style={{ ...PX, fontSize: 8 }}>{t.photo.prev}</span></CtrlBtn>
         <span style={{ ...PX, fontSize: 8, color: "var(--text-secondary)" }}>{idx + 1} / {PHOTOS.length}</span>
-        <CtrlBtn onClick={() => { setIdx(i => (i + 1) % PHOTOS.length); setZoom(1); }} w={56} h={18}><span style={{ ...PX, fontSize: 8 }}>NEXT ▶</span></CtrlBtn>
+        <CtrlBtn onClick={() => { setIdx(i => (i + 1) % PHOTOS.length); setZoom(1); }} w={56} h={18}><span style={{ ...PX, fontSize: 8 }}>{t.photo.next}</span></CtrlBtn>
       </div>
     </Win>
   );
@@ -636,55 +647,59 @@ interface FsVideo  { name: string; type: "video";  date?: string; src?: string; 
 interface FsTxt    { name: string; type: "txt";    date?: string; content: string; }
 type FsEntry = FsFolder | FsImage | FsVideo | FsTxt;
 
-// ── Project data (fill in real content here) ──────────────────────────────────
+// ── Project data (fill in real content here) — README content is language-aware,
+// file/folder names stay constant across languages (they're filenames, not prose) ─
 
-const PROJECTS: FsFolder = {
-  name: "MY_PROJECTS", type: "folder",
-  children: [
-    {
-      name: "PROJECT_01",  type: "folder", date: "2025.01.01",
-      children: [
-        { name: "README.TXT",    type: "txt",   date: "2025.01.01", content: "// PROJECT_01 — SWORD SET\n\nGame-ready asset, workflow from low to high\nand retopologized. Textures compressed and\noptimized for UE5.\n\nI didn't stick completely to the concept\nsince I wanted to approach a bit of realism\nmore than just stylized.\n\nOriginal concept art from Maeve.\n\nTOOLS: 3DS Max, Blender, ZBrush,\n       Substance Painter, Substance Designer,\n       Unreal Engine 5.7\nYEAR:  2025" },
-        { name: "OVERVIEW.MP4",  type: "video", date: "2025.01.02" },
-        { name: "RENDER_01.JPG", type: "image", date: "2025.01.03", src: "/projects/PROJECT_01/sword1.jpg" },
-        { name: "RENDER_02.JPG", type: "image", date: "2025.01.04", src: "/projects/PROJECT_01/sword2.jpg" },
-        { name: "RENDER_03.JPG", type: "image", date: "2025.01.05", src: "/projects/PROJECT_01/sword3.jpg" },
-      ],
-    },
-    {
-      name: "PROJECT_02",  type: "folder", date: "2025.02.01",
-      children: [
-        { name: "README.TXT",    type: "txt",   date: "2025.02.01", content: "// PROJECT_02 — AXE SET\n\nWith this work I focused on Darksiders-\nstyle stylized texturing and exaggerated\nforms to develop a game-ready asset for\nvideogames.\n\nThanks to Jakob Gavelli for the reference\nand to Visual Architects for the mentorship.\n\nTOOLS: 3DS Max, Blender, ZBrush,\n       Substance Painter, Substance Designer,\n       Unreal Engine 5.7\nYEAR:  2025" },
-        { name: "OVERVIEW.MP4",  type: "video", date: "2025.02.02" },
-        { name: "RENDER_01.JPG", type: "image", date: "2025.02.03", src: "/projects/PROJECT_02/axe1.webp" },
-        { name: "RENDER_02.JPG", type: "image", date: "2025.02.04", src: "/projects/PROJECT_02/axe2.webp" },
-        { name: "RENDER_03.JPG", type: "image", date: "2025.02.05", src: "/projects/PROJECT_02/axe3.webp" },
-      ],
-    },
-    {
-      name: "PROJECT_03",  type: "folder", date: "2026.01.01",
-      children: [
-        { name: "README.TXT",    type: "txt",   date: "2026.01.01", content: "// PROJECT_03 — STREET ENVIRONMENT\n\nEnvironment inspired by Bloodborne's\naesthetic. I focused on developing pieces\nthat can be used as a kit.\n\nAll pieces and materials are made by\nmyself — only some kit-dressing pieces\n(decals, foliage) are from FAB's free\nlibraries.\n\nTOOLS: 3DS Max, Blender, ZBrush,\n       Substance Painter, Substance Designer,\n       Unreal Engine 5.7\nYEAR:  2026" },
-        { name: "OVERVIEW.MP4",  type: "video", date: "2026.01.02" },
-        { name: "RENDER_01.JPG", type: "image", date: "2026.01.03", src: "/projects/PROJECT_03/street1.webp" },
-        { name: "RENDER_02.JPG", type: "image", date: "2026.01.04", src: "/projects/PROJECT_03/street2.webp" },
-        { name: "RENDER_03.JPG", type: "image", date: "2026.01.05", src: "/projects/PROJECT_03/street3.webp" },
-        { name: "RENDER_04.JPG", type: "image", date: "2026.01.06", src: "/projects/PROJECT_03/street4.webp" },
-      ],
-    },
-  ],
-};
+function getProjects(t: Strings): FsFolder {
+  return {
+    name: "MY_PROJECTS", type: "folder",
+    children: [
+      {
+        name: "PROJECT_01",  type: "folder", date: "2025.01.01",
+        children: [
+          { name: "README.TXT",    type: "txt",   date: "2025.01.01", content: t.projectContent.project01 },
+          { name: "OVERVIEW.MP4",  type: "video", date: "2025.01.02" },
+          { name: "RENDER_01.JPG", type: "image", date: "2025.01.03", src: "/projects/PROJECT_01/sword1.jpg" },
+          { name: "RENDER_02.JPG", type: "image", date: "2025.01.04", src: "/projects/PROJECT_01/sword2.jpg" },
+          { name: "RENDER_03.JPG", type: "image", date: "2025.01.05", src: "/projects/PROJECT_01/sword3.jpg" },
+        ],
+      },
+      {
+        name: "PROJECT_02",  type: "folder", date: "2025.02.01",
+        children: [
+          { name: "README.TXT",    type: "txt",   date: "2025.02.01", content: t.projectContent.project02 },
+          { name: "OVERVIEW.MP4",  type: "video", date: "2025.02.02" },
+          { name: "RENDER_01.JPG", type: "image", date: "2025.02.03", src: "/projects/PROJECT_02/axe1.webp" },
+          { name: "RENDER_02.JPG", type: "image", date: "2025.02.04", src: "/projects/PROJECT_02/axe2.webp" },
+          { name: "RENDER_03.JPG", type: "image", date: "2025.02.05", src: "/projects/PROJECT_02/axe3.webp" },
+        ],
+      },
+      {
+        name: "PROJECT_03",  type: "folder", date: "2026.01.01",
+        children: [
+          { name: "README.TXT",    type: "txt",   date: "2026.01.01", content: t.projectContent.project03 },
+          { name: "OVERVIEW.MP4",  type: "video", date: "2026.01.02" },
+          { name: "RENDER_01.JPG", type: "image", date: "2026.01.03", src: "/projects/PROJECT_03/street1.webp" },
+          { name: "RENDER_02.JPG", type: "image", date: "2026.01.04", src: "/projects/PROJECT_03/street2.webp" },
+          { name: "RENDER_03.JPG", type: "image", date: "2026.01.05", src: "/projects/PROJECT_03/street3.webp" },
+          { name: "RENDER_04.JPG", type: "image", date: "2026.01.06", src: "/projects/PROJECT_03/street4.webp" },
+        ],
+      },
+    ],
+  };
+}
 
 // ── File viewers ──────────────────────────────────────────────────────────────
 
 interface ViewerProps { zIndex: number; onFocus: () => void; onClose: () => void; offsetIndex?: number }
 
 function TxtViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { entry: FsTxt } & ViewerProps) {
+  const { t } = useLang();
   return (
-    <Win title={`${entry.name} — NOTEPAD`} width={280} initX={590 + offsetIndex * 22} initY={120 + offsetIndex * 22} zIndex={zIndex} onFocus={onFocus} open onClose={onClose}
+    <Win title={`${entry.name} ${t.fileViewer.notepadSuffix}`} width={280} initX={590 + offsetIndex * 22} initY={120 + offsetIndex * 22} zIndex={zIndex} onFocus={onFocus} open onClose={onClose}
       statusBar={`${entry.name} · UTF-8`}>
       <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
-        {["FILE", "EDIT"].map(m => (
+        {[t.fileViewer.fileMenu, t.fileViewer.editMenu].map(m => (
           <button key={m} style={{ ...PX, fontSize: 8, padding: "3px 7px", background: "transparent", border: "none", cursor: "pointer", color: "var(--text-primary)" }}>{m}</button>
         ))}
       </div>
@@ -696,8 +711,9 @@ function TxtViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { en
 }
 
 function VideoViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { entry: FsVideo } & ViewerProps) {
+  const { t } = useLang();
   return (
-    <Win title={`${entry.name} — VIDEO PLAYER`} width={420} initX={560 + offsetIndex * 22} initY={70 + offsetIndex * 22} zIndex={zIndex} onFocus={onFocus} open onClose={onClose}
+    <Win title={`${entry.name} ${t.fileViewer.videoSuffix}`} width={420} initX={560 + offsetIndex * 22} initY={70 + offsetIndex * 22} zIndex={zIndex} onFocus={onFocus} open onClose={onClose}
       statusBar={`${entry.name} · MP4`}>
       <div style={{ background: "#0a060f", minHeight: 260, display: "flex", alignItems: "center", justifyContent: "center" }}>
         {entry.src ? (
@@ -707,8 +723,8 @@ function VideoViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { 
             <div style={{ width: 56, height: 56, border: "1px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
               <Film size={24} strokeWidth={1} style={{ color: "rgba(255,255,255,0.25)" }}/>
             </div>
-            <div style={{ ...PX, fontSize: 7, color: "rgba(255,255,255,0.25)" }}>NO VIDEO SET</div>
-            <div style={{ ...MONO, fontSize: 10, color: "rgba(255,255,255,0.15)", marginTop: 6 }}>add src to PROJECTS data</div>
+            <div style={{ ...PX, fontSize: 7, color: "rgba(255,255,255,0.25)" }}>{t.fileViewer.noVideo}</div>
+            <div style={{ ...MONO, fontSize: 10, color: "rgba(255,255,255,0.15)", marginTop: 6 }}>{t.fileViewer.noVideoHint}</div>
           </div>
         )}
       </div>
@@ -718,15 +734,16 @@ function VideoViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { 
 
 function ImageViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { entry: FsImage } & ViewerProps) {
   const [zoom, setZoom] = useState(1);
+  const { t } = useLang();
   const baseWidth = 400;
   const baseHeight = 320;
   const winWidth = baseWidth + (zoom - 1) * 160;
   const contentHeight = baseHeight + (zoom - 1) * 120;
   return (
-    <Win title={`${entry.name} — IMAGE VIEWER`} width={winWidth} initX={570 + offsetIndex * 22} initY={90 + offsetIndex * 22} zIndex={zIndex} onFocus={onFocus} open onClose={onClose}
+    <Win title={`${entry.name} ${t.fileViewer.imageSuffix}`} width={winWidth} initX={570 + offsetIndex * 22} initY={90 + offsetIndex * 22} zIndex={zIndex} onFocus={onFocus} open onClose={onClose}
       statusBar={`${entry.name} · JPG · ${zoom}×`}>
       <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 8px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
-        <span style={{ ...PX, fontSize: 7, color: "var(--text-secondary)", marginRight: "auto" }}>ZOOM</span>
+        <span style={{ ...PX, fontSize: 7, color: "var(--text-secondary)", marginRight: "auto" }}>{t.fileViewer.zoom}</span>
         {[1, 2, 3, 4].map(zVal => (
           <CtrlBtn key={zVal} onClick={() => setZoom(zVal)} active={zoom === zVal} w={26} h={18}>
             <span style={{ ...PX, fontSize: 7 }}>{zVal}×</span>
@@ -741,8 +758,8 @@ function ImageViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { 
             <div style={{ width: 56, height: 56, border: "1px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
               <Image size={24} strokeWidth={1} style={{ color: "rgba(255,255,255,0.25)" }}/>
             </div>
-            <div style={{ ...PX, fontSize: 7, color: "rgba(255,255,255,0.25)" }}>NO IMAGE SET</div>
-            <div style={{ ...MONO, fontSize: 10, color: "rgba(255,255,255,0.15)", marginTop: 6 }}>add src to PROJECTS data</div>
+            <div style={{ ...PX, fontSize: 7, color: "rgba(255,255,255,0.25)" }}>{t.fileViewer.noImage}</div>
+            <div style={{ ...MONO, fontSize: 10, color: "rgba(255,255,255,0.15)", marginTop: 6 }}>{t.fileViewer.noImageHint}</div>
           </div>
         )}
       </div>
@@ -760,11 +777,29 @@ function MyProjectsWin({ zIndex, onFocus, open, onClose, getNextZ, autoNavigate 
   const [openWins, setOpenWins] = useState<OpenWin[]>([]);
   const stackCount = useRef(0);
   const lastAutoNav = useRef(autoNavigate);
+  const { t } = useLang();
+  const PROJECTS = getProjects(t);
 
   const currentFolder = path.reduce((node: FsFolder, seg) => {
     const child = node.children.find(c => c.name === seg);
     return (child?.type === "folder" ? child : node) as FsFolder;
   }, PROJECTS);
+
+  // Resolves an open window's entry fresh from the current-language PROJECTS
+  // tree by id (a "/"-joined path) — keeps already-open file content (e.g.
+  // README.TXT) in sync when the visitor switches language mid-session,
+  // instead of freezing it to whatever language was active when opened.
+  const resolveEntry = (id: string): FsEntry | undefined => {
+    const segs = id.split("/");
+    let node: FsEntry = PROJECTS;
+    for (const seg of segs) {
+      if (node.type !== "folder") return undefined;
+      const next = node.children.find(c => c.name === seg);
+      if (!next) return undefined;
+      node = next;
+    }
+    return node;
+  };
 
   const openEntry = (entry: FsEntry) => {
     if (entry.type === "folder") { setPath(p => [...p, entry.name]); setSelected(null); return; }
@@ -802,15 +837,15 @@ function MyProjectsWin({ zIndex, onFocus, open, onClose, getNextZ, autoNavigate 
 
   const goBack = () => { setPath(p => p.slice(0, -1)); setSelected(null); };
 
-  const pathLabel = ["ROOT", ...path].join("  /  ");
+  const pathLabel = [t.projects.root, ...path].join("  /  ");
 
-  const typeIcon = (t: FsEntry["type"]) =>
-    t === "folder" ? Folder : t === "video" ? Film : t === "image" ? Image : File;
+  const typeIcon = (ty: FsEntry["type"]) =>
+    ty === "folder" ? Folder : ty === "video" ? Film : ty === "image" ? Image : File;
 
   return (
     <>
-      <Win title="MY PROJECTS — FILE MANAGER" width={420} initX={100} initY={52} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
-        statusBar={`${currentFolder.children.length} ITEMS  ·  ${pathLabel}`}>
+      <Win title={t.projects.windowTitle} width={420} initX={100} initY={52} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
+        statusBar={`${currentFolder.children.length} ${t.projects.itemsSuffix}  ·  ${pathLabel}`}>
 
         {/* Breadcrumb toolbar */}
         <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 8px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
@@ -823,7 +858,7 @@ function MyProjectsWin({ zIndex, onFocus, open, onClose, getNextZ, autoNavigate 
 
         {/* Column headers */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 60px 90px", borderBottom: "2px solid var(--border-color)", background: "var(--bg-panel)" }}>
-          {["NAME", "TYPE", "DATE"].map(h => (
+          {[t.projects.nameCol, t.projects.typeCol, t.projects.dateCol].map(h => (
             <div key={h} style={{ ...PX, fontSize: 7, color: "var(--text-secondary)", padding: "4px 8px", textTransform: "uppercase", borderRight: "1px solid var(--border-color)" }}>
               {h}
             </div>
@@ -833,7 +868,7 @@ function MyProjectsWin({ zIndex, onFocus, open, onClose, getNextZ, autoNavigate 
         {/* Entries */}
         <div style={{ minHeight: 220, maxHeight: 340, overflowY: "auto" }}>
           {currentFolder.children.length === 0 ? (
-            <div style={{ padding: 24, textAlign: "center", ...MONO, fontSize: 11, color: "var(--text-tertiary)" }}>EMPTY FOLDER</div>
+            <div style={{ padding: 24, textAlign: "center", ...MONO, fontSize: 11, color: "var(--text-tertiary)" }}>{t.projects.emptyFolder}</div>
           ) : currentFolder.children.map((entry, i) => {
             const IconComp = typeIcon(entry.type);
             const isSel = selected === entry.name;
@@ -850,7 +885,7 @@ function MyProjectsWin({ zIndex, onFocus, open, onClose, getNextZ, autoNavigate 
                   </span>
                   {entry.type === "folder" && (
                     <span style={{ ...MONO, fontSize: 9, color: isOpenFile ? "var(--bg-window)" : "var(--text-tertiary)", marginLeft: "auto", flexShrink: 0 }}>
-                      {(entry as FsFolder).children.length} items
+                      {(entry as FsFolder).children.length} {t.projects.itemsWord}
                     </span>
                   )}
                 </div>
@@ -867,16 +902,17 @@ function MyProjectsWin({ zIndex, onFocus, open, onClose, getNextZ, autoNavigate 
 
         {/* Hint bar */}
         <div style={{ padding: "3px 8px", borderTop: "1px solid var(--border-color)", background: "var(--bg-panel)", ...MONO, fontSize: 10, color: "var(--text-tertiary)" }}>
-          CLICK SELECT  ·  DOUBLE-CLICK OPEN
+          {t.projects.hintBar}
         </div>
       </Win>
 
       {openWins.map((w, i) => {
         const off = i % 8;
-        const common = { key: w.id, zIndex: w.z, onFocus: () => focusWin(w.id), onClose: () => closeWin(w.id), offsetIndex: off };
-        if (w.entry.type === "txt")   return <TxtViewerWin   entry={w.entry as FsTxt}   {...common}/>;
-        if (w.entry.type === "video") return <VideoViewerWin entry={w.entry as FsVideo} {...common}/>;
-        if (w.entry.type === "image") return <ImageViewerWin entry={w.entry as FsImage} {...common}/>;
+        const entry = resolveEntry(w.id) ?? w.entry;
+        const common = { zIndex: w.z, onFocus: () => focusWin(w.id), onClose: () => closeWin(w.id), offsetIndex: off };
+        if (entry.type === "txt")   return <TxtViewerWin   key={w.id} entry={entry as FsTxt}   {...common}/>;
+        if (entry.type === "video") return <VideoViewerWin key={w.id} entry={entry as FsVideo} {...common}/>;
+        if (entry.type === "image") return <ImageViewerWin key={w.id} entry={entry as FsImage} {...common}/>;
         return null;
       })}
     </>
@@ -885,49 +921,19 @@ function MyProjectsWin({ zIndex, onFocus, open, onClose, getNextZ, autoNavigate 
 
 // ── Notes / Diary ─────────────────────────────────────────────────────────────
 
-const NOTE_LINES = [
-  { text: "// README.TXT — v1.0", type: "comment" },
-  { text: "", type: "blank" },
-  { text: "> The limits of my", type: "accent" },
-  { text: "  language are the", type: "accent" },
-  { text: "  limits of my world.", type: "accent" },
-  { text: "          — Wittgenstein", type: "accent" },
-  { text: "", type: "blank" },
-  { text: "  hi! welcome to my", type: "body" },
-  { text: "  webpage / portfolio /", type: "body" },
-  { text: "  digital portrait of", type: "body" },
-  { text: "  myself (?)", type: "body" },
-  { text: "", type: "blank" },
-  { text: "  based near the", type: "body" },
-  { text: "  mountains of barcelona,", type: "body" },
-  { text: "  spain.", type: "body" },
-  { text: "", type: "blank" },
-  { text: "  3d artist & non-stop", type: "body" },
-  { text: "  brainy creative", type: "body" },
-  { text: "  designer — or whatever", type: "body" },
-  { text: "  etiquette fits someone", type: "body" },
-  { text: "  who never stops", type: "body" },
-  { text: "  thinking, learning,", type: "body" },
-  { text: "  creating.", type: "body" },
-  { text: "", type: "blank" },
-  { text: "// here you will find:", type: "comment" },
-  { text: "  - my portfolio", type: "body" },
-  { text: "", type: "blank" },
-  { text: "// end of file_", type: "comment" },
-];
-
 function NotesWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
+  const { t } = useLang();
   return (
-    <Win title="README.TXT — NOTEPAD" width={212} initX={58} initY={148} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar="LN 28  COL 1 · UTF-8 · CRLF">
+    <Win title={t.notes.windowTitle} width={212} initX={58} initY={148} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar="LN 28  COL 1 · UTF-8 · CRLF">
       <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
-        {["FILE", "EDIT", "FORMAT", "VIEW"].map(m => (
+        {[t.fileViewer.fileMenu, t.fileViewer.editMenu, t.fileViewer.formatMenu, t.fileViewer.viewMenu].map(m => (
           <button key={m} style={{ ...PX, fontSize: 8, padding: "3px 6px", background: "transparent", border: "none", cursor: "pointer", color: "var(--text-primary)", textTransform: "uppercase" }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>{m}</button>
         ))}
       </div>
       <div style={{ padding: "8px 10px", minHeight: 168 }}>
-        {NOTE_LINES.map((line, i) => (
+        {t.notes.lines.map((line, i) => (
           <div key={i} style={{ ...MONO, fontSize: 11, lineHeight: 1.8, color: line.type === "comment" ? "var(--text-tertiary)" : line.type === "accent" ? "var(--text-secondary)" : "var(--text-primary)", whiteSpace: "pre" }}>
             {line.text || " "}
           </div>
@@ -940,25 +946,26 @@ function NotesWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
 // ── System Info ───────────────────────────────────────────────────────────────
 
 function SysInfo({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
+  const { t } = useLang();
   const stack = [
-    ["FRAMEWORK", "React 18 + TypeScript"],
-    ["BUNDLER", "Vite 6"],
-    ["STYLING", "Tailwind 4 + Inline CSS"],
-    ["UI", "shadcn/ui + Radix UI"],
-    ["AUDIO", "Web Audio API"],
-    ["FONTS", "Press Start 2P · Share Tech Mono"],
-    ["PKG MGR", "pnpm"],
-    ["SOURCE", "github.com/Nemestria"],
+    [t.sysInfo.lblFramework, "React 18 + TypeScript"],
+    [t.sysInfo.lblBundler, "Vite 6"],
+    [t.sysInfo.lblStyling, "Tailwind 4 + Inline CSS"],
+    [t.sysInfo.lblUi, "shadcn/ui + Radix UI"],
+    [t.sysInfo.lblAudio, "Web Audio API"],
+    [t.sysInfo.lblFonts, "Press Start 2P · Share Tech Mono"],
+    [t.sysInfo.lblPkgMgr, "pnpm"],
+    [t.sysInfo.lblSource, "github.com/Nemestria"],
   ];
   return (
-    <Win title="SYSTEM_INFO.EXE" width={260} initX={620} initY={380} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar="SYSTEM OK · NO ERRORS">
+    <Win title={t.sysInfo.title} width={260} initX={620} initY={380} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar={t.sysInfo.statusBar}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
         <div style={{ width: 28, height: 28, background: "var(--bg-panel)", border: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Monitor size={16} strokeWidth={1.5} />
         </div>
         <div>
-          <div style={{ ...PX, fontSize: 9, color: "var(--text-primary)" }}>TECH STACK</div>
-          <div style={{ ...MONO, fontSize: 10, color: "var(--text-secondary)" }}>portfolio v2.1.0</div>
+          <div style={{ ...PX, fontSize: 9, color: "var(--text-primary)" }}>{t.sysInfo.techStack}</div>
+          <div style={{ ...MONO, fontSize: 10, color: "var(--text-secondary)" }}>{t.sysInfo.version}</div>
         </div>
       </div>
       {stack.map(([k, v]) => (
@@ -985,6 +992,7 @@ function ContactModal({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
+  const { t } = useLang();
 
   const send = () => {
     const subject = encodeURIComponent(`Portfolio contact from ${name || "visitor"}`);
@@ -1001,19 +1009,19 @@ function ContactModal({ onClose }: { onClose: () => void }) {
   );
 
   return (
-    <Modal title="CONTACT.EXE" onClose={onClose}>
+    <Modal title={t.contact.title} onClose={onClose}>
       <div style={{ padding: "14px 14px 10px" }}>
-        {row("Your name", <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="full name" />)}
-        {row("Your email", <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />)}
-        {row("Message", <textarea value={msg} onChange={e => setMsg(e.target.value)} placeholder="say something..." rows={5} />)}
+        {row(t.contact.name, <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t.contact.namePlaceholder} />)}
+        {row(t.contact.email, <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t.contact.emailPlaceholder} />)}
+        {row(t.contact.message, <textarea value={msg} onChange={e => setMsg(e.target.value)} placeholder={t.contact.messagePlaceholder} rows={5} />)}
         <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
           <button onClick={send}
             style={{ flex: 1, padding: "7px 0", background: "var(--bg-active)", border: "1px solid var(--border-color)", cursor: "pointer", ...PX, fontSize: 8, color: "var(--bg-window)", textTransform: "uppercase" }}>
-            SEND →
+            {t.contact.send}
           </button>
           <button onClick={onClose}
             style={{ padding: "7px 14px", background: "var(--bg-panel)", border: "1px solid var(--border-color)", cursor: "pointer", ...PX, fontSize: 8, color: "var(--text-primary)", textTransform: "uppercase" }}>
-            CANCEL
+            {t.contact.cancel}
           </button>
         </div>
         <div style={{ ...MONO, fontSize: 10, color: "var(--text-tertiary)", marginTop: 8, textAlign: "center" }}>
@@ -1029,28 +1037,29 @@ function ContactModal({ onClose }: { onClose: () => void }) {
 function NetworkModal({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
+  const { t } = useLang();
 
   return (
-    <Modal title="NETWORK.EXE — NEWSLETTER" onClose={onClose}>
+    <Modal title={t.network.title} onClose={onClose}>
       <div style={{ padding: "20px 14px" }}>
         {done ? (
           <div style={{ textAlign: "center", padding: "10px 0" }}>
-            <div style={{ ...PX, fontSize: 9, color: "var(--bg-active)", marginBottom: 8 }}>SUBSCRIBED ✓</div>
-            <div style={{ ...MONO, fontSize: 11, color: "var(--text-secondary)" }}>you'll hear from me eventually.</div>
+            <div style={{ ...PX, fontSize: 9, color: "var(--bg-active)", marginBottom: 8 }}>{t.network.subscribed}</div>
+            <div style={{ ...MONO, fontSize: 11, color: "var(--text-secondary)" }}>{t.network.subscribedBody}</div>
           </div>
         ) : (
           <>
             <div style={{ ...MONO, fontSize: 11, color: "var(--text-secondary)", marginBottom: 16, lineHeight: 1.7 }}>
-              Get updates on new projects, experiments and things I find interesting. No spam. Infrequent.
+              {t.network.intro}
             </div>
-            <div style={{ ...PX, fontSize: 7, color: "var(--text-secondary)", marginBottom: 4, textTransform: "uppercase" }}>Email address</div>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" style={{ marginBottom: 10 }} />
+            <div style={{ ...PX, fontSize: 7, color: "var(--text-secondary)", marginBottom: 4, textTransform: "uppercase" }}>{t.network.emailLabel}</div>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t.network.emailPlaceholder} style={{ marginBottom: 10 }} />
             <button onClick={() => { if (email) setDone(true); }}
               style={{ width: "100%", padding: "8px 0", background: "var(--bg-active)", border: "1px solid var(--border-color)", cursor: "pointer", ...PX, fontSize: 8, color: "var(--bg-window)", textTransform: "uppercase" }}>
-              SUBSCRIBE →
+              {t.network.subscribe}
             </button>
             <div style={{ ...MONO, fontSize: 10, color: "var(--text-tertiary)", marginTop: 8, textAlign: "center" }}>
-              newsletter integration TBD
+              {t.network.footer}
             </div>
           </>
         )}
@@ -1061,13 +1070,6 @@ function NetworkModal({ onClose }: { onClose: () => void }) {
 
 // ── Preferences Window ────────────────────────────────────────────────────────
 
-const BG_OPTIONS: { name: BgPattern; label: string }[] = [
-  { name: "flat",      label: "FLAT" },
-  { name: "grid",      label: "GRID" },
-  { name: "dots",      label: "DOTS" },
-  { name: "scanlines", label: "LINES" },
-];
-
 function PrefsWin({ zIndex, onFocus, open, onClose, palette, onPalette, volume, onVolumeChange, sfxVolume, onSfxVolumeChange, bgPattern, onBgPattern, darkMode, onDarkMode }: {
   zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void;
   palette: string; onPalette: (name: string) => void;
@@ -1076,6 +1078,13 @@ function PrefsWin({ zIndex, onFocus, open, onClose, palette, onPalette, volume, 
   bgPattern: BgPattern; onBgPattern: (p: BgPattern) => void;
   darkMode: boolean; onDarkMode: (v: boolean) => void;
 }) {
+  const { t } = useLang();
+  const BG_OPTIONS: { name: BgPattern; label: string }[] = [
+    { name: "flat",      label: t.prefs.bgFlat },
+    { name: "grid",      label: t.prefs.bgGrid },
+    { name: "dots",      label: t.prefs.bgDots },
+    { name: "scanlines", label: t.prefs.bgLines },
+  ];
   const section = (label: string) => (
     <div style={{ ...PX, fontSize: 7, color: "var(--text-secondary)", padding: "6px 10px 3px", textTransform: "uppercase", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
       {label}
@@ -1083,20 +1092,20 @@ function PrefsWin({ zIndex, onFocus, open, onClose, palette, onPalette, volume, 
   );
 
   return (
-    <Win title="PREFERENCES.EXE" width={300} initX={200} initY={100} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar="CHANGES APPLY INSTANTLY">
-      {section("Display Mode")}
+    <Win title={t.prefs.title} width={300} initX={200} initY={100} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar={t.prefs.statusBar}>
+      {section(t.prefs.displayMode)}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, padding: "10px" }}>
         <button onClick={() => onDarkMode(false)}
           style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 4px", background: !darkMode ? "var(--bg-active)" : "var(--bg-panel)", border: `1px solid ${!darkMode ? "var(--bg-active)" : "var(--border-color)"}`, cursor: "pointer", ...PX, fontSize: 7, color: !darkMode ? "var(--bg-window)" : "var(--text-primary)" }}>
-          <Sun size={11} strokeWidth={2}/> LIGHT
+          <Sun size={11} strokeWidth={2}/> {t.prefs.light}
         </button>
         <button onClick={() => onDarkMode(true)}
           style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 4px", background: darkMode ? "var(--bg-active)" : "var(--bg-panel)", border: `1px solid ${darkMode ? "var(--bg-active)" : "var(--border-color)"}`, cursor: "pointer", ...PX, fontSize: 7, color: darkMode ? "var(--bg-window)" : "var(--text-primary)" }}>
-          <Moon size={11} strokeWidth={2}/> DARK
+          <Moon size={11} strokeWidth={2}/> {t.prefs.dark}
         </button>
       </div>
 
-      {section("Color Palette")}
+      {section(t.prefs.colorPalette)}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6, padding: "10px" }}>
         {PALETTES.map(p => (
           <button key={p.name} onClick={() => onPalette(p.name)}
@@ -1108,7 +1117,7 @@ function PrefsWin({ zIndex, onFocus, open, onClose, palette, onPalette, volume, 
         ))}
       </div>
 
-      {section("Background")}
+      {section(t.prefs.background)}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 6, padding: "10px" }}>
         {BG_OPTIONS.map(bg => (
           <button key={bg.name} onClick={() => onBgPattern(bg.name)}
@@ -1118,7 +1127,7 @@ function PrefsWin({ zIndex, onFocus, open, onClose, palette, onPalette, volume, 
         ))}
       </div>
 
-      {section("Music Volume")}
+      {section(t.prefs.musicVolume)}
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px" }}>
         <VolumeX size={10} strokeWidth={1.5} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
         <input type="range" min={0} max={1} step={0.01} value={volume} onChange={e => onVolumeChange(Number(e.target.value))} style={{ flex: 1, height: 14 }} />
@@ -1126,7 +1135,7 @@ function PrefsWin({ zIndex, onFocus, open, onClose, palette, onPalette, volume, 
         <span style={{ ...PX, fontSize: 7, color: "var(--text-tertiary)", minWidth: 28 }}>{Math.round(volume * 100)}%</span>
       </div>
 
-      {section("Effects Volume")}
+      {section(t.prefs.effectsVolume)}
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px" }}>
         <VolumeX size={10} strokeWidth={1.5} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
         <input type="range" min={0} max={1} step={0.01} value={sfxVolume} onChange={e => onSfxVolumeChange(Number(e.target.value))} style={{ flex: 1, height: 14 }} />
@@ -1140,13 +1149,14 @@ function PrefsWin({ zIndex, onFocus, open, onClose, palette, onPalette, volume, 
 // ── About Window ──────────────────────────────────────────────────────────────
 
 function AboutWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
+  const { t } = useLang();
   const links = [
     { label: "LINKEDIN", url: "https://www.linkedin.com/in/environment-artist", icon: ExternalLink },
     { label: "INSTAGRAM", url: "https://www.instagram.com/soyvertigo/", icon: ExternalLink },
     { label: "EMAIL", url: "mailto:asanchomarmol@gmail.com", icon: Mail },
   ];
   return (
-    <Win title="ABOUT.EXE" width={260} initX={580} initY={80} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar="LAST UPDATED · 2024">
+    <Win title={t.about.title} width={260} initX={580} initY={80} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar={t.about.lastUpdated}>
       {/* Avatar placeholder */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 12px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
         <div style={{ width: 44, height: 44, background: "var(--bg-active)", border: "2px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -1154,15 +1164,15 @@ function AboutWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
         </div>
         <div>
           <div style={{ ...PX, fontSize: 9, color: "var(--text-primary)", marginBottom: 3 }}>ASANCHO</div>
-          <div style={{ ...MONO, fontSize: 10, color: "var(--text-secondary)" }}>Environment Artist</div>
-          <div style={{ ...MONO, fontSize: 10, color: "var(--text-tertiary)" }}>& Creative Dev</div>
+          <div style={{ ...MONO, fontSize: 10, color: "var(--text-secondary)" }}>{t.about.role}</div>
+          <div style={{ ...MONO, fontSize: 10, color: "var(--text-tertiary)" }}>{t.about.roleSub}</div>
         </div>
       </div>
 
       {/* Bio */}
       <div style={{ padding: "10px 12px", borderBottom: "1px solid var(--border-color)" }}>
         <div style={{ ...MONO, fontSize: 11, color: "var(--text-primary)", lineHeight: 1.75 }}>
-          Crafting worlds between pixels and polygons. Environment artist by day, retro web tinkerer by night.
+          {t.about.bio}
         </div>
       </div>
 
@@ -1184,18 +1194,13 @@ function AboutWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
 
 // ── Blog Window (fake browser) ───────────────────────────────────────────────
 
-const BLOG_POSTS = [
-  { title: "Replace with a real post title", date: "2026.01.01", excerpt: "Replace with a short excerpt — workflow notes, project breakdowns, whatever you want the blog to cover." },
-  { title: "Replace with a real post title", date: "2025.12.01", excerpt: "Replace with a short excerpt — workflow notes, project breakdowns, whatever you want the blog to cover." },
-  { title: "Replace with a real post title", date: "2025.11.01", excerpt: "Replace with a short excerpt — workflow notes, project breakdowns, whatever you want the blog to cover." },
-];
-
 function BlogWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
   const [openPost, setOpenPost] = useState<number | null>(null);
+  const { t } = useLang();
 
   return (
-    <Win title="BLOG.EXE — BROWSER" width={360} initX={140} initY={70} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
-      statusBar="DONE">
+    <Win title={t.blog.title} width={360} initX={140} initY={70} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
+      statusBar={t.blog.statusBar}>
       {/* Browser toolbar */}
       <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 8px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
         <CtrlBtn w={22} h={18}><ArrowLeft size={9} strokeWidth={2}/></CtrlBtn>
@@ -1208,10 +1213,10 @@ function BlogWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: 
 
       {/* Page content */}
       <div style={{ padding: "14px 14px 16px", minHeight: 240, maxHeight: 380, overflowY: "auto" }}>
-        <div style={{ ...PX, fontSize: 11, color: "var(--text-primary)", marginBottom: 4 }}>THE BLOG</div>
-        <div style={{ ...MONO, fontSize: 10, color: "var(--text-tertiary)", marginBottom: 18 }}>notes on 3d art, design & process</div>
+        <div style={{ ...PX, fontSize: 11, color: "var(--text-primary)", marginBottom: 4 }}>{t.blog.heading}</div>
+        <div style={{ ...MONO, fontSize: 10, color: "var(--text-tertiary)", marginBottom: 18 }}>{t.blog.tagline}</div>
 
-        {BLOG_POSTS.map((post, i) => {
+        {t.blog.posts.map((post, i) => {
           const isOpen = openPost === i;
           return (
             <div key={i} style={{ borderTop: "1px solid var(--border-color)", padding: "12px 0", cursor: "pointer" }}
@@ -1247,12 +1252,6 @@ function mulberry32(seed: number) {
 
 type GenType = "plasma" | "mesh" | "noise" | "poly" | "waves" | "dots";
 type BgSvgCfg = { type: GenType; seed: number };
-
-const GEN_TYPES: { id: GenType; label: string }[] = [
-  { id: "plasma", label: "PLASMA" }, { id: "mesh",  label: "MESH"  },
-  { id: "noise",  label: "NOISE"  }, { id: "poly",  label: "POLY"  },
-  { id: "waves",  label: "WAVES"  }, { id: "dots",  label: "DOTS"  },
-];
 
 const PAL = ["var(--bg-main)", "var(--text-secondary)", "var(--bg-active)", "var(--text-primary)", "var(--bg-hover)"] as const;
 
@@ -1446,21 +1445,27 @@ function BgGenWin({ zIndex, onFocus, open, onClose, onApplyBg, bgSvg }: {
   const [seed, setSeed] = useState(1337);
   const roll = () => setSeed(Math.floor(Math.random() * 99999) + 1);
   const isApplied = bgSvg?.type === genType && bgSvg?.seed === seed;
+  const { t } = useLang();
+  const GEN_TYPES: { id: GenType; label: string }[] = [
+    { id: "plasma", label: t.bgGen.genPlasma }, { id: "mesh",  label: t.bgGen.genMesh  },
+    { id: "noise",  label: t.bgGen.genNoise  }, { id: "poly",  label: t.bgGen.genPoly  },
+    { id: "waves",  label: t.bgGen.genWaves  }, { id: "dots",  label: t.bgGen.genDots  },
+  ];
 
   return (
-    <Win title="BG_GENERATOR.EXE" width={330} initX={320} initY={70} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
-      statusBar={`SEED: ${seed} · ${genType.toUpperCase()}${isApplied ? " · ACTIVE" : ""}`}>
+    <Win title={t.bgGen.title} width={330} initX={320} initY={70} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
+      statusBar={`${t.bgGen.seed}: ${seed} · ${genType.toUpperCase()}${isApplied ? " · ACTIVE" : ""}`}>
 
       {/* Live SVG preview */}
       <div style={{ height: 186, borderBottom: "1px solid var(--border-color)", position: "relative", overflow: "hidden" }}>
         <BackgroundSvg type={genType} seed={seed}/>
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 3px)" }}/>
-        <span style={{ position: "absolute", top: 4, left: 6, ...PX, fontSize: 7, color: "rgba(255,255,255,0.4)", textShadow: "0 0 4px rgba(0,0,0,0.9)" }}>LIVE PREVIEW</span>
+        <span style={{ position: "absolute", top: 4, left: 6, ...PX, fontSize: 7, color: "rgba(255,255,255,0.4)", textShadow: "0 0 4px rgba(0,0,0,0.9)" }}>{t.bgGen.livePreview}</span>
       </div>
 
       {/* Algorithm */}
       <div style={{ padding: "7px 8px", borderBottom: "1px solid var(--border-color)" }}>
-        <div style={{ ...PX, fontSize: 7, color: "var(--text-secondary)", marginBottom: 5, textTransform: "uppercase" }}>Algorithm</div>
+        <div style={{ ...PX, fontSize: 7, color: "var(--text-secondary)", marginBottom: 5, textTransform: "uppercase" }}>{t.bgGen.algorithm}</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 4 }}>
           {GEN_TYPES.map(g => (
             <button key={g.id} onClick={() => setGenType(g.id)}
@@ -1473,11 +1478,11 @@ function BgGenWin({ zIndex, onFocus, open, onClose, onApplyBg, bgSvg }: {
 
       {/* Seed */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 8px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
-        <span style={{ ...PX, fontSize: 7, color: "var(--text-secondary)" }}>SEED</span>
+        <span style={{ ...PX, fontSize: 7, color: "var(--text-secondary)" }}>{t.bgGen.seed}</span>
         <span style={{ ...MONO, fontSize: 11, color: "var(--text-primary)", flex: 1, textAlign: "center" }}>{seed}</span>
         <button onClick={roll}
           style={{ padding: "4px 9px", background: "var(--bg-window)", border: "1px solid var(--border-color)", cursor: "pointer", ...PX, fontSize: 7, color: "var(--text-primary)" }}>
-          ROLL
+          {t.bgGen.roll}
         </button>
       </div>
 
@@ -1485,16 +1490,16 @@ function BgGenWin({ zIndex, onFocus, open, onClose, onApplyBg, bgSvg }: {
       <div style={{ padding: "8px", display: "flex", flexDirection: "column", gap: 6 }}>
         <button onClick={() => onApplyBg({ type: genType, seed })}
           style={{ width: "100%", padding: "9px 0", background: isApplied ? "var(--bg-panel)" : "var(--bg-active)", border: "1px solid var(--border-color)", cursor: "pointer", ...PX, fontSize: 9, color: isApplied ? "var(--text-secondary)" : "var(--bg-window)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-          {isApplied ? "✓ APPLIED" : "▶ APPLY TO DESKTOP"}
+          {isApplied ? t.bgGen.applied : t.bgGen.apply}
         </button>
         {bgSvg && (
           <button onClick={() => onApplyBg(null)}
             style={{ width: "100%", padding: "6px 0", background: "var(--bg-panel)", border: "1px solid var(--border-color)", cursor: "pointer", ...PX, fontSize: 8, color: "var(--text-secondary)", textTransform: "uppercase" }}>
-            CLEAR BACKGROUND
+            {t.bgGen.clear}
           </button>
         )}
         <div style={{ ...MONO, fontSize: 10, color: "var(--text-tertiary)", textAlign: "center" }}>
-          animated · vector · palette-aware
+          {t.bgGen.footer}
         </div>
       </div>
     </Win>
@@ -1556,9 +1561,11 @@ function bgStyle(pattern: BgPattern): React.CSSProperties {
 
 function SplashScreen({ onEnter, exiting }: { onEnter: (withSound: boolean) => void; exiting: boolean }) {
   const [progress, setProgress] = useState(0);
-  const [phase, setPhase] = useState<"loading" | "ready">("loading");
+  const [phase, setPhase] = useState<"language" | "loading" | "ready">("language");
+  const { lang, setLang, t } = useLang();
 
   useEffect(() => {
+    if (phase !== "loading") return;
     let p = 0;
     const iv = setInterval(() => {
       p += Math.random() * 9 + 3;
@@ -1570,7 +1577,9 @@ function SplashScreen({ onEnter, exiting }: { onEnter: (withSound: boolean) => v
       setProgress(Math.floor(p));
     }, 55);
     return () => clearInterval(iv);
-  }, []);
+  }, [phase]);
+
+  const pickLanguage = (l: Lang) => { playClick(); setLang(l); setPhase("loading"); };
 
   const blocks = Math.round(progress / 5);
   const bar = "█".repeat(blocks) + "░".repeat(20 - blocks);
@@ -1589,16 +1598,48 @@ function SplashScreen({ onEnter, exiting }: { onEnter: (withSound: boolean) => v
 
       <div style={{ position: "relative", zIndex: 1, textAlign: "center", width: "100%", maxWidth: 440, padding: "0 32px" }}>
         <div style={{ ...PX, fontSize: 11, color: "var(--bg-active)", letterSpacing: 3, marginBottom: 6 }}>
-          ALEJANDRO SANCHO
+          {t.splash.title}
         </div>
         <div style={{ ...MONO, fontSize: 11, color: "rgba(255,255,255,0.25)", letterSpacing: 8, marginBottom: 52 }}>
-          PORTFOLIO
+          {t.splash.tagline}
         </div>
 
-        {phase === "loading" ? (
+        {phase === "language" ? (
+          <div style={{ animation: "splash-fadein 0.3s ease" }}>
+            <div style={{ ...MONO, fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 22, letterSpacing: 1 }}>
+              ELIGE IDIOMA / SELECT LANGUAGE
+            </div>
+            <button
+              onClick={() => pickLanguage("es")}
+              style={{
+                display: "block", width: "100%", marginBottom: 12, cursor: "pointer",
+                ...PX, fontSize: 8, letterSpacing: 1,
+                background: lang === "es" ? "var(--bg-active)" : "transparent", color: lang === "es" ? "#fff" : "rgba(255,255,255,0.7)",
+                border: "2px solid var(--bg-active)", padding: "14px 0",
+                transition: "background 0.15s, color 0.15s",
+              }}
+            >
+              ESPAÑOL
+            </button>
+            <button
+              onClick={() => pickLanguage("en")}
+              style={{
+                display: "block", width: "100%", cursor: "pointer",
+                ...PX, fontSize: 8, letterSpacing: 1,
+                background: "transparent", color: "rgba(255,255,255,0.7)",
+                border: "1px solid rgba(255,255,255,0.3)", padding: "14px 0",
+                transition: "color 0.15s, border-color 0.15s",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
+            >
+              ENGLISH
+            </button>
+          </div>
+        ) : phase === "loading" ? (
           <div style={{ animation: "splash-fadein 0.3s ease" }}>
             <div style={{ ...MONO, fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 18, letterSpacing: 1 }}>
-              INITIALIZING SYSTEM...
+              {t.splash.initializing}
             </div>
             <div style={{ ...MONO, fontSize: 13, color: "var(--bg-active)", letterSpacing: 2, marginBottom: 10 }}>
               [{bar}]
@@ -1608,7 +1649,7 @@ function SplashScreen({ onEnter, exiting }: { onEnter: (withSound: boolean) => v
         ) : (
           <div style={{ animation: "splash-fadein 0.4s ease" }}>
             <div style={{ ...MONO, fontSize: 11, color: "#4dffaa", marginBottom: 36, letterSpacing: 2 }}>
-              ▶  SYSTEM READY
+              {t.splash.systemReady}
             </div>
             <button
               onClick={() => onEnter(true)}
@@ -1622,7 +1663,7 @@ function SplashScreen({ onEnter, exiting }: { onEnter: (withSound: boolean) => v
               onMouseEnter={e => (e.currentTarget.style.opacity = "0.82")}
               onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
             >
-              [ ENABLE SOUND + ENTER ]
+              {t.splash.enterSound}
             </button>
             <button
               onClick={() => onEnter(false)}
@@ -1636,13 +1677,13 @@ function SplashScreen({ onEnter, exiting }: { onEnter: (withSound: boolean) => v
               onMouseEnter={e => { e.currentTarget.style.color = "rgba(255,255,255,0.6)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
               onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.3)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
             >
-              enter without sound
+              {t.splash.enterNoSound}
             </button>
           </div>
         )}
 
         <div style={{ ...MONO, fontSize: 9, color: "rgba(255,255,255,0.1)", marginTop: 52, letterSpacing: 2 }}>
-          3D ARTIST · ENVIRONMENT & PROPS · GRAPHIC DESIGN · WEB DESIGN
+          {t.splash.footer}
         </div>
       </div>
     </div>
@@ -1653,6 +1694,10 @@ export default function App() {
   const clock = useClock();
   const [layoutKey, setLayoutKey] = useState(0);
   const [z, setZ] = useState<Record<WinId, number>>(DEFAULT_Z);
+
+  // Language — defaults to Spanish (Alejandro is Spanish; English is the translation)
+  const [lang, setLang] = useState<Lang>("es");
+  const t = STRINGS[lang];
 
   // Window open states
   const [projOpen,    setProjOpen]    = useState(false);
@@ -1750,11 +1795,12 @@ export default function App() {
     setLayoutKey(k => k + 1);
   };
 
-  const timeStr = clock.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
-  const dateStr = clock.toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" });
+  const locale = lang === "es" ? "es-ES" : "en-US";
+  const timeStr = clock.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", hour12: false });
+  const dateStr = clock.toLocaleDateString(locale, { year: "numeric", month: "2-digit", day: "2-digit" });
 
   return (
-    <>
+    <LanguageContext.Provider value={{ lang, setLang, t }}>
       <style>{GLOBAL_CSS}</style>
       <div style={{ width: "100vw", height: "100vh", background: "var(--bg-main)", position: "relative", overflow: "hidden", ...(bgSvg ? {} : bgStyle(bgPattern)) }}>
 
@@ -1773,7 +1819,7 @@ export default function App() {
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <span style={{ ...PX, fontSize: 9, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-primary)" }}>SYSTEM v2.1</span>
             <div style={{ display: "flex", gap: 12 }}>
-              {["FILE", "EDIT", "VIEW", "SPECIAL"].map(m => (
+              {[t.systemBar.menuFile, t.systemBar.menuEdit, t.systemBar.menuView, t.systemBar.menuSpecial].map(m => (
                 <button key={m} style={{ ...PX, fontSize: 8, textTransform: "uppercase", background: "transparent", border: "none", cursor: "pointer", color: "var(--text-primary)", padding: "0 2px" }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>{m}</button>
@@ -1781,12 +1827,20 @@ export default function App() {
               <button onClick={() => { playClick(); setShowFatalError(true); }} title="Trigger the FATAL ERROR nag manually"
                 style={{ ...PX, fontSize: 8, textTransform: "uppercase", background: "transparent", border: "none", cursor: "pointer", color: "var(--color-error)", padding: "0 2px" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>DEBUG</button>
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>{t.systemBar.debug}</button>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{ display: "flex", gap: 2 }}>
+              {(["es", "en"] as Lang[]).map(l => (
+                <button key={l} onClick={() => { playClick(); setLang(l); }} title={l === "es" ? "Español" : "English"}
+                  style={{ ...PX, fontSize: 8, textTransform: "uppercase", background: lang === l ? "var(--bg-active)" : "transparent", color: lang === l ? "var(--bg-window)" : "var(--text-secondary)", border: "1px solid var(--border-color)", cursor: "pointer", padding: "1px 5px" }}>
+                  {l}
+                </button>
+              ))}
+            </div>
             <span style={{ ...PX, fontSize: 8, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 3 }}>
-              <span style={{ animation: "led-blink 2s ease-in-out infinite" }}>●</span> ONLINE
+              <span style={{ animation: "led-blink 2s ease-in-out infinite" }}>●</span> {t.systemBar.online}
             </span>
             <span style={{ ...PX, fontSize: 8, color: "var(--text-secondary)" }}>guest@desktop</span>
             <span style={{ ...PX, fontSize: 8, color: "var(--text-primary)" }}>{dateStr}</span>
@@ -1797,15 +1851,15 @@ export default function App() {
         {/* Desktop */}
         <div style={{ position: "absolute", top: 20, bottom: 58, left: 0, right: 0 }}>
           <div style={{ position: "absolute", top: 22, left: 20, ...SERIF, fontSize: 11, color: "var(--text-tertiary)", letterSpacing: "0.2em", textTransform: "uppercase", userSelect: "none", pointerEvents: "none" }}>
-            Desktop
+            {t.desktop.label}
           </div>
 
-          <DesktopIcon icon={Folder}     label="MY PROJECTS" x={18} y={54}  onOpen={() => toggle("projects", projOpen, setProjOpen)} />
-          <DesktopIcon icon={Music}      label="MUSIC"       x={18} y={130} onOpen={() => toggle("visualizer", vizOpen,   setVizOpen)} />
-          <DesktopIcon icon={Image}      label="PHOTOS"      x={18} y={206} onOpen={() => toggle("photo",      photoOpen, setPhotoOpen)} />
-          <DesktopIcon icon={Info}       label="ABOUT"       x={18} y={282} onOpen={() => toggle("notes",      notesOpen, setNotesOpen)} />
-          <DesktopIcon icon={Paintbrush} label="BG GEN"      x={18} y={358} onOpen={() => toggle("bggen",     bggenOpen, setBggenOpen)} />
-          <DesktopIcon icon={Globe}      label="BLOG"        x={18} y={434} onOpen={() => toggle("blog",      blogOpen,  setBlogOpen)} />
+          <DesktopIcon icon={Folder}     label={t.desktop.myProjects} x={18} y={54}  onOpen={() => toggle("projects", projOpen, setProjOpen)} />
+          <DesktopIcon icon={Music}      label={t.desktop.music}      x={18} y={130} onOpen={() => toggle("visualizer", vizOpen,   setVizOpen)} />
+          <DesktopIcon icon={Image}      label={t.desktop.photos}     x={18} y={206} onOpen={() => toggle("photo",      photoOpen, setPhotoOpen)} />
+          <DesktopIcon icon={Info}       label={t.desktop.about}      x={18} y={282} onOpen={() => toggle("notes",      notesOpen, setNotesOpen)} />
+          <DesktopIcon icon={Paintbrush} label={t.desktop.bgGen}      x={18} y={358} onOpen={() => toggle("bggen",     bggenOpen, setBggenOpen)} />
+          <DesktopIcon icon={Globe}      label={t.desktop.blog}       x={18} y={434} onOpen={() => toggle("blog",      blogOpen,  setBlogOpen)} />
 
           <React.Fragment key={layoutKey}>
             <MyProjectsWin   zIndex={z.projects}   onFocus={() => focus("projects")}   open={projOpen}    onClose={() => setProjOpen(false)} getNextZ={nextZ} autoNavigate={autoNavSignal} />
@@ -1832,14 +1886,14 @@ export default function App() {
 
         {/* Dock */}
         <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 58, background: "var(--bg-panel)", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", gap: 18, zIndex: 100 }}>
-          <DockIcon icon={Home}             label="HOME"    onClick={() => { playClick(); resetLayout(); }} />
-          <DockIcon icon={Mail}             label="CONTACT" onClick={() => { playOpen(); setContactOpen(true); }} active={contactOpen} />
-          <DockIcon icon={Rss}              label="NETWORK" onClick={() => { playOpen(); setNetworkOpen(true); }}  active={networkOpen} />
-          <DockIcon icon={SlidersHorizontal} label="PREFS"  onClick={() => toggle("prefs", prefsOpen, setPrefsOpen)}  active={prefsOpen} />
-          <DockIcon icon={Monitor}          label="SYSTEM"  onClick={() => toggle("sysinfo", sysinfoOpen, setSysinfoOpen)} active={sysinfoOpen} />
-          <DockIcon icon={User}             label="ABOUT"   onClick={() => toggle("about", aboutOpen, setAboutOpen)}   active={aboutOpen} />
+          <DockIcon icon={Home}             label={t.dock.home}    onClick={() => { playClick(); resetLayout(); }} />
+          <DockIcon icon={Mail}             label={t.dock.contact} onClick={() => { playOpen(); setContactOpen(true); }} active={contactOpen} />
+          <DockIcon icon={Rss}              label={t.dock.network} onClick={() => { playOpen(); setNetworkOpen(true); }}  active={networkOpen} />
+          <DockIcon icon={SlidersHorizontal} label={t.dock.prefs}  onClick={() => toggle("prefs", prefsOpen, setPrefsOpen)}  active={prefsOpen} />
+          <DockIcon icon={Monitor}          label={t.dock.system}  onClick={() => toggle("sysinfo", sysinfoOpen, setSysinfoOpen)} active={sysinfoOpen} />
+          <DockIcon icon={User}             label={t.dock.about}   onClick={() => toggle("about", aboutOpen, setAboutOpen)}   active={aboutOpen} />
         </div>
       </div>
-    </>
+    </LanguageContext.Provider>
   );
 }
