@@ -57,6 +57,46 @@ const PX: React.CSSProperties = { fontFamily: "'Press Start 2P', monospace" };
 const MONO: React.CSSProperties = { fontFamily: "'Share Tech Mono', monospace" };
 const SERIF: React.CSSProperties = { fontFamily: "'IM Fell English', Georgia, serif" };
 
+// ── SFX Engine — synthesized retro UI sounds (no audio files needed) ───────────
+
+let sfxCtx: AudioContext | null = null;
+let sfxGain: GainNode | null = null;
+let desiredSfxVolume = 0.5;
+
+function getSfx() {
+  if (!sfxCtx) {
+    sfxCtx = new AudioContext();
+    sfxGain = sfxCtx.createGain();
+    sfxGain.gain.value = desiredSfxVolume;
+    sfxGain.connect(sfxCtx.destination);
+  }
+  if (sfxCtx.state === "suspended") sfxCtx.resume();
+  return { ctx: sfxCtx, gain: sfxGain! };
+}
+
+function setSfxVolumeGain(v: number) {
+  desiredSfxVolume = v;
+  if (sfxGain) sfxGain.gain.value = v;
+}
+
+function beep(freqStart: number, freqEnd: number, duration: number, type: OscillatorType = "square", peak = 0.25) {
+  const { ctx, gain } = getSfx();
+  const osc = ctx.createOscillator();
+  const env = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freqStart, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(Math.max(freqEnd, 1), ctx.currentTime + duration);
+  env.gain.setValueAtTime(peak, ctx.currentTime);
+  env.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+  osc.connect(env); env.connect(gain);
+  osc.start();
+  osc.stop(ctx.currentTime + duration);
+}
+
+const playClick = () => beep(1100, 850, 0.04, "square", 0.18);
+const playOpen  = () => beep(480, 1200, 0.1, "square", 0.22);
+const playClose = () => beep(900, 320, 0.1, "square", 0.22);
+
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const PHOTOS = [
@@ -217,7 +257,7 @@ function CtrlBtn({ children, onClick, w = 28, h = 22, active = false, title }: {
   const [pressed, setPressed] = useState(false);
   const down = pressed || active;
   return (
-    <button title={title} onClick={onClick}
+    <button title={title} onClick={() => { playClick(); onClick?.(); }}
       onMouseDown={() => setPressed(true)} onMouseUp={() => setPressed(false)} onMouseLeave={() => setPressed(false)}
       style={{
         width: w, height: h,
@@ -250,17 +290,17 @@ function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar,
 
   const closed = onClose !== undefined ? !open : internalClosed;
   if (closed) return null;
-  const handleClose = () => { if (onClose) onClose(); else setInternalClosed(true); };
+  const handleClose = () => { playClose(); if (onClose) onClose(); else setInternalClosed(true); };
 
   return (
-    <div className="absolute" style={{ left: pos.x, top: pos.y, width, zIndex, userSelect: "none" }} onMouseDown={onFocus}>
+    <div className="absolute" style={{ left: pos.x, top: pos.y, width, zIndex, userSelect: "none", transition: "width 0.15s" }} onMouseDown={onFocus}>
       <div style={{ border: "1px solid var(--border-color)", background: "var(--bg-window)" }}>
         <div onMouseDown={onMouseDown} style={{ ...TITLEBAR, height: 22, borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 6px", cursor: "move" }}>
           <span style={{ ...PX, fontSize: 9, color: "var(--titlebar-text)", textTransform: "uppercase", letterSpacing: "0.04em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "calc(100% - 36px)" }}>
             {title}
           </span>
           <div style={{ display: "flex", gap: 2, flexShrink: 0 }}>
-            <button onClick={() => setMinimized(v => !v)} style={{ width: 13, height: 13, background: "var(--bg-panel)", border: "1px solid var(--border-color)", cursor: "pointer", fontSize: 10, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>–</button>
+            <button onClick={() => { playClick(); setMinimized(v => !v); }} style={{ width: 13, height: 13, background: "var(--bg-panel)", border: "1px solid var(--border-color)", cursor: "pointer", fontSize: 10, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>–</button>
             <button onClick={handleClose}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--color-error)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-panel)"; }}
@@ -285,14 +325,15 @@ function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar,
 // ── Modal (non-draggable overlay) ─────────────────────────────────────────────
 
 function Modal({ title, onClose, children, width = 360 }: { title: string; onClose: () => void; children: React.ReactNode; width?: number }) {
+  const handleClose = () => { playClose(); onClose(); };
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 900, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.45)" }}
-      onClick={onClose}>
+      onClick={handleClose}>
       <div style={{ width, background: "var(--bg-window)", border: "2px solid var(--border-color)", boxShadow: "4px 4px 0 var(--border-color)" }}
         onClick={e => e.stopPropagation()}>
         <div style={{ ...TITLEBAR, height: 24, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px" }}>
           <span style={{ ...PX, fontSize: 9, color: "var(--titlebar-text)", textTransform: "uppercase" }}>{title}</span>
-          <button onClick={onClose}
+          <button onClick={handleClose}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--color-error)"; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-panel)"; }}
             style={{ width: 14, height: 14, background: "var(--bg-panel)", border: "1px solid var(--border-color)", cursor: "pointer", fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
@@ -323,7 +364,7 @@ function FatalErrorModal({ onGoToProjects }: { onGoToProjects: () => void }) {
           <div style={{ ...MONO, fontSize: 12, color: "#ffd9d9", lineHeight: 1.8, textAlign: "center", marginBottom: 22 }}>
             Hey! You've been wandering this page a lot without checking my projects. That's unacceptable!
           </div>
-          <button onClick={onGoToProjects}
+          <button onClick={() => { playOpen(); onGoToProjects(); }}
             style={{ display: "block", width: "100%", padding: "12px 0", background: "#ff3b3b", border: "2px solid #ff3b3b", cursor: "pointer", ...PX, fontSize: 8, color: "#1a0000", letterSpacing: 1 }}
             onMouseEnter={e => { e.currentTarget.style.opacity = "0.85"; }}
             onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}>
@@ -550,10 +591,14 @@ function PhotoViewer({ zIndex, onFocus, open, onClose }: { zIndex: number; onFoc
   const [idx, setIdx] = useState(0);
   const [zoom, setZoom] = useState(1);
   const photo = PHOTOS[idx];
+  const baseWidth = 254;
+  const baseImgHeight = 172;
+  const winWidth = baseWidth + (zoom - 1) * 100;
+  const imgHeight = baseImgHeight + (zoom - 1) * 80;
   return (
-    <Win title={`PHOTO_VIEWER — ${photo.label}`} width={254} initX={672} initY={106} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar={`${idx + 1} OF ${PHOTOS.length} · ${zoom}× · RGB · 24BIT`}>
-      <div style={{ height: 172, borderBottom: "1px solid var(--border-color)", overflow: "auto", background: "var(--bg-dark)" }}>
-        <img src={photo.src} alt={photo.label} style={{ width: `${zoom * 100}%`, height: zoom === 1 ? "100%" : "auto", objectFit: "cover", display: "block" }} />
+    <Win title={`PHOTO_VIEWER — ${photo.label}`} width={winWidth} initX={672} initY={106} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar={`${idx + 1} OF ${PHOTOS.length} · ${zoom}× · RGB · 24BIT`}>
+      <div style={{ height: imgHeight, borderBottom: "1px solid var(--border-color)", overflow: "hidden", background: "var(--bg-dark)", transition: "height 0.15s" }}>
+        <img src={photo.src} alt={photo.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 8px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
         <span style={{ ...PX, fontSize: 7, color: "var(--text-secondary)", marginRight: "auto" }}>ZOOM</span>
@@ -671,8 +716,12 @@ function VideoViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { 
 
 function ImageViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { entry: FsImage } & ViewerProps) {
   const [zoom, setZoom] = useState(1);
+  const baseWidth = 400;
+  const baseHeight = 320;
+  const winWidth = baseWidth + (zoom - 1) * 160;
+  const contentHeight = baseHeight + (zoom - 1) * 120;
   return (
-    <Win title={`${entry.name} — IMAGE VIEWER`} width={400} initX={570 + offsetIndex * 22} initY={90 + offsetIndex * 22} zIndex={zIndex} onFocus={onFocus} open onClose={onClose}
+    <Win title={`${entry.name} — IMAGE VIEWER`} width={winWidth} initX={570 + offsetIndex * 22} initY={90 + offsetIndex * 22} zIndex={zIndex} onFocus={onFocus} open onClose={onClose}
       statusBar={`${entry.name} · JPG · ${zoom}×`}>
       <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 8px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
         <span style={{ ...PX, fontSize: 7, color: "var(--text-secondary)", marginRight: "auto" }}>ZOOM</span>
@@ -682,9 +731,9 @@ function ImageViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { 
           </CtrlBtn>
         ))}
       </div>
-      <div style={{ background: "#0a060f", height: 320, display: "flex", alignItems: zoom === 1 ? "center" : "flex-start", justifyContent: zoom === 1 ? "center" : "flex-start", overflow: "auto" }}>
+      <div style={{ background: "#0a060f", height: contentHeight, display: "flex", alignItems: "center", justifyContent: "center", transition: "height 0.15s" }}>
         {entry.src ? (
-          <img src={entry.src} alt={entry.name} style={{ width: `${zoom * 100}%`, maxWidth: zoom === 1 ? "100%" : "none", display: "block", flexShrink: 0 }}/>
+          <img src={entry.src} alt={entry.name} style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}/>
         ) : (
           <div style={{ textAlign: "center", padding: 40, margin: "auto" }}>
             <div style={{ width: 56, height: 56, border: "1px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
@@ -1017,10 +1066,11 @@ const BG_OPTIONS: { name: BgPattern; label: string }[] = [
   { name: "scanlines", label: "LINES" },
 ];
 
-function PrefsWin({ zIndex, onFocus, open, onClose, palette, onPalette, volume, onVolumeChange, bgPattern, onBgPattern, darkMode, onDarkMode }: {
+function PrefsWin({ zIndex, onFocus, open, onClose, palette, onPalette, volume, onVolumeChange, sfxVolume, onSfxVolumeChange, bgPattern, onBgPattern, darkMode, onDarkMode }: {
   zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void;
   palette: string; onPalette: (name: string) => void;
   volume: number; onVolumeChange: (v: number) => void;
+  sfxVolume: number; onSfxVolumeChange: (v: number) => void;
   bgPattern: BgPattern; onBgPattern: (p: BgPattern) => void;
   darkMode: boolean; onDarkMode: (v: boolean) => void;
 }) {
@@ -1072,6 +1122,14 @@ function PrefsWin({ zIndex, onFocus, open, onClose, palette, onPalette, volume, 
         <input type="range" min={0} max={1} step={0.01} value={volume} onChange={e => onVolumeChange(Number(e.target.value))} style={{ flex: 1, height: 14 }} />
         <Volume2 size={10} strokeWidth={1.5} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
         <span style={{ ...PX, fontSize: 7, color: "var(--text-tertiary)", minWidth: 28 }}>{Math.round(volume * 100)}%</span>
+      </div>
+
+      {section("Effects Volume")}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px" }}>
+        <VolumeX size={10} strokeWidth={1.5} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
+        <input type="range" min={0} max={1} step={0.01} value={sfxVolume} onChange={e => onSfxVolumeChange(Number(e.target.value))} style={{ flex: 1, height: 14 }} />
+        <Volume2 size={10} strokeWidth={1.5} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
+        <span style={{ ...PX, fontSize: 7, color: "var(--text-tertiary)", minWidth: 28 }}>{Math.round(sfxVolume * 100)}%</span>
       </div>
     </Win>
   );
@@ -1627,6 +1685,7 @@ export default function App() {
   const [palette,    setPalette]    = useState("Y2K");
   const [bgPattern,  setBgPattern]  = useState<BgPattern>("dots");
   const [volume,     setVolume]     = useState(0.8);
+  const [sfxVolume,  setSfxVolumeState] = useState(0.5);
   const [darkMode,   setDarkMode]   = useState(false);
 
   // Apply palette CSS vars
@@ -1637,6 +1696,8 @@ export default function App() {
     Object.entries(vars).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
   }, [palette, darkMode]);
 
+  useEffect(() => { setSfxVolumeGain(sfxVolume); }, [sfxVolume]);
+
   // Single monotonic z-counter shared by every window in the app, including
   // file-viewer popups spawned inside MyProjectsWin — guarantees whatever was
   // clicked last is always strictly on top, regardless of window type.
@@ -1646,8 +1707,8 @@ export default function App() {
   const focus = (id: WinId) => setZ(prev => ({ ...prev, [id]: nextZ() }));
 
   const toggle = (id: WinId, isOpen: boolean, setOpen: (v: boolean) => void) => {
-    if (isOpen) setOpen(false);
-    else { setOpen(true); focus(id); }
+    if (isOpen) { playClose(); setOpen(false); }
+    else { playOpen(); setOpen(true); focus(id); }
   };
 
   // FATAL ERROR nag — fires once if the visitor hasn't opened MY PROJECTS
@@ -1715,7 +1776,7 @@ export default function App() {
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>{m}</button>
               ))}
-              <button onClick={() => setShowFatalError(true)} title="Trigger the FATAL ERROR nag manually"
+              <button onClick={() => { playClick(); setShowFatalError(true); }} title="Trigger the FATAL ERROR nag manually"
                 style={{ ...PX, fontSize: 8, textTransform: "uppercase", background: "transparent", border: "none", cursor: "pointer", color: "var(--color-error)", padding: "0 2px" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>DEBUG</button>
@@ -1750,7 +1811,7 @@ export default function App() {
             <PhotoViewer     zIndex={z.photo}       onFocus={() => focus("photo")}      open={photoOpen}   onClose={() => setPhotoOpen(false)} />
             <NotesWin        zIndex={z.notes}       onFocus={() => focus("notes")}      open={notesOpen}   onClose={() => setNotesOpen(false)} />
             <SysInfo         zIndex={z.sysinfo}     onFocus={() => focus("sysinfo")}    open={sysinfoOpen} onClose={() => setSysinfoOpen(false)} />
-            <PrefsWin        zIndex={z.prefs}       onFocus={() => focus("prefs")}      open={prefsOpen}   onClose={() => setPrefsOpen(false)}   palette={palette} onPalette={setPalette} volume={volume} onVolumeChange={setVolume} bgPattern={bgPattern} onBgPattern={setBgPattern} darkMode={darkMode} onDarkMode={setDarkMode} />
+            <PrefsWin        zIndex={z.prefs}       onFocus={() => focus("prefs")}      open={prefsOpen}   onClose={() => setPrefsOpen(false)}   palette={palette} onPalette={setPalette} volume={volume} onVolumeChange={setVolume} sfxVolume={sfxVolume} onSfxVolumeChange={setSfxVolumeState} bgPattern={bgPattern} onBgPattern={setBgPattern} darkMode={darkMode} onDarkMode={setDarkMode} />
             <AboutWin        zIndex={z.about}       onFocus={() => focus("about")}      open={aboutOpen}   onClose={() => setAboutOpen(false)} />
             <BgGenWin        zIndex={z.bggen}       onFocus={() => focus("bggen")}      open={bggenOpen}   onClose={() => setBggenOpen(false)} bgSvg={bgSvg} onApplyBg={cfg => { setBgSvg(cfg); if (cfg) setBgPattern("flat"); }} />
             <BlogWin         zIndex={z.blog}        onFocus={() => focus("blog")}       open={blogOpen}    onClose={() => setBlogOpen(false)} />
@@ -1769,9 +1830,9 @@ export default function App() {
 
         {/* Dock */}
         <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 58, background: "var(--bg-panel)", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", gap: 18, zIndex: 100 }}>
-          <DockIcon icon={Home}             label="HOME"    onClick={resetLayout} />
-          <DockIcon icon={Mail}             label="CONTACT" onClick={() => setContactOpen(true)} active={contactOpen} />
-          <DockIcon icon={Rss}              label="NETWORK" onClick={() => setNetworkOpen(true)}  active={networkOpen} />
+          <DockIcon icon={Home}             label="HOME"    onClick={() => { playClick(); resetLayout(); }} />
+          <DockIcon icon={Mail}             label="CONTACT" onClick={() => { playOpen(); setContactOpen(true); }} active={contactOpen} />
+          <DockIcon icon={Rss}              label="NETWORK" onClick={() => { playOpen(); setNetworkOpen(true); }}  active={networkOpen} />
           <DockIcon icon={SlidersHorizontal} label="PREFS"  onClick={() => toggle("prefs", prefsOpen, setPrefsOpen)}  active={prefsOpen} />
           <DockIcon icon={Monitor}          label="SYSTEM"  onClick={() => toggle("sysinfo", sysinfoOpen, setSysinfoOpen)} active={sysinfoOpen} />
           <DockIcon icon={User}             label="ABOUT"   onClick={() => toggle("about", aboutOpen, setAboutOpen)}   active={aboutOpen} />
