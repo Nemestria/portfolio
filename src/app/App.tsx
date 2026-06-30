@@ -3,7 +3,7 @@ import {
   Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
   Folder, Music, Image, Info, Home, Monitor,
   Mail, Rss, SlidersHorizontal, User, ExternalLink, Paintbrush,
-  ArrowLeft, ArrowRight, RotateCw, File, Film, Globe,
+  ArrowLeft, ArrowRight, RotateCw, File, Film, Globe, Sun, Moon,
 } from "lucide-react";
 import "../styles/themes.css";
 import { BUILTIN_TRACKS } from "./data/tracks";
@@ -67,12 +67,12 @@ const PHOTOS = [
 // ── Color palettes ────────────────────────────────────────────────────────────
 
 interface PaletteVars { [key: string]: string }
-interface Palette { name: string; accent: string; vars: PaletteVars }
+interface Palette { name: string; accent: string; light: PaletteVars; dark: PaletteVars }
 
 const PALETTES: Palette[] = [
   {
     name: "Y2K", accent: "#00b9be",
-    vars: {
+    light: {
       "--bg-main": "#f5f5f5", "--bg-window": "#ffffff", "--bg-panel": "#e8e8e8",
       "--bg-hover": "#ffb0a3", "--bg-active": "#00b9be", "--bg-dark": "#2a1a2a",
       "--text-primary": "#46425e", "--text-secondary": "#15788c", "--text-tertiary": "#999999",
@@ -80,10 +80,18 @@ const PALETTES: Palette[] = [
       "--titlebar-bg": "repeating-linear-gradient(90deg,#15788c 0,#15788c 1px,#1a5a70 1px,#1a5a70 2px)",
       "--titlebar-text": "#ffffff",
     },
+    dark: {
+      "--bg-main": "#14141c", "--bg-window": "#1c1c26", "--bg-panel": "#262631",
+      "--bg-hover": "#3a2a30", "--bg-active": "#00d4da", "--bg-dark": "#0a0a0f",
+      "--text-primary": "#e8e6f0", "--text-secondary": "#4dd9e0", "--text-tertiary": "#8888a0",
+      "--color-accent": "#00d4da", "--color-error": "#ff8990", "--border-color": "#4a4860",
+      "--titlebar-bg": "repeating-linear-gradient(90deg,#0d4854 0,#0d4854 1px,#0a2e38 1px,#0a2e38 2px)",
+      "--titlebar-text": "#e8e6f0",
+    },
   },
   {
     name: "DUSK", accent: "#9b72cf",
-    vars: {
+    light: {
       "--bg-main": "#f2f0f8", "--bg-window": "#faf9fe", "--bg-panel": "#e4e0f4",
       "--bg-hover": "#d4b8e8", "--bg-active": "#9b72cf", "--bg-dark": "#1a0a3a",
       "--text-primary": "#2d1b5e", "--text-secondary": "#7c5cbf", "--text-tertiary": "#9080c0",
@@ -91,10 +99,18 @@ const PALETTES: Palette[] = [
       "--titlebar-bg": "repeating-linear-gradient(90deg,#7c5cbf 0,#7c5cbf 1px,#5a3d99 1px,#5a3d99 2px)",
       "--titlebar-text": "#ffffff",
     },
+    dark: {
+      "--bg-main": "#15101f", "--bg-window": "#1d1729", "--bg-panel": "#281f38",
+      "--bg-hover": "#43305a", "--bg-active": "#b48ee0", "--bg-dark": "#0a0614",
+      "--text-primary": "#ece6f7", "--text-secondary": "#c9a8f0", "--text-tertiary": "#a89bc8",
+      "--color-accent": "#b48ee0", "--color-error": "#e06aa8", "--border-color": "#4a3a66",
+      "--titlebar-bg": "repeating-linear-gradient(90deg,#5a3d99 0,#5a3d99 1px,#3d2a66 1px,#3d2a66 2px)",
+      "--titlebar-text": "#ece6f7",
+    },
   },
   {
     name: "FOREST", accent: "#2e8b57",
-    vars: {
+    light: {
       "--bg-main": "#f0f5f0", "--bg-window": "#f8faf8", "--bg-panel": "#deeade",
       "--bg-hover": "#b8e0b8", "--bg-active": "#2e8b57", "--bg-dark": "#0a1f0a",
       "--text-primary": "#1b3a1b", "--text-secondary": "#388e3c", "--text-tertiary": "#7a9e7a",
@@ -102,10 +118,18 @@ const PALETTES: Palette[] = [
       "--titlebar-bg": "repeating-linear-gradient(90deg,#2e8b57 0,#2e8b57 1px,#1b5e20 1px,#1b5e20 2px)",
       "--titlebar-text": "#ffffff",
     },
+    dark: {
+      "--bg-main": "#0d160d", "--bg-window": "#121f12", "--bg-panel": "#1a2e1a",
+      "--bg-hover": "#234d23", "--bg-active": "#4caf7d", "--bg-dark": "#060d06",
+      "--text-primary": "#e2f0e2", "--text-secondary": "#6fd98f", "--text-tertiary": "#84a884",
+      "--color-accent": "#4caf7d", "--color-error": "#e05a5a", "--border-color": "#2e4a2e",
+      "--titlebar-bg": "repeating-linear-gradient(90deg,#1b5e20 0,#1b5e20 1px,#123d15 1px,#123d15 2px)",
+      "--titlebar-text": "#e2f0e2",
+    },
   },
   {
     name: "SUNSET", accent: "#e05d2e",
-    vars: {
+    light: {
       "--bg-main": "#fef5ec", "--bg-window": "#fffaf6", "--bg-panel": "#fde8d4",
       "--bg-hover": "#ffccaa", "--bg-active": "#e05d2e", "--bg-dark": "#2a0a00",
       "--text-primary": "#5c1a00", "--text-secondary": "#c04010", "--text-tertiary": "#aa8870",
@@ -113,15 +137,30 @@ const PALETTES: Palette[] = [
       "--titlebar-bg": "repeating-linear-gradient(90deg,#e05d2e 0,#e05d2e 1px,#b83a10 1px,#b83a10 2px)",
       "--titlebar-text": "#ffffff",
     },
+    dark: {
+      "--bg-main": "#1a0f08", "--bg-window": "#21140b", "--bg-panel": "#2e1c10",
+      "--bg-hover": "#4d2c18", "--bg-active": "#ff7a45", "--bg-dark": "#100a05",
+      "--text-primary": "#fbe8da", "--text-secondary": "#ff9a5c", "--text-tertiary": "#bd9d80",
+      "--color-accent": "#ff7a45", "--color-error": "#ff5a3a", "--border-color": "#5c3a20",
+      "--titlebar-bg": "repeating-linear-gradient(90deg,#b83a10 0,#b83a10 1px,#7a2608 1px,#7a2608 2px)",
+      "--titlebar-text": "#fbe8da",
+    },
   },
   {
     name: "MONO", accent: "#222323",
-    vars: {
+    light: {
       "--bg-main": "#f0f6f0", "--bg-window": "#f0f6f0", "--bg-panel": "#e6ebe6",
       "--bg-hover": "#dce2dc", "--bg-active": "#222323", "--bg-dark": "#222323",
       "--text-primary": "#222323", "--text-secondary": "#222323", "--text-tertiary": "#888888",
       "--color-accent": "#222323", "--color-error": "#222323", "--border-color": "#222323",
       "--titlebar-bg": "#222323", "--titlebar-text": "#f0f6f0",
+    },
+    dark: {
+      "--bg-main": "#16171c", "--bg-window": "#16171c", "--bg-panel": "#20222a",
+      "--bg-hover": "#2c2f38", "--bg-active": "#f0f6f0", "--bg-dark": "#f0f6f0",
+      "--text-primary": "#f0f6f0", "--text-secondary": "#f0f6f0", "--text-tertiary": "#888888",
+      "--color-accent": "#f0f6f0", "--color-error": "#f0f6f0", "--border-color": "#f0f6f0",
+      "--titlebar-bg": "#f0f6f0", "--titlebar-text": "#16171c",
     },
   },
 ];
@@ -910,11 +949,12 @@ const BG_OPTIONS: { name: BgPattern; label: string }[] = [
   { name: "scanlines", label: "LINES" },
 ];
 
-function PrefsWin({ zIndex, onFocus, open, onClose, palette, onPalette, volume, onVolumeChange, bgPattern, onBgPattern }: {
+function PrefsWin({ zIndex, onFocus, open, onClose, palette, onPalette, volume, onVolumeChange, bgPattern, onBgPattern, darkMode, onDarkMode }: {
   zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void;
   palette: string; onPalette: (name: string) => void;
   volume: number; onVolumeChange: (v: number) => void;
   bgPattern: BgPattern; onBgPattern: (p: BgPattern) => void;
+  darkMode: boolean; onDarkMode: (v: boolean) => void;
 }) {
   const section = (label: string) => (
     <div style={{ ...PX, fontSize: 7, color: "var(--text-secondary)", padding: "6px 10px 3px", textTransform: "uppercase", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
@@ -924,6 +964,18 @@ function PrefsWin({ zIndex, onFocus, open, onClose, palette, onPalette, volume, 
 
   return (
     <Win title="PREFERENCES.EXE" width={300} initX={200} initY={100} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar="CHANGES APPLY INSTANTLY">
+      {section("Display Mode")}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, padding: "10px" }}>
+        <button onClick={() => onDarkMode(false)}
+          style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 4px", background: !darkMode ? "var(--bg-active)" : "var(--bg-panel)", border: `1px solid ${!darkMode ? "var(--bg-active)" : "var(--border-color)"}`, cursor: "pointer", ...PX, fontSize: 7, color: !darkMode ? "var(--bg-window)" : "var(--text-primary)" }}>
+          <Sun size={11} strokeWidth={2}/> LIGHT
+        </button>
+        <button onClick={() => onDarkMode(true)}
+          style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 4px", background: darkMode ? "var(--bg-active)" : "var(--bg-panel)", border: `1px solid ${darkMode ? "var(--bg-active)" : "var(--border-color)"}`, cursor: "pointer", ...PX, fontSize: 7, color: darkMode ? "var(--bg-window)" : "var(--text-primary)" }}>
+          <Moon size={11} strokeWidth={2}/> DARK
+        </button>
+      </div>
+
       {section("Color Palette")}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6, padding: "10px" }}>
         {PALETTES.map(p => (
@@ -1507,13 +1559,15 @@ export default function App() {
   const [palette,    setPalette]    = useState("Y2K");
   const [bgPattern,  setBgPattern]  = useState<BgPattern>("dots");
   const [volume,     setVolume]     = useState(0.8);
+  const [darkMode,   setDarkMode]   = useState(false);
 
   // Apply palette CSS vars
   useEffect(() => {
     const p = PALETTES.find(p => p.name === palette);
     if (!p) return;
-    Object.entries(p.vars).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
-  }, [palette]);
+    const vars = darkMode ? p.dark : p.light;
+    Object.entries(vars).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
+  }, [palette, darkMode]);
 
   // Single monotonic z-counter shared by every window in the app, including
   // file-viewer popups spawned inside MyProjectsWin — guarantees whatever was
@@ -1597,7 +1651,7 @@ export default function App() {
             <PhotoViewer     zIndex={z.photo}       onFocus={() => focus("photo")}      open={photoOpen}   onClose={() => setPhotoOpen(false)} />
             <NotesWin        zIndex={z.notes}       onFocus={() => focus("notes")}      open={notesOpen}   onClose={() => setNotesOpen(false)} />
             <SysInfo         zIndex={z.sysinfo}     onFocus={() => focus("sysinfo")}    open={sysinfoOpen} onClose={() => setSysinfoOpen(false)} />
-            <PrefsWin        zIndex={z.prefs}       onFocus={() => focus("prefs")}      open={prefsOpen}   onClose={() => setPrefsOpen(false)}   palette={palette} onPalette={setPalette} volume={volume} onVolumeChange={setVolume} bgPattern={bgPattern} onBgPattern={setBgPattern} />
+            <PrefsWin        zIndex={z.prefs}       onFocus={() => focus("prefs")}      open={prefsOpen}   onClose={() => setPrefsOpen(false)}   palette={palette} onPalette={setPalette} volume={volume} onVolumeChange={setVolume} bgPattern={bgPattern} onBgPattern={setBgPattern} darkMode={darkMode} onDarkMode={setDarkMode} />
             <AboutWin        zIndex={z.about}       onFocus={() => focus("about")}      open={aboutOpen}   onClose={() => setAboutOpen(false)} />
             <BgGenWin        zIndex={z.bggen}       onFocus={() => focus("bggen")}      open={bggenOpen}   onClose={() => setBggenOpen(false)} bgSvg={bgSvg} onApplyBg={cfg => { setBgSvg(cfg); if (cfg) setBgPattern("flat"); }} />
             <BlogWin         zIndex={z.blog}        onFocus={() => focus("blog")}       open={blogOpen}    onClose={() => setBlogOpen(false)} />
