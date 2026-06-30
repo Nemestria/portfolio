@@ -113,3 +113,7 @@ CLAUDE.md (project overview)
 - **Live:** https://portfolio-ashen-sigma-63gx2gi92g.vercel.app
 
 Vercel is linked to GitHub — every push to `master` auto-deploys to the live URL.
+
+## Related Projects
+
+- **`../3d-gateway`** — separate repo/session, a 3D scene (computer model → password prompt → redirect here). One-way relationship: it links to this site, this site has zero dependency on it. Don't build 3D features in this project — see `../3d-gateway/ARCHITECTURE.md` for the full split rationale if curious.

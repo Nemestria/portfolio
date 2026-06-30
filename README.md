@@ -31,3 +31,7 @@ A boot-up desktop OS with a splash screen (loading bar → choice to enable soun
 - A FATAL ERROR easter egg nags visitors who haven't opened MY PROJECTS after a while (DEBUG button in the system bar triggers it manually for testing).
 
 See [DOCS_INDEX.md](DOCS_INDEX.md) for the full doc set.
+
+## Related project
+
+A separate sibling project, [`../3d-gateway`](../3d-gateway), is in progress: a 3D scene with a computer model that, once a password is entered, takes the visitor here via real browser navigation. It's a one-way relationship — that project links to this one; this project has no dependency on it and isn't modified by it.

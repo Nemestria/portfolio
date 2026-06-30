@@ -6,6 +6,9 @@ Y2K retro portfolio — interactive OS desktop theme for Alejandro Sancho (3D Ar
 Live: https://portfolio-ashen-sigma-63gx2gi92g.vercel.app
 Repo: https://github.com/Nemestria/portfolio (connected to Vercel — push to `master` auto-deploys)
 
+## Scope Boundary — Related Project
+There is a sibling project, `../3d-gateway` (separate repo, separate git history, separate Claude session) — a 3D scene where a computer model, once a password is entered, navigates the browser **to this site**. It is a one-way relationship: `3d-gateway` redirects here on success; **this project never imports from, depends on, or needs to change for it.** Do not add Three.js/3D code here — that work belongs entirely in `../3d-gateway`. See that project's `ARCHITECTURE.md` if you need the full reasoning.
+
 ## Dev Setup
 ```bash
 pnpm install
