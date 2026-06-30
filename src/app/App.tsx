@@ -518,28 +518,32 @@ const PROJECTS: FsFolder = {
     {
       name: "PROJECT_01",  type: "folder", date: "2024.03.01",
       children: [
-        { name: "README.TXT",    type: "txt",   date: "2024.03.01", content: "// PROJECT_01\n\nDescription goes here.\nReplace with your project info.\n\nTools used: ...\nYear: 2024" },
+        { name: "README.TXT",    type: "txt",   date: "2024.03.01", content: "// PROJECT_01 — SWORD SET\n\nDescription goes here.\nReplace with your project info.\n\nTools used: ...\nYear: 2024" },
         { name: "OVERVIEW.PDF",  type: "pdf",   date: "2024.02.15" },
-        { name: "RENDER_01.JPG", type: "image", date: "2024.02.20", src: "" },
-        { name: "RENDER_02.JPG", type: "image", date: "2024.02.22", src: "" },
+        { name: "RENDER_01.JPG", type: "image", date: "2024.02.20", src: "/projects/PROJECT_01/sword1.jpg" },
+        { name: "RENDER_02.JPG", type: "image", date: "2024.02.21", src: "/projects/PROJECT_01/sword2.jpg" },
+        { name: "RENDER_03.JPG", type: "image", date: "2024.02.22", src: "/projects/PROJECT_01/sword3.jpg" },
       ],
     },
     {
       name: "PROJECT_02",  type: "folder", date: "2024.01.10",
       children: [
-        { name: "README.TXT",    type: "txt",   date: "2024.01.10", content: "// PROJECT_02\n\nDescription goes here.\nReplace with your project info.\n\nTools used: ...\nYear: 2024" },
+        { name: "README.TXT",    type: "txt",   date: "2024.01.10", content: "// PROJECT_02 — AXE SET\n\nDescription goes here.\nReplace with your project info.\n\nTools used: ...\nYear: 2024" },
         { name: "OVERVIEW.PDF",  type: "pdf",   date: "2023.12.20" },
-        { name: "RENDER_01.JPG", type: "image", date: "2023.12.28", src: "" },
-        { name: "RENDER_02.JPG", type: "image", date: "2024.01.03", src: "" },
-        { name: "RENDER_03.JPG", type: "image", date: "2024.01.05", src: "" },
+        { name: "RENDER_01.JPG", type: "image", date: "2023.12.28", src: "/projects/PROJECT_02/axe1.webp" },
+        { name: "RENDER_02.JPG", type: "image", date: "2024.01.03", src: "/projects/PROJECT_02/axe2.webp" },
+        { name: "RENDER_03.JPG", type: "image", date: "2024.01.05", src: "/projects/PROJECT_02/axe3.webp" },
       ],
     },
     {
       name: "PROJECT_03",  type: "folder", date: "2023.09.20",
       children: [
-        { name: "README.TXT",    type: "txt",   date: "2023.09.20", content: "// PROJECT_03\n\nDescription goes here.\nReplace with your project info.\n\nTools used: ...\nYear: 2023" },
+        { name: "README.TXT",    type: "txt",   date: "2023.09.20", content: "// PROJECT_03 — STREET ENVIRONMENT\n\nDescription goes here.\nReplace with your project info.\n\nTools used: ...\nYear: 2023" },
         { name: "OVERVIEW.PDF",  type: "pdf",   date: "2023.09.05" },
-        { name: "RENDER_01.JPG", type: "image", date: "2023.09.10", src: "" },
+        { name: "RENDER_01.JPG", type: "image", date: "2023.09.10", src: "/projects/PROJECT_03/street1.webp" },
+        { name: "RENDER_02.JPG", type: "image", date: "2023.09.11", src: "/projects/PROJECT_03/street2.webp" },
+        { name: "RENDER_03.JPG", type: "image", date: "2023.09.12", src: "/projects/PROJECT_03/street3.webp" },
+        { name: "RENDER_04.JPG", type: "image", date: "2023.09.13", src: "/projects/PROJECT_03/street4.webp" },
       ],
     },
   ],
@@ -1299,7 +1303,7 @@ function DesktopIcon({ icon: Icon, label, x, y, onOpen }: { icon: React.ElementT
 
 type WinId = "visualizer" | "photo" | "notes" | "sysinfo" | "prefs" | "about" | "bggen" | "projects";
 
-const DEFAULT_Z: Record<WinId, number> = { visualizer: 14, photo: 13, notes: 12, sysinfo: 10, prefs: 9, about: 8, bggen: 7, projects: 15 };
+const DEFAULT_Z: Record<WinId, number> = { visualizer: 12, photo: 13, notes: 14, sysinfo: 10, prefs: 9, about: 8, bggen: 7, projects: 15 };
 
 function bgStyle(pattern: BgPattern): React.CSSProperties {
   if (pattern === "grid") return { backgroundImage: "repeating-linear-gradient(0deg,rgba(0,0,0,0.04) 0,rgba(0,0,0,0.04) 1px,transparent 1px,transparent 32px),repeating-linear-gradient(90deg,rgba(0,0,0,0.04) 0,rgba(0,0,0,0.04) 1px,transparent 1px,transparent 32px)" };
