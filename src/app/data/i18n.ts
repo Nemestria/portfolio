@@ -1,7 +1,8 @@
 export type Lang = "es" | "en";
 
 export interface NoteLine { text: string; type: "comment" | "blank" | "accent" | "body" }
-export interface BlogPost { title: string; date: string; excerpt: string }
+export type BlogBlock = { type: "p"; text: string } | { type: "img"; src: string; caption?: string };
+export interface BlogPost { title: string; date: string; excerpt: string; body: BlogBlock[] }
 
 export interface Strings {
   splash: {
@@ -50,7 +51,8 @@ export interface Strings {
     title: string; lastUpdated: string; role: string; roleSub: string; bio: string;
   };
   blog: {
-    title: string; heading: string; tagline: string; statusBar: string;
+    title: string; heading: string; tagline: string; statusBar: string; backToList: string;
+    noImage: string;
     posts: BlogPost[];
   };
   bgGen: {
@@ -145,10 +147,33 @@ const ES: Strings = {
   },
   blog: {
     title: "BLOG.EXE — NAVEGADOR", heading: "EL BLOG", tagline: "notas sobre arte 3d, diseño y proceso", statusBar: "LISTO",
+    backToList: "← volver al listado", noImage: "SIN IMAGEN",
     posts: [
-      { title: "Sustituye por un título real", date: "2026.01.01", excerpt: "Sustituye por un extracto breve — notas de proceso, desglose de proyectos, lo que quieras que cubra el blog." },
-      { title: "Sustituye por un título real", date: "2025.12.01", excerpt: "Sustituye por un extracto breve — notas de proceso, desglose de proyectos, lo que quieras que cubra el blog." },
-      { title: "Sustituye por un título real", date: "2025.11.01", excerpt: "Sustituye por un extracto breve — notas de proceso, desglose de proyectos, lo que quieras que cubra el blog." },
+      {
+        title: "Sustituye por un título real", date: "2026.01.01",
+        excerpt: "Sustituye por un extracto breve — esto es solo un ejemplo de cómo se ve una entrada larga con imágenes intercaladas.",
+        body: [
+          { type: "p", text: "Sustituye este texto por tu artículo real. Esta entrada de ejemplo muestra cómo se comporta el blog cuando hay texto largo: varios párrafos, alguna imagen intercalada y un pie de foto opcional. Puedes escribir tanto como quieras — el contenido hace scroll dentro de la ventana." },
+          { type: "p", text: "Por ejemplo, aquí podrías contar el proceso detrás de uno de tus proyectos: de dónde viene la idea, qué referencias usaste, qué decisiones tomaste por el camino y qué problemas tuviste que resolver. Cuanto más concreto y técnico, mejor encaja con el tono del resto de la web." },
+          { type: "img", src: "", caption: "Sustituye por una imagen real (ej. un work-in-progress o un detalle de textura)." },
+          { type: "p", text: "Después de una imagen puedes seguir con más texto — comentar el render de arriba, explicar una decisión de diseño, o simplemente continuar la historia. El formato soporta tantos párrafos e imágenes como necesites, en el orden que quieras." },
+          { type: "p", text: "Para terminar, un cierre breve: qué aprendiste, qué harías diferente la próxima vez, o un enlace a dónde ver el proyecto completo." },
+        ],
+      },
+      {
+        title: "Sustituye por un título real", date: "2025.12.01",
+        excerpt: "Sustituye por un extracto breve — notas de proceso, desglose de proyectos, lo que quieras que cubra el blog.",
+        body: [
+          { type: "p", text: "Sustituye por el contenido real de esta entrada." },
+        ],
+      },
+      {
+        title: "Sustituye por un título real", date: "2025.11.01",
+        excerpt: "Sustituye por un extracto breve — notas de proceso, desglose de proyectos, lo que quieras que cubra el blog.",
+        body: [
+          { type: "p", text: "Sustituye por el contenido real de esta entrada." },
+        ],
+      },
     ],
   },
   bgGen: {
@@ -284,10 +309,33 @@ const EN: Strings = {
   },
   blog: {
     title: "BLOG.EXE — BROWSER", heading: "THE BLOG", tagline: "notes on 3d art, design & process", statusBar: "DONE",
+    backToList: "← back to list", noImage: "NO IMAGE SET",
     posts: [
-      { title: "Replace with a real post title", date: "2026.01.01", excerpt: "Replace with a short excerpt — workflow notes, project breakdowns, whatever you want the blog to cover." },
-      { title: "Replace with a real post title", date: "2025.12.01", excerpt: "Replace with a short excerpt — workflow notes, project breakdowns, whatever you want the blog to cover." },
-      { title: "Replace with a real post title", date: "2025.11.01", excerpt: "Replace with a short excerpt — workflow notes, project breakdowns, whatever you want the blog to cover." },
+      {
+        title: "Replace with a real post title", date: "2026.01.01",
+        excerpt: "Replace with a short excerpt — this is just a sample showing what a long post with inline images looks like.",
+        body: [
+          { type: "p", text: "Replace this with your real article. This sample post shows how the blog handles long-form content: multiple paragraphs, an inline image, and an optional caption. Write as much as you want — the content scrolls inside the window." },
+          { type: "p", text: "For example, this is a good place to walk through the process behind one of your projects: where the idea came from, what references you used, what decisions you made along the way, and what problems you had to solve. The more concrete and technical, the better it fits the tone of the rest of the site." },
+          { type: "img", src: "", caption: "Replace with a real image (e.g. a work-in-progress shot or a texture detail)." },
+          { type: "p", text: "After an image you can keep writing — comment on the render above, explain a design decision, or just continue the story. The format supports as many paragraphs and images as you need, in whatever order you want." },
+          { type: "p", text: "Wrap up with a short close: what you learned, what you'd do differently next time, or a link to see the full project." },
+        ],
+      },
+      {
+        title: "Replace with a real post title", date: "2025.12.01",
+        excerpt: "Replace with a short excerpt — workflow notes, project breakdowns, whatever you want the blog to cover.",
+        body: [
+          { type: "p", text: "Replace with the real content of this post." },
+        ],
+      },
+      {
+        title: "Replace with a real post title", date: "2025.11.01",
+        excerpt: "Replace with a short excerpt — workflow notes, project breakdowns, whatever you want the blog to cover.",
+        body: [
+          { type: "p", text: "Replace with the real content of this post." },
+        ],
+      },
     ],
   },
   bgGen: {

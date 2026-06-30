@@ -643,7 +643,7 @@ function PhotoViewer({ zIndex, onFocus, open, onClose }: { zIndex: number; onFoc
 
 interface FsFolder { name: string; type: "folder"; date?: string; children: FsEntry[]; }
 interface FsImage  { name: string; type: "image";  date?: string; src: string; }
-interface FsVideo  { name: string; type: "video";  date?: string; src?: string; }
+interface FsVideo  { name: string; type: "video";  date?: string; src?: string; youtubeId?: string; }
 interface FsTxt    { name: string; type: "txt";    date?: string; content: string; }
 type FsEntry = FsFolder | FsImage | FsVideo | FsTxt;
 
@@ -714,9 +714,17 @@ function VideoViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { 
   const { t } = useLang();
   return (
     <Win title={`${entry.name} ${t.fileViewer.videoSuffix}`} width={420} initX={560 + offsetIndex * 22} initY={70 + offsetIndex * 22} zIndex={zIndex} onFocus={onFocus} open onClose={onClose}
-      statusBar={`${entry.name} · MP4`}>
+      statusBar={entry.youtubeId ? `${entry.name} · YOUTUBE` : `${entry.name} · MP4`}>
       <div style={{ background: "#0a060f", minHeight: 260, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {entry.src ? (
+        {entry.youtubeId ? (
+          <iframe
+            src={`https://www.youtube-nocookie.com/embed/${entry.youtubeId}`}
+            title={entry.name}
+            style={{ width: "100%", aspectRatio: "16/9", border: "none", display: "block" }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        ) : entry.src ? (
           <video src={entry.src} controls style={{ width: "100%", maxHeight: 400, display: "block" }}/>
         ) : (
           <div style={{ textAlign: "center", padding: 40 }}>
@@ -1197,42 +1205,72 @@ function AboutWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
 function BlogWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
   const [openPost, setOpenPost] = useState<number | null>(null);
   const { t } = useLang();
+  const post = openPost !== null ? t.blog.posts[openPost] : null;
+  const url = post ? `http://asancho.dev/blog/post-${openPost! + 1}` : "http://asancho.dev/blog";
 
   return (
-    <Win title={t.blog.title} width={360} initX={140} initY={70} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
+    <Win title={t.blog.title} width={420} initX={140} initY={70} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
       statusBar={t.blog.statusBar}>
       {/* Browser toolbar */}
       <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 8px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
-        <CtrlBtn w={22} h={18}><ArrowLeft size={9} strokeWidth={2}/></CtrlBtn>
+        <CtrlBtn onClick={() => setOpenPost(null)} w={22} h={18}><ArrowLeft size={9} strokeWidth={2}/></CtrlBtn>
         <CtrlBtn w={22} h={18}><ArrowRight size={9} strokeWidth={2}/></CtrlBtn>
         <CtrlBtn w={22} h={18}><RotateCw size={9} strokeWidth={2}/></CtrlBtn>
         <div style={{ flex: 1, ...MONO, fontSize: 10, color: "var(--text-secondary)", background: "var(--bg-window)", border: "1px solid var(--border-color)", padding: "3px 7px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          http://asancho.dev/blog
+          {url}
         </div>
       </div>
 
       {/* Page content */}
-      <div style={{ padding: "14px 14px 16px", minHeight: 240, maxHeight: 380, overflowY: "auto" }}>
-        <div style={{ ...PX, fontSize: 11, color: "var(--text-primary)", marginBottom: 4 }}>{t.blog.heading}</div>
-        <div style={{ ...MONO, fontSize: 10, color: "var(--text-tertiary)", marginBottom: 18 }}>{t.blog.tagline}</div>
+      <div style={{ padding: "14px 14px 16px", minHeight: 240, maxHeight: 440, overflowY: "auto" }}>
+        {post ? (
+          <div>
+            <button onClick={() => setOpenPost(null)}
+              style={{ display: "block", marginBottom: 14, background: "transparent", border: "none", cursor: "pointer", ...MONO, fontSize: 11, color: "var(--text-secondary)", padding: 0 }}
+              onMouseEnter={e => { e.currentTarget.style.color = "var(--bg-active)"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = "var(--text-secondary)"; }}>
+              {t.blog.backToList}
+            </button>
+            <div style={{ ...PX, fontSize: 12, color: "var(--text-primary)", lineHeight: 1.5, marginBottom: 6 }}>{post.title}</div>
+            <div style={{ ...MONO, fontSize: 10, color: "var(--text-tertiary)", marginBottom: 18 }}>{post.date}</div>
+            {post.body.map((block, i) => block.type === "p" ? (
+              <p key={i} style={{ ...MONO, fontSize: 11, color: "var(--text-primary)", lineHeight: 1.8, marginBottom: 14 }}>
+                {block.text}
+              </p>
+            ) : (
+              <figure key={i} style={{ margin: "0 0 14px" }}>
+                {block.src ? (
+                  <img src={block.src} alt={block.caption ?? post.title} style={{ width: "100%", display: "block", border: "1px solid var(--border-color)" }}/>
+                ) : (
+                  <div style={{ width: "100%", height: 140, background: "#0a060f", border: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ ...PX, fontSize: 7, color: "rgba(255,255,255,0.25)" }}>{t.blog.noImage}</span>
+                  </div>
+                )}
+                {block.caption && (
+                  <figcaption style={{ ...MONO, fontSize: 10, color: "var(--text-tertiary)", marginTop: 5, fontStyle: "italic" }}>{block.caption}</figcaption>
+                )}
+              </figure>
+            ))}
+          </div>
+        ) : (
+          <>
+            <div style={{ ...PX, fontSize: 11, color: "var(--text-primary)", marginBottom: 4 }}>{t.blog.heading}</div>
+            <div style={{ ...MONO, fontSize: 10, color: "var(--text-tertiary)", marginBottom: 18 }}>{t.blog.tagline}</div>
 
-        {t.blog.posts.map((post, i) => {
-          const isOpen = openPost === i;
-          return (
-            <div key={i} style={{ borderTop: "1px solid var(--border-color)", padding: "12px 0", cursor: "pointer" }}
-              onClick={() => setOpenPost(isOpen ? null : i)}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-                <span style={{ ...PX, fontSize: 9, color: "var(--text-primary)" }}>{post.title}</span>
-                <span style={{ ...MONO, fontSize: 9, color: "var(--text-tertiary)", flexShrink: 0 }}>{post.date}</span>
-              </div>
-              {isOpen && (
-                <div style={{ ...MONO, fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.7, marginTop: 8 }}>
-                  {post.excerpt}
+            {t.blog.posts.map((p, i) => (
+              <div key={i} style={{ borderTop: "1px solid var(--border-color)", padding: "12px 0", cursor: "pointer" }}
+                onClick={() => setOpenPost(i)}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+                  <span style={{ ...PX, fontSize: 9, color: "var(--text-primary)" }}>{p.title}</span>
+                  <span style={{ ...MONO, fontSize: 9, color: "var(--text-tertiary)", flexShrink: 0 }}>{p.date}</span>
                 </div>
-              )}
-            </div>
-          );
-        })}
+                <div style={{ ...MONO, fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.7, marginTop: 8 }}>
+                  {p.excerpt}
+                </div>
+              </div>
+            ))}
+          </>
+        )}
       </div>
     </Win>
   );
