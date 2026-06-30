@@ -3,7 +3,7 @@ import {
   Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
   Folder, Music, Image, Info, Home, Monitor,
   Mail, Rss, SlidersHorizontal, User, ExternalLink, Paintbrush,
-  ArrowLeft, FileText, File,
+  ArrowLeft, FileText, File, Film,
 } from "lucide-react";
 import "../styles/themes.css";
 import { BUILTIN_TRACKS } from "./data/tracks";
@@ -506,9 +506,9 @@ function PhotoViewer({ zIndex, onFocus, open, onClose }: { zIndex: number; onFoc
 
 interface FsFolder { name: string; type: "folder"; date?: string; children: FsEntry[]; }
 interface FsImage  { name: string; type: "image";  date?: string; src: string; }
-interface FsPdf    { name: string; type: "pdf";    date?: string; src?: string; }
+interface FsVideo  { name: string; type: "video";  date?: string; src?: string; }
 interface FsTxt    { name: string; type: "txt";    date?: string; content: string; }
-type FsEntry = FsFolder | FsImage | FsPdf | FsTxt;
+type FsEntry = FsFolder | FsImage | FsVideo | FsTxt;
 
 // ── Project data (fill in real content here) ──────────────────────────────────
 
@@ -516,34 +516,34 @@ const PROJECTS: FsFolder = {
   name: "MY_PROJECTS", type: "folder",
   children: [
     {
-      name: "PROJECT_01",  type: "folder", date: "2024.03.01",
+      name: "PROJECT_01",  type: "folder", date: "2025.01.01",
       children: [
-        { name: "README.TXT",    type: "txt",   date: "2024.03.01", content: "// PROJECT_01 — SWORD SET\n\nDescription goes here.\nReplace with your project info.\n\nTools used: ...\nYear: 2024" },
-        { name: "OVERVIEW.PDF",  type: "pdf",   date: "2024.02.15" },
-        { name: "RENDER_01.JPG", type: "image", date: "2024.02.20", src: "/projects/PROJECT_01/sword1.jpg" },
-        { name: "RENDER_02.JPG", type: "image", date: "2024.02.21", src: "/projects/PROJECT_01/sword2.jpg" },
-        { name: "RENDER_03.JPG", type: "image", date: "2024.02.22", src: "/projects/PROJECT_01/sword3.jpg" },
+        { name: "README.TXT",    type: "txt",   date: "2025.01.01", content: "// PROJECT_01 — SWORD SET\n\nGame-ready asset, workflow from low to high\nand retopologized. Textures compressed and\noptimized for UE5.\n\nI didn't stick completely to the concept\nsince I wanted to approach a bit of realism\nmore than just stylized.\n\nOriginal concept art from Maeve.\n\nTOOLS: 3DS Max, Blender, ZBrush,\n       Substance Painter, Substance Designer,\n       Unreal Engine 5.7\nYEAR:  2025" },
+        { name: "OVERVIEW.MP4",  type: "video", date: "2025.01.02" },
+        { name: "RENDER_01.JPG", type: "image", date: "2025.01.03", src: "/projects/PROJECT_01/sword1.jpg" },
+        { name: "RENDER_02.JPG", type: "image", date: "2025.01.04", src: "/projects/PROJECT_01/sword2.jpg" },
+        { name: "RENDER_03.JPG", type: "image", date: "2025.01.05", src: "/projects/PROJECT_01/sword3.jpg" },
       ],
     },
     {
-      name: "PROJECT_02",  type: "folder", date: "2024.01.10",
+      name: "PROJECT_02",  type: "folder", date: "2025.02.01",
       children: [
-        { name: "README.TXT",    type: "txt",   date: "2024.01.10", content: "// PROJECT_02 — AXE SET\n\nDescription goes here.\nReplace with your project info.\n\nTools used: ...\nYear: 2024" },
-        { name: "OVERVIEW.PDF",  type: "pdf",   date: "2023.12.20" },
-        { name: "RENDER_01.JPG", type: "image", date: "2023.12.28", src: "/projects/PROJECT_02/axe1.webp" },
-        { name: "RENDER_02.JPG", type: "image", date: "2024.01.03", src: "/projects/PROJECT_02/axe2.webp" },
-        { name: "RENDER_03.JPG", type: "image", date: "2024.01.05", src: "/projects/PROJECT_02/axe3.webp" },
+        { name: "README.TXT",    type: "txt",   date: "2025.02.01", content: "// PROJECT_02 — AXE SET\n\nWith this work I focused on Darksiders-\nstyle stylized texturing and exaggerated\nforms to develop a game-ready asset for\nvideogames.\n\nThanks to Jakob Gavelli for the reference\nand to Visual Architects for the mentorship.\n\nTOOLS: 3DS Max, Blender, ZBrush,\n       Substance Painter, Substance Designer,\n       Unreal Engine 5.7\nYEAR:  2025" },
+        { name: "OVERVIEW.MP4",  type: "video", date: "2025.02.02" },
+        { name: "RENDER_01.JPG", type: "image", date: "2025.02.03", src: "/projects/PROJECT_02/axe1.webp" },
+        { name: "RENDER_02.JPG", type: "image", date: "2025.02.04", src: "/projects/PROJECT_02/axe2.webp" },
+        { name: "RENDER_03.JPG", type: "image", date: "2025.02.05", src: "/projects/PROJECT_02/axe3.webp" },
       ],
     },
     {
-      name: "PROJECT_03",  type: "folder", date: "2023.09.20",
+      name: "PROJECT_03",  type: "folder", date: "2026.01.01",
       children: [
-        { name: "README.TXT",    type: "txt",   date: "2023.09.20", content: "// PROJECT_03 — STREET ENVIRONMENT\n\nDescription goes here.\nReplace with your project info.\n\nTools used: ...\nYear: 2023" },
-        { name: "OVERVIEW.PDF",  type: "pdf",   date: "2023.09.05" },
-        { name: "RENDER_01.JPG", type: "image", date: "2023.09.10", src: "/projects/PROJECT_03/street1.webp" },
-        { name: "RENDER_02.JPG", type: "image", date: "2023.09.11", src: "/projects/PROJECT_03/street2.webp" },
-        { name: "RENDER_03.JPG", type: "image", date: "2023.09.12", src: "/projects/PROJECT_03/street3.webp" },
-        { name: "RENDER_04.JPG", type: "image", date: "2023.09.13", src: "/projects/PROJECT_03/street4.webp" },
+        { name: "README.TXT",    type: "txt",   date: "2026.01.01", content: "// PROJECT_03 — STREET ENVIRONMENT\n\nEnvironment inspired by Bloodborne's\naesthetic. I focused on developing pieces\nthat can be used as a kit.\n\nAll pieces and materials are made by\nmyself — only some kit-dressing pieces\n(decals, foliage) are from FAB's free\nlibraries.\n\nTOOLS: 3DS Max, Blender, ZBrush,\n       Substance Painter, Substance Designer,\n       Unreal Engine 5.7\nYEAR:  2026" },
+        { name: "OVERVIEW.MP4",  type: "video", date: "2026.01.02" },
+        { name: "RENDER_01.JPG", type: "image", date: "2026.01.03", src: "/projects/PROJECT_03/street1.webp" },
+        { name: "RENDER_02.JPG", type: "image", date: "2026.01.04", src: "/projects/PROJECT_03/street2.webp" },
+        { name: "RENDER_03.JPG", type: "image", date: "2026.01.05", src: "/projects/PROJECT_03/street3.webp" },
+        { name: "RENDER_04.JPG", type: "image", date: "2026.01.06", src: "/projects/PROJECT_03/street4.webp" },
       ],
     },
   ],
@@ -551,9 +551,11 @@ const PROJECTS: FsFolder = {
 
 // ── File viewers ──────────────────────────────────────────────────────────────
 
-function TxtViewerWin({ entry, onClose }: { entry: FsTxt; onClose: () => void }) {
+interface ViewerProps { zIndex: number; onFocus: () => void; onClose: () => void; offsetIndex?: number }
+
+function TxtViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { entry: FsTxt } & ViewerProps) {
   return (
-    <Win title={`${entry.name} — NOTEPAD`} width={280} initX={590} initY={120} zIndex={220} onFocus={() => {}} open onClose={onClose}
+    <Win title={`${entry.name} — NOTEPAD`} width={280} initX={590 + offsetIndex * 22} initY={120 + offsetIndex * 22} zIndex={zIndex} onFocus={onFocus} open onClose={onClose}
       statusBar={`${entry.name} · UTF-8`}>
       <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
         {["FILE", "EDIT"].map(m => (
@@ -567,45 +569,20 @@ function TxtViewerWin({ entry, onClose }: { entry: FsTxt; onClose: () => void })
   );
 }
 
-function PdfViewerWin({ entry, onClose }: { entry: FsPdf; onClose: () => void }) {
-  const [page, setPage] = useState(1);
-  const TOTAL = 3;
+function VideoViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { entry: FsVideo } & ViewerProps) {
   return (
-    <Win title={`${entry.name} — PDF VIEWER`} width={380} initX={570} initY={80} zIndex={220} onFocus={() => {}} open onClose={onClose}
-      statusBar={`PAGE ${page} / ${TOTAL} · ${entry.name}`}>
-      {/* Toolbar */}
-      <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 8px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
-        <CtrlBtn onClick={() => setPage(p => Math.max(1, p - 1))} w={22} h={18}><span style={{ ...PX, fontSize: 8 }}>◀</span></CtrlBtn>
-        <span style={{ ...PX, fontSize: 8, color: "var(--text-secondary)", flex: 1, textAlign: "center" }}>
-          {page} / {TOTAL}
-        </span>
-        <CtrlBtn onClick={() => setPage(p => Math.min(TOTAL, p + 1))} w={22} h={18}><span style={{ ...PX, fontSize: 8 }}>▶</span></CtrlBtn>
-        <div style={{ width: 1, height: 14, background: "var(--border-color)", margin: "0 4px" }}/>
-        <span style={{ ...PX, fontSize: 8, color: "var(--text-tertiary)" }}>100%</span>
-      </div>
-      {/* Page */}
-      <div style={{ padding: "10px 14px 14px", background: "var(--bg-panel)" }}>
+    <Win title={`${entry.name} — VIDEO PLAYER`} width={420} initX={560 + offsetIndex * 22} initY={70 + offsetIndex * 22} zIndex={zIndex} onFocus={onFocus} open onClose={onClose}
+      statusBar={`${entry.name} · MP4`}>
+      <div style={{ background: "#0a060f", minHeight: 260, display: "flex", alignItems: "center", justifyContent: "center" }}>
         {entry.src ? (
-          <iframe src={`${entry.src}#page=${page}`} style={{ width: "100%", height: 380, border: "none", display: "block" }} title={entry.name}/>
+          <video src={entry.src} controls style={{ width: "100%", maxHeight: 400, display: "block" }}/>
         ) : (
-          <div style={{ background: "#ffffff", padding: "20px 24px", boxShadow: "2px 2px 8px rgba(0,0,0,0.15)" }}>
-            {/* Header */}
-            <div style={{ height: 14, background: "#1a1a2e", width: "50%", marginBottom: 6 }}/>
-            <div style={{ height: 7, background: "#c0c0d0", width: "35%", marginBottom: 22 }}/>
-            {/* Body sections */}
-            {Array.from({ length: page === 1 ? 3 : page === 2 ? 4 : 2 }, (_, sec) => (
-              <div key={sec} style={{ marginBottom: 16 }}>
-                <div style={{ height: 7, background: "#888", width: "28%", marginBottom: 7 }}/>
-                {Array.from({ length: 3 + sec }, (_, j) => (
-                  <div key={j} style={{ height: 5, background: "#e0e0e0", width: j === 2 ? "65%" : "100%", marginBottom: 5 }}/>
-                ))}
-              </div>
-            ))}
-            {/* Footer */}
-            <div style={{ borderTop: "1px solid #d8d8d8", marginTop: 18, paddingTop: 10, display: "flex", justifyContent: "space-between" }}>
-              <div style={{ height: 4, background: "#c0c0c0", width: "22%" }}/>
-              <div style={{ height: 4, background: "#c0c0c0", width: "10%" }}/>
+          <div style={{ textAlign: "center", padding: 40 }}>
+            <div style={{ width: 56, height: 56, border: "1px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+              <Film size={24} strokeWidth={1} style={{ color: "rgba(255,255,255,0.25)" }}/>
             </div>
+            <div style={{ ...PX, fontSize: 7, color: "rgba(255,255,255,0.25)" }}>NO VIDEO SET</div>
+            <div style={{ ...MONO, fontSize: 10, color: "rgba(255,255,255,0.15)", marginTop: 6 }}>add src to PROJECTS data</div>
           </div>
         )}
       </div>
@@ -613,9 +590,9 @@ function PdfViewerWin({ entry, onClose }: { entry: FsPdf; onClose: () => void })
   );
 }
 
-function ImageViewerWin({ entry, onClose }: { entry: FsImage; onClose: () => void }) {
+function ImageViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { entry: FsImage } & ViewerProps) {
   return (
-    <Win title={`${entry.name} — IMAGE VIEWER`} width={400} initX={570} initY={90} zIndex={220} onFocus={() => {}} open onClose={onClose}
+    <Win title={`${entry.name} — IMAGE VIEWER`} width={400} initX={570 + offsetIndex * 22} initY={90 + offsetIndex * 22} zIndex={zIndex} onFocus={onFocus} open onClose={onClose}
       statusBar={`${entry.name} · JPG`}>
       <div style={{ background: "#0a060f", minHeight: 260, display: "flex", alignItems: "center", justifyContent: "center" }}>
         {entry.src ? (
@@ -636,10 +613,14 @@ function ImageViewerWin({ entry, onClose }: { entry: FsImage; onClose: () => voi
 
 // ── MyProjectsWin ─────────────────────────────────────────────────────────────
 
+interface OpenWin { id: string; entry: FsEntry; z: number }
+
 function MyProjectsWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
   const [path, setPath] = useState<string[]>([]);
-  const [openFile, setOpenFile] = useState<FsEntry | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
+  const [openWins, setOpenWins] = useState<OpenWin[]>([]);
+  const zCounter = useRef(300);
+  const stackCount = useRef(0);
 
   const currentFolder = path.reduce((node: FsFolder, seg) => {
     const child = node.children.find(c => c.name === seg);
@@ -647,16 +628,30 @@ function MyProjectsWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onF
   }, PROJECTS);
 
   const openEntry = (entry: FsEntry) => {
-    if (entry.type === "folder") { setPath(p => [...p, entry.name]); setSelected(null); setOpenFile(null); }
-    else setOpenFile(entry);
+    if (entry.type === "folder") { setPath(p => [...p, entry.name]); setSelected(null); return; }
+    const id = [...path, entry.name].join("/");
+    zCounter.current += 1;
+    const z = zCounter.current;
+    setOpenWins(prev => {
+      if (prev.some(w => w.id === id)) return prev.map(w => w.id === id ? { ...w, z } : w);
+      stackCount.current += 1;
+      return [...prev, { id, entry, z }];
+    });
   };
 
-  const goBack = () => { setPath(p => p.slice(0, -1)); setSelected(null); setOpenFile(null); };
+  const closeWin = (id: string) => setOpenWins(prev => prev.filter(w => w.id !== id));
+  const focusWin = (id: string) => {
+    zCounter.current += 1;
+    const z = zCounter.current;
+    setOpenWins(prev => prev.map(w => w.id === id ? { ...w, z } : w));
+  };
+
+  const goBack = () => { setPath(p => p.slice(0, -1)); setSelected(null); };
 
   const pathLabel = ["ROOT", ...path].join("  /  ");
 
   const typeIcon = (t: FsEntry["type"]) =>
-    t === "folder" ? Folder : t === "pdf" ? FileText : t === "image" ? Image : File;
+    t === "folder" ? Folder : t === "video" ? Film : t === "image" ? Image : File;
 
   return (
     <>
@@ -688,7 +683,7 @@ function MyProjectsWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onF
           ) : currentFolder.children.map((entry, i) => {
             const IconComp = typeIcon(entry.type);
             const isSel = selected === entry.name;
-            const isOpenFile = openFile?.name === entry.name;
+            const isOpenFile = entry.type !== "folder" && openWins.some(w => w.id === [...path, entry.name].join("/"));
             return (
               <div key={i}
                 style={{ display: "grid", gridTemplateColumns: "1fr 60px 90px", borderBottom: "1px solid rgba(0,0,0,0.06)", background: isOpenFile ? "var(--bg-active)" : isSel ? "var(--bg-hover)" : i % 2 === 0 ? "var(--bg-window)" : "var(--bg-panel)", cursor: "pointer", userSelect: "none" }}
@@ -722,9 +717,14 @@ function MyProjectsWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onF
         </div>
       </Win>
 
-      {openFile?.type === "txt"   && <TxtViewerWin   entry={openFile as FsTxt}   onClose={() => setOpenFile(null)}/>}
-      {openFile?.type === "pdf"   && <PdfViewerWin   entry={openFile as FsPdf}   onClose={() => setOpenFile(null)}/>}
-      {openFile?.type === "image" && <ImageViewerWin entry={openFile as FsImage} onClose={() => setOpenFile(null)}/>}
+      {openWins.map((w, i) => {
+        const off = i % 8;
+        const common = { key: w.id, zIndex: w.z, onFocus: () => focusWin(w.id), onClose: () => closeWin(w.id), offsetIndex: off };
+        if (w.entry.type === "txt")   return <TxtViewerWin   entry={w.entry as FsTxt}   {...common}/>;
+        if (w.entry.type === "video") return <VideoViewerWin entry={w.entry as FsVideo} {...common}/>;
+        if (w.entry.type === "image") return <ImageViewerWin entry={w.entry as FsImage} {...common}/>;
+        return null;
+      })}
     </>
   );
 }
@@ -732,26 +732,39 @@ function MyProjectsWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onF
 // ── Notes / Diary ─────────────────────────────────────────────────────────────
 
 const NOTE_LINES = [
-  { text: "// README.TXT — v2.1.0", type: "comment" },
+  { text: "// README.TXT — v1.0", type: "comment" },
   { text: "", type: "blank" },
-  { text: "> this is a quiet place.", type: "accent" },
+  { text: "> The limits of my", type: "accent" },
+  { text: "  language are the", type: "accent" },
+  { text: "  limits of my world.", type: "accent" },
+  { text: "          — Wittgenstein", type: "accent" },
   { text: "", type: "blank" },
-  { text: "  somewhere between analog", type: "body" },
-  { text: "  and digital. between the", type: "body" },
-  { text: "  memory and the moment", type: "body" },
-  { text: "  before it fades.", type: "body" },
+  { text: "  hi! welcome to my", type: "body" },
+  { text: "  webpage / portfolio /", type: "body" },
+  { text: "  digital portrait of", type: "body" },
+  { text: "  myself (?)", type: "body" },
   { text: "", type: "blank" },
-  { text: "  last online:  summer 2001", type: "body" },
-  { text: "  status:       [offline]", type: "body" },
-  { text: "  mood:         nostalgic", type: "body" },
-  { text: "  location:     bedroom, 2am", type: "body" },
+  { text: "  based near the", type: "body" },
+  { text: "  mountains of barcelona,", type: "body" },
+  { text: "  spain.", type: "body" },
+  { text: "", type: "blank" },
+  { text: "  3d artist & non-stop", type: "body" },
+  { text: "  brainy creative", type: "body" },
+  { text: "  designer — or whatever", type: "body" },
+  { text: "  etiquette fits someone", type: "body" },
+  { text: "  who never stops", type: "body" },
+  { text: "  thinking, learning,", type: "body" },
+  { text: "  creating.", type: "body" },
+  { text: "", type: "blank" },
+  { text: "// here you will find:", type: "comment" },
+  { text: "  - my portfolio", type: "body" },
   { text: "", type: "blank" },
   { text: "// end of file_", type: "comment" },
 ];
 
 function NotesWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
   return (
-    <Win title="README.TXT — NOTEPAD" width={212} initX={58} initY={148} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar="LN 15  COL 1 · UTF-8 · CRLF">
+    <Win title="README.TXT — NOTEPAD" width={212} initX={58} initY={148} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar="LN 28  COL 1 · UTF-8 · CRLF">
       <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
         {["FILE", "EDIT", "FORMAT", "VIEW"].map(m => (
           <button key={m} style={{ ...PX, fontSize: 8, padding: "3px 6px", background: "transparent", border: "none", cursor: "pointer", color: "var(--text-primary)", textTransform: "uppercase" }}
