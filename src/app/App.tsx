@@ -659,7 +659,7 @@ function getProjects(t: Strings): FsFolder {
         name: "PROJECT_01",  type: "folder", date: "2025.01.01",
         children: [
           { name: "README.TXT",    type: "txt",   date: "2025.01.01", content: t.projectContent.project01 },
-          { name: "OVERVIEW.MP4",  type: "video", date: "2025.01.02" },
+          { name: "OVERVIEW.MP4",  type: "video", date: "2025.01.02", src: "/projects/PROJECT_01/OVERVIEW.MP4" },
           { name: "RENDER_01.JPG", type: "image", date: "2025.01.03", src: "/projects/PROJECT_01/sword1.jpg" },
           { name: "RENDER_02.JPG", type: "image", date: "2025.01.04", src: "/projects/PROJECT_01/sword2.jpg" },
           { name: "RENDER_03.JPG", type: "image", date: "2025.01.05", src: "/projects/PROJECT_01/sword3.jpg" },
@@ -679,7 +679,7 @@ function getProjects(t: Strings): FsFolder {
         name: "PROJECT_03",  type: "folder", date: "2026.01.01",
         children: [
           { name: "README.TXT",    type: "txt",   date: "2026.01.01", content: t.projectContent.project03 },
-          { name: "OVERVIEW.MP4",  type: "video", date: "2026.01.02" },
+          { name: "OVERVIEW.MP4",  type: "video", date: "2026.01.02", src: "/projects/PROJECT_03/OVERVIEW.MP4" },
           { name: "RENDER_01.JPG", type: "image", date: "2026.01.03", src: "/projects/PROJECT_03/street1.webp" },
           { name: "RENDER_02.JPG", type: "image", date: "2026.01.04", src: "/projects/PROJECT_03/street2.webp" },
           { name: "RENDER_03.JPG", type: "image", date: "2026.01.05", src: "/projects/PROJECT_03/street3.webp" },
@@ -1166,10 +1166,10 @@ function AboutWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
   ];
   return (
     <Win title={t.about.title} width={260} initX={580} initY={80} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar={t.about.lastUpdated}>
-      {/* Avatar placeholder */}
+      {/* Avatar */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 12px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
-        <div style={{ width: 44, height: 44, background: "var(--bg-active)", border: "2px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <User size={22} strokeWidth={1.5} style={{ color: "var(--bg-window)" }} />
+        <div style={{ width: 44, height: 44, border: "2px solid var(--border-color)", flexShrink: 0, overflow: "hidden" }}>
+          <img src="/photos/002.png" alt="ASANCHO" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}/>
         </div>
         <div>
           <div style={{ ...PX, fontSize: 9, color: "var(--text-primary)", marginBottom: 3 }}>ASANCHO</div>
