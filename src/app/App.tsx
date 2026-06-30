@@ -1715,6 +1715,10 @@ export default function App() {
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>{m}</button>
               ))}
+              <button onClick={() => setShowFatalError(true)} title="Trigger the FATAL ERROR nag manually"
+                style={{ ...PX, fontSize: 8, textTransform: "uppercase", background: "transparent", border: "none", cursor: "pointer", color: "var(--color-error)", padding: "0 2px" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>DEBUG</button>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
