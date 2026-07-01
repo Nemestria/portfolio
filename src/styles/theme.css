@@ -1,5 +1,22 @@
 @custom-variant dark (&:is(.dark *));
 
+/* ── Embed mode (3d-gateway iframe, ?embed=1) ────────────────────────────────
+   The portfolio renders at 1280×800 then gets CSS-scaled down to fit inside
+   the monitor's screen plane (~0.85-0.95×). Bump the base font-size so body
+   copy and captions read comfortably at that reduced size. Only applies when
+   main.tsx detects ?embed=1 — genuine small-desktop windows are unaffected.
+   Inline-px font sizes in App.tsx are handled separately via the EMBED flag
+   there; this covers rem-based Tailwind utilities and input/textarea overrides. */
+html[data-embed="1"] {
+  --font-size: 15.5px; /* 14 → 15.5 ≈ +10.7%, restores readability after scale */
+}
+html[data-embed="1"] input[type="text"],
+html[data-embed="1"] input[type="email"],
+html[data-embed="1"] textarea {
+  font-size: 12px !important; /* GLOBAL_CSS locks these at 11px; override for embed */
+  line-height: 1.65 !important;
+}
+
 :root {
   --font-size: 14px;
   --background: #f7dede;

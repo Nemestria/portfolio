@@ -61,6 +61,15 @@ const GLOBAL_CSS = `
   ::-webkit-scrollbar-thumb { background: var(--text-secondary); border: 1px solid var(--border-color); }
 `;
 
+// ── Embed mode ────────────────────────────────────────────────────────────────
+// True when loaded as the 3d-gateway's iframe (?embed=1). main.tsx also sets
+// html[data-embed="1"] for CSS-handled overrides (--font-size, inputs).
+const EMBED = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("embed");
+// Body-copy baseline: bump 11→12.5 in embed mode so prose is legible after the
+// gateway's ~0.9× CSS scale. Retro UI chrome (7-8px PX labels) is intentionally
+// small and stays unchanged — it's decoration, not reading content.
+const BODY_FS = EMBED ? 12.5 : 11;
+
 // ── Fonts ─────────────────────────────────────────────────────────────────────
 
 const PX: React.CSSProperties = { fontFamily: "'Press Start 2P', monospace" };
@@ -704,7 +713,7 @@ function TxtViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { en
           <button key={m} style={{ ...PX, fontSize: 8, padding: "3px 7px", background: "transparent", border: "none", cursor: "pointer", color: "var(--text-primary)" }}>{m}</button>
         ))}
       </div>
-      <div style={{ padding: "10px 12px", minHeight: 120, whiteSpace: "pre-wrap", ...MONO, fontSize: 11, color: "var(--text-primary)", lineHeight: 1.85 }}>
+      <div style={{ padding: "10px 12px", minHeight: 120, whiteSpace: "pre-wrap", ...MONO, fontSize: BODY_FS, color: "var(--text-primary)", lineHeight: 1.85 }}>
         {entry.content}
       </div>
     </Win>
@@ -943,7 +952,7 @@ function NotesWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
       </div>
       <div style={{ padding: "8px 10px", minHeight: 168 }}>
         {t.notes.lines.map((line, i) => (
-          <div key={i} style={{ ...MONO, fontSize: 11, lineHeight: 1.8, color: line.type === "comment" ? "var(--text-tertiary)" : line.type === "accent" ? "var(--text-secondary)" : "var(--text-primary)", whiteSpace: "pre" }}>
+          <div key={i} style={{ ...MONO, fontSize: BODY_FS, lineHeight: 1.8, color: line.type === "comment" ? "var(--text-tertiary)" : line.type === "accent" ? "var(--text-secondary)" : "var(--text-primary)", whiteSpace: "pre" }}>
             {line.text || " "}
           </div>
         ))}
@@ -1180,7 +1189,7 @@ function AboutWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
 
       {/* Bio */}
       <div style={{ padding: "10px 12px", borderBottom: "1px solid var(--border-color)" }}>
-        <div style={{ ...MONO, fontSize: 11, color: "var(--text-primary)", lineHeight: 1.75 }}>
+        <div style={{ ...MONO, fontSize: BODY_FS, color: "var(--text-primary)", lineHeight: 1.75 }}>
           {t.about.bio}
         </div>
       </div>
@@ -1235,7 +1244,7 @@ function BlogWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: 
             <div style={{ ...PX, fontSize: 12, color: "var(--text-primary)", lineHeight: 1.5, marginBottom: 6 }}>{post.title}</div>
             <div style={{ ...MONO, fontSize: 10, color: "var(--text-tertiary)", marginBottom: 18 }}>{post.date}</div>
             {post.body.map((block, i) => block.type === "p" ? (
-              <p key={i} style={{ ...MONO, fontSize: 11, color: "var(--text-primary)", lineHeight: 1.8, marginBottom: 14 }}>
+              <p key={i} style={{ ...MONO, fontSize: BODY_FS, color: "var(--text-primary)", lineHeight: 1.8, marginBottom: 14 }}>
                 {block.text}
               </p>
             ) : (
