@@ -982,7 +982,7 @@ function MyProjectsWin({ zIndex, onFocus, open, onClose, getNextZ, autoNavigate 
 function NotesWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
   const { t } = useLang();
   return (
-    <Win title={t.notes.windowTitle} width={212} initX={58} initY={148} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar="LN 28  COL 1 · UTF-8 · CRLF" resizable>
+    <Win title={t.notes.windowTitle} width={268} initX={58} initY={148} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar="LN 28  COL 1 · UTF-8 · CRLF" resizable>
       <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
         {[t.fileViewer.fileMenu, t.fileViewer.editMenu, t.fileViewer.formatMenu, t.fileViewer.viewMenu].map(m => (
           <button key={m} style={{ ...PX, fontSize: 8, padding: "3px 6px", background: "transparent", border: "none", cursor: "pointer", color: "var(--text-primary)", textTransform: "uppercase" }}
@@ -992,7 +992,7 @@ function NotesWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
       </div>
       <div style={{ padding: "8px 10px", minHeight: 168 }}>
         {t.notes.lines.map((line, i) => (
-          <div key={i} style={{ ...MONO, fontSize: BODY_FS, lineHeight: 1.8, color: line.type === "comment" ? "var(--text-tertiary)" : line.type === "accent" ? "var(--text-secondary)" : "var(--text-primary)", whiteSpace: "pre" }}>
+          <div key={i} style={{ ...MONO, fontSize: BODY_FS, lineHeight: 1.8, color: line.type === "comment" ? "var(--text-tertiary)" : line.type === "accent" ? "var(--text-secondary)" : "var(--text-primary)", whiteSpace: "pre-wrap" }}>
             {line.text || " "}
           </div>
         ))}
