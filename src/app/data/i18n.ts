@@ -1,4 +1,4 @@
-export type Lang = "es" | "en";
+export type Lang = "es" | "en" | "ca";
 
 export interface NoteLine { text: string; type: "comment" | "blank" | "accent" | "body" }
 export type BlogBlock = { type: "p"; text: string } | { type: "img"; src: string; caption?: string };
@@ -432,4 +432,178 @@ const EN: Strings = {
   },
 };
 
-export const STRINGS: Record<Lang, Strings> = { es: ES, en: EN };
+const CA: Strings = {
+  splash: {
+    pickLanguage: "TRIA IDIOMA",
+    title: "ALEJANDRO SANCHO",
+    tagline: "PORTFOLI",
+    initializing: "INICIANT SISTEMA...",
+    systemReady: "▶  SISTEMA LLEST",
+    enterSound: "[ ACTIVAR SO + ENTRAR ]",
+    enterNoSound: "entrar sense so",
+    footer: "ARTISTA 3D · ENTORNS I PROPS · DISSENY GRÀFIC · DISSENY WEB",
+  },
+  systemBar: {
+    menuFile: "ARXIU", menuEdit: "EDITAR", menuView: "VEURE", menuSpecial: "ESPECIAL",
+    debug: "DEBUG", online: "EN LÍNIA",
+  },
+  dock: {
+    home: "INICI", contact: "CONTACTE", network: "XARXA", prefs: "AJUSTOS", system: "SISTEMA", about: "SOBRE MI",
+  },
+  desktop: {
+    label: "Escriptori",
+    myProjects: "ELS MEUS PROJECTES", music: "MÚSICA", photos: "FOTOS", about: "SOBRE MI", bgGen: "GEN. FONS", blog: "BLOG",
+  },
+  fatalError: {
+    title: "ERROR FATAL",
+    subtitle: "COMPORTAMENT INACCEPTABLE DETECTAT",
+    body: "Ei! Portes una bona estona voltant per aquí sense entrar als meus projectes. Això és inacceptable!",
+    cta: "→ ANAR ALS MEUS PROJECTES",
+  },
+  contact: {
+    title: "CONTACTE.EXE",
+    name: "El teu nom", namePlaceholder: "nom complet",
+    email: "El teu correu", emailPlaceholder: "tu@exemple.com",
+    message: "Missatge", messagePlaceholder: "escriu alguna cosa...",
+    send: "ENVIAR →", cancel: "CANCEL·LAR",
+  },
+  network: {
+    title: "XARXA.EXE — BUTLLETÍ",
+    subscribed: "SUBSCRIT ✓",
+    subscribedBody: "tindràs notícies meves amb el temps.",
+    intro: "Novetats sobre projectes nous, experiments i coses que trobo interessants. Sense spam. Poc freqüent.",
+    emailLabel: "Adreça de correu", emailPlaceholder: "tu@exemple.com",
+    subscribe: "SUBSCRIURE'S →",
+    footer: "integració del butlletí pendent",
+  },
+  prefs: {
+    title: "AJUSTOS.EXE", statusBar: "ELS CANVIS S'APLIQUEN A L'INSTANT",
+    displayMode: "Mode de Visualització", light: "CLAR", dark: "FOSC",
+    colorPalette: "Paleta de Colors", background: "Fons",
+    bgFlat: "PLA", bgGrid: "QUADRÍCULA", bgDots: "PUNTS", bgLines: "LÍNIES",
+    musicVolume: "Volum de Música", effectsVolume: "Volum d'Efectes", language: "Idioma",
+  },
+  sysInfo: {
+    title: "SYSTEM_INFO.EXE", statusBar: "SISTEMA OK · SENSE ERRORS",
+    techStack: "TECNOLOGIES", version: "portfolio v2.1.0",
+    lblFramework: "FRAMEWORK", lblBundler: "BUNDLER", lblStyling: "ESTILS", lblUi: "UI", lblAudio: "ÀUDIO",
+    lblFonts: "FONTS", lblPkgMgr: "GESTOR PKG", lblSource: "FONT",
+  },
+  about: {
+    title: "SOBRE_MI.EXE", lastUpdated: "ÚLTIMA ACTUALITZACIÓ · 2024",
+    role: "Artista d'Entorns", roleSub: "& Desenvolupador Creatiu",
+    bio: "Construint mons entre píxels i polígons. Artista d'entorns de dia, trasteador de webs retro de nit.",
+  },
+  blog: {
+    title: "BLOG.EXE — NAVEGADOR", heading: "EL BLOG", tagline: "notes sobre art 3d, disseny i procés", statusBar: "LLEST",
+    backToList: "← tornar al llistat", noImage: "SENSE IMATGE",
+    posts: [
+      {
+        title: "Com vaig construir aquest lloc (i per què sembla Windows 98)", date: "2026.06.30",
+        excerpt: "La idea, les referències i les decisions tècniques darrere d'aquest portfoli — per què un escriptori retro, per què React monolític, i per què no hi ha ni un sol arxiu d'àudio a tota la web.",
+        body: [
+          { type: "p", text: "Feia temps que li donava voltes a com volia presentar la meva feina, i els portfolis típics — graella d'imatges, scroll infinit, tipografia minimalista — no m'acabaven de representar. Volia alguna cosa amb personalitat, alguna cosa on es notés que darrere hi ha algú a qui li agraden els videojocs, els sistemes operatius antics i l'estètica de quan internet encara sonava a mòdem. D'aquí va sortir la idea: un escriptori Y2K funcional, amb finestres que s'arrosseguen, un dock, una barra de sistema i un easter egg d'error fatal si et quedes massa temps sense entrar als meus projectes." },
+          { type: "p", text: "A nivell tècnic va ser React + TypeScript amb Vite i Tailwind, però la decisió més estranya — i la que millor ha funcionat — va ser mantenir gairebé tot en un únic arxiu, App.tsx. En qualsevol projecte \"seriós\" això sona a mala pràctica, però aquí el lloc sencer és bàsicament un sol sistema interconnectat: un comptador de z-index compartit per totes les finestres, un sistema de paletes de color que s'aplica en calent sobre variables CSS, i un gestor d'arxius virtual per ELS MEUS PROJECTES. Separar-ho en quinze components hauria significat passar les mateixes props per tot arreu sense guanyar claredat real." },
+          { type: "img", src: "", caption: "Pendent — captura de l'escriptori amb alguna paleta de color aplicada." },
+          { type: "p", text: "Una altra decisió que m'agrada especialment: no hi ha ni un sol arxiu de so al projecte. Tots els clics, obertures i tancaments de finestra són beeps sintetitzats en temps real amb la Web Audio API. És una ximpleria tècnica, però encaixa perfectament amb l'estètica — aquells pitits quadrats de sistema operatiu dels 2000 no sonen a res que puguis gravar, cal generar-los." },
+          { type: "p", text: "El sistema de paletes també mereix menció: cinc paletes de color (Y2K, DUSK, FOREST, SUNSET, MONO), cada una amb la seva versió clara i fosca ajustada a mà, no invertida automàticament. Canviar de paleta o de mode aplica les variables CSS a l'instant sense recarregar res — tota la web reacciona en viu." },
+          { type: "p", text: "El que més m'ha costat fins ara no és codi, és contingut: escriure els meus propis textos, decidir com sonar en català sense semblar un fullet corporatiu, i triar quins projectes ensenyar primer. Aquesta part va molt més lenta que el codi, però és la que de veritat importa." },
+        ],
+      },
+      {
+        title: "Substitueix per un títol real", date: "2025.12.01",
+        excerpt: "Substitueix per un extracte breu — notes de procés, desglossament de projectes, el que vulguis que cobreixi el blog.",
+        body: [
+          { type: "p", text: "Substitueix pel contingut real d'aquesta entrada." },
+        ],
+      },
+      {
+        title: "Substitueix per un títol real", date: "2025.11.01",
+        excerpt: "Substitueix per un extracte breu — notes de procés, desglossament de projectes, el que vulguis que cobreixi el blog.",
+        body: [
+          { type: "p", text: "Substitueix pel contingut real d'aquesta entrada." },
+        ],
+      },
+    ],
+  },
+  bgGen: {
+    title: "BG_GENERATOR.EXE", livePreview: "PREVISUALITZACIÓ EN VIU", algorithm: "Algorisme",
+    genPlasma: "PLASMA", genMesh: "MALLA", genNoise: "SOROLL", genPoly: "POLY", genWaves: "ONES", genDots: "PUNTS",
+    seed: "LLAVOR", roll: "NOVA", applied: "✓ APLICAT", apply: "▶ APLICAR A L'ESCRIPTORI", clear: "TREURE FONS",
+    footer: "animat · vectorial · adaptat a la paleta",
+  },
+  music: {
+    title: "VISUALIZER.EXE", oscilloscope: "OSCIL·LOSCOPI", spectrum: "ESPECTRE", noTrack: "// CAP PISTA CARREGADA",
+    noSignal: "SENSE SENYAL · ARROSSEGA UN ÀUDIO O TRIA PISTA",
+    live: "▶ EN VIU", ready: "■ LLEST", idle: "○ INACTIU",
+    dropToLoad: "DEIXA ANAR PER CARREGAR ↓", dropFile: "ARROSSEGA UN ARXIU · CLIC PER EXPLORAR",
+  },
+  photo: {
+    lblFile: "ARXIU", lblDate: "DATA", lblDims: "DIMENSIONS", lblCamera: "CÀMERA",
+    prev: "◀ ANT", next: "SEG ▶", zoom: "ZOOM",
+  },
+  projects: {
+    windowTitle: "ELS MEUS PROJECTES — GESTOR D'ARXIUS",
+    nameCol: "NOM", typeCol: "TIPUS", dateCol: "DATA",
+    emptyFolder: "CARPETA BUIDA", itemsSuffix: "ELEMENTS", itemsWord: "elements", root: "ARREL",
+    hintBar: "CLIC SELECCIONAR  ·  DOBLE CLIC OBRIR",
+  },
+  fileViewer: {
+    notepadSuffix: "— BLOC DE NOTES", videoSuffix: "— REPRODUCTOR DE VÍDEO", imageSuffix: "— VISOR D'IMATGES",
+    fileMenu: "ARXIU", editMenu: "EDITAR", formatMenu: "FORMAT", viewMenu: "VEURE",
+    noVideo: "SENSE VÍDEO", noVideoHint: "afegeix el src a les dades de PROJECTS",
+    noImage: "SENSE IMATGE", noImageHint: "afegeix el src a les dades de PROJECTS",
+    zoom: "ZOOM",
+  },
+  notes: {
+    windowTitle: "README.TXT — BLOC DE NOTES",
+    lines: [
+      { text: "// README.TXT — v1.0", type: "comment" },
+      { text: "", type: "blank" },
+      { text: "> Els límits del meu", type: "accent" },
+      { text: "  llenguatge són els", type: "accent" },
+      { text: "  límits del meu món.", type: "accent" },
+      { text: "          — Wittgenstein", type: "accent" },
+      { text: "", type: "blank" },
+      { text: "  hola! benvingut a la", type: "body" },
+      { text: "  meva pàgina / portfoli /", type: "body" },
+      { text: "  retrat digital de mi", type: "body" },
+      { text: "  mateix (?)", type: "body" },
+      { text: "", type: "blank" },
+      { text: "  visc prop de les", type: "body" },
+      { text: "  muntanyes de barcelona,", type: "body" },
+      { text: "  espanya.", type: "body" },
+      { text: "", type: "blank" },
+      { text: "  artista 3d i dissenyador", type: "body" },
+      { text: "  creatiu que no para", type: "body" },
+      { text: "  de pensar — o com", type: "body" },
+      { text: "  vulguis anomenar algú", type: "body" },
+      { text: "  que mai deixa de", type: "body" },
+      { text: "  pensar, aprendre", type: "body" },
+      { text: "  i crear.", type: "body" },
+      { text: "", type: "blank" },
+      { text: "// aquí trobaràs:", type: "comment" },
+      { text: "  - el meu portfoli", type: "body" },
+      { text: "  - música que m'agrada", type: "body" },
+      { text: "    per concentrar-me", type: "body" },
+      { text: "  - dissenys, fotos, pòsters", type: "body" },
+      { text: "  - diari de dev de jocs", type: "body" },
+      { text: "  - on he treballat i", type: "body" },
+      { text: "    he estudiat", type: "body" },
+      { text: "  - posts, trucs i anàlisis", type: "body" },
+      { text: "    del que estudio i vaig", type: "body" },
+      { text: "    aprenent", type: "body" },
+      { text: "  - coses divertides, útils", type: "body" },
+      { text: "    i no tan útils.", type: "body" },
+      { text: "", type: "blank" },
+      { text: "// fi de l'arxiu_", type: "comment" },
+    ],
+  },
+  projectContent: {
+    project01: "// PROJECTE_01 — SET D'ESPASES\n\nAsset llest per a videojoc, flux de\ntreball de low a high poly i retopologitzat.\nTextures comprimides i optimitzades per UE5.\n\nNo em vaig cenyir del tot al concepte, ja\nque vaig voler apropar-me una mica més al\nrealisme en lloc de quedar-me només en\nl'estilitzat.\n\nArt conceptual original de Maeve.\n\nEINES: 3DS Max, Blender, ZBrush,\n       Substance Painter, Substance Designer,\n       Unreal Engine 5.7\nANY:   2025",
+    project02: "// PROJECTE_02 — SET DE DESTRALS\n\nAmb aquest treball em vaig centrar en el\ntexturitzat estilitzat a l'estil Darksiders\ni formes exagerades per desenvolupar un\nasset llest per a videojoc.\n\nGràcies a Jakob Gavelli per la referència\ni a Visual Architects per la mentoria.\n\nEINES: 3DS Max, Blender, ZBrush,\n       Substance Painter, Substance Designer,\n       Unreal Engine 5.7\nANY:   2025",
+    project03: "// PROJECTE_03 — ENTORN URBÀ\n\nEntorn inspirat en l'estètica de\nBloodborne. Em vaig centrar en desenvolupar\npeces que poguessin usar-se com a kit.\n\nTotes les peces i materials estan fetes\nper mi — només algunes peces d'ambientació\ndel kit (decals, vegetació) venen de les\nbiblioteques gratuïtes de FAB.\n\nEINES: 3DS Max, Blender, ZBrush,\n       Substance Painter, Substance Designer,\n       Unreal Engine 5.7\nANY:   2026",
+  },
+};
+
+export const STRINGS: Record<Lang, Strings> = { es: ES, en: EN, ca: CA };

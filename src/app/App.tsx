@@ -1655,7 +1655,7 @@ function SplashScreen({ onEnter, exiting }: { onEnter: (withSound: boolean) => v
         {phase === "language" ? (
           <div style={{ animation: "splash-fadein 0.3s ease" }}>
             <div style={{ ...MONO, fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 22, letterSpacing: 1 }}>
-              ELIGE IDIOMA / SELECT LANGUAGE
+              ELIGE IDIOMA / SELECT LANGUAGE / TRIA IDIOMA
             </div>
             <button
               onClick={() => pickLanguage("es")}
@@ -1672,7 +1672,7 @@ function SplashScreen({ onEnter, exiting }: { onEnter: (withSound: boolean) => v
             <button
               onClick={() => pickLanguage("en")}
               style={{
-                display: "block", width: "100%", cursor: "pointer",
+                display: "block", width: "100%", marginBottom: 12, cursor: "pointer",
                 ...PX, fontSize: 8, letterSpacing: 1,
                 background: "transparent", color: "rgba(255,255,255,0.7)",
                 border: "1px solid rgba(255,255,255,0.3)", padding: "14px 0",
@@ -1682,6 +1682,20 @@ function SplashScreen({ onEnter, exiting }: { onEnter: (withSound: boolean) => v
               onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
             >
               ENGLISH
+            </button>
+            <button
+              onClick={() => pickLanguage("ca")}
+              style={{
+                display: "block", width: "100%", cursor: "pointer",
+                ...PX, fontSize: 8, letterSpacing: 1,
+                background: "transparent", color: "rgba(255,255,255,0.7)",
+                border: "1px solid rgba(255,255,255,0.3)", padding: "14px 0",
+                transition: "color 0.15s, border-color 0.15s",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
+            >
+              CATALÀ
             </button>
           </div>
         ) : phase === "loading" ? (
@@ -1743,7 +1757,7 @@ export default function App() {
   const [layoutKey, setLayoutKey] = useState(0);
   const [z, setZ] = useState<Record<WinId, number>>(DEFAULT_Z);
 
-  // Language — defaults to Spanish (Alejandro is Spanish; English is the translation)
+  // Language — defaults to Spanish; Catalan and English are available
   const [lang, setLang] = useState<Lang>("es");
   const t = STRINGS[lang];
 
@@ -1843,7 +1857,7 @@ export default function App() {
     setLayoutKey(k => k + 1);
   };
 
-  const locale = lang === "es" ? "es-ES" : "en-US";
+  const locale = lang === "es" ? "es-ES" : lang === "ca" ? "ca-ES" : "en-US";
   const timeStr = clock.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", hour12: false });
   const dateStr = clock.toLocaleDateString(locale, { year: "numeric", month: "2-digit", day: "2-digit" });
 
@@ -1880,8 +1894,8 @@ export default function App() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{ display: "flex", gap: 2 }}>
-              {(["es", "en"] as Lang[]).map(l => (
-                <button key={l} onClick={() => { playClick(); setLang(l); }} title={l === "es" ? "Español" : "English"}
+              {(["es", "ca", "en"] as Lang[]).map(l => (
+                <button key={l} onClick={() => { playClick(); setLang(l); }} title={l === "es" ? "Español" : l === "ca" ? "Català" : "English"}
                   style={{ ...PX, fontSize: 8, textTransform: "uppercase", background: lang === l ? "var(--bg-active)" : "transparent", color: lang === l ? "var(--bg-window)" : "var(--text-secondary)", border: "1px solid var(--border-color)", cursor: "pointer", padding: "1px 5px" }}>
                   {l}
                 </button>
