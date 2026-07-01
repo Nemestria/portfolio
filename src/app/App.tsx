@@ -229,6 +229,30 @@ type BgPattern = "flat" | "grid" | "dots" | "scanlines";
 
 // ── Hooks ─────────────────────────────────────────────────────────────────────
 
+function useResizable(initW: number, minW = 160) {
+  const [w, setW] = useState(initW);
+  const drag = useRef({ on: false, startX: 0, startW: 0 });
+
+  const onResizeDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    drag.current = { on: true, startX: e.clientX, startW: w };
+  }, [w]);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!drag.current.on) return;
+      setW(Math.max(minW, drag.current.startW + e.clientX - drag.current.startX));
+    };
+    const onUp = () => { drag.current.on = false; };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
+  }, [minW]);
+
+  return { w, onResizeDown };
+}
+
 function useDraggable(init: { x: number; y: number }) {
   const [pos, setPos] = useState(init);
   const drag = useRef({ on: false, ox: 0, oy: 0, sx: 0, sy: 0 });
@@ -299,10 +323,12 @@ interface WinProps {
   title: string; width: number; initX: number; initY: number;
   zIndex: number; onFocus: () => void; children: React.ReactNode;
   statusBar?: React.ReactNode; open?: boolean; onClose?: () => void;
+  resizable?: boolean;
 }
 
-function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar, open, onClose }: WinProps) {
+function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar, open, onClose, resizable }: WinProps) {
   const { pos, onMouseDown } = useDraggable({ x: initX, y: initY });
+  const { w, onResizeDown } = useResizable(width, 180);
   const [minimized, setMinimized] = useState(false);
   const [internalClosed, setInternalClosed] = useState(false);
 
@@ -311,10 +337,11 @@ function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar,
   const closed = onClose !== undefined ? !open : internalClosed;
   if (closed) return null;
   const handleClose = () => { playClose(); if (onClose) onClose(); else setInternalClosed(true); };
+  const currentWidth = resizable ? w : width;
 
   return (
-    <div className="absolute" style={{ left: pos.x, top: pos.y, width, zIndex, userSelect: "none", transition: "width 0.15s" }} onMouseDown={onFocus}>
-      <div style={{ border: "1px solid var(--border-color)", background: "var(--bg-window)" }}>
+    <div className="absolute" style={{ left: pos.x, top: pos.y, width: currentWidth, zIndex, userSelect: "none" }} onMouseDown={onFocus}>
+      <div style={{ border: "1px solid var(--border-color)", background: "var(--bg-window)", position: "relative" }}>
         <div onMouseDown={onMouseDown} style={{ ...TITLEBAR, height: 22, borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 6px", cursor: "move" }}>
           <span style={{ ...PX, fontSize: 9, color: "var(--titlebar-text)", textTransform: "uppercase", letterSpacing: "0.04em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "calc(100% - 36px)" }}>
             {title}
@@ -334,6 +361,19 @@ function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar,
               <div style={{ borderTop: "1px solid var(--border-color)", background: "var(--bg-window)", padding: "2px 8px", ...PX, fontSize: 8, color: "var(--text-secondary)", textTransform: "uppercase", whiteSpace: "nowrap", overflow: "hidden" }}>
                 {statusBar}
               </div>
+            )}
+            {resizable && (
+              <div
+                onMouseDown={onResizeDown}
+                title="Resize"
+                style={{
+                  position: "absolute", bottom: 0, right: 0,
+                  width: 14, height: 14, cursor: "nwse-resize",
+                  backgroundImage: "radial-gradient(circle, var(--text-tertiary) 1px, transparent 1px)",
+                  backgroundSize: "4px 4px", backgroundPosition: "1px 1px",
+                  opacity: 0.55,
+                }}
+              />
             )}
           </>
         )}
@@ -707,7 +747,7 @@ function TxtViewerWin({ entry, zIndex, onFocus, onClose, offsetIndex = 0 }: { en
   const { t } = useLang();
   return (
     <Win title={`${entry.name} ${t.fileViewer.notepadSuffix}`} width={280} initX={590 + offsetIndex * 22} initY={120 + offsetIndex * 22} zIndex={zIndex} onFocus={onFocus} open onClose={onClose}
-      statusBar={`${entry.name} · UTF-8`}>
+      statusBar={`${entry.name} · UTF-8`} resizable>
       <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
         {[t.fileViewer.fileMenu, t.fileViewer.editMenu].map(m => (
           <button key={m} style={{ ...PX, fontSize: 8, padding: "3px 7px", background: "transparent", border: "none", cursor: "pointer", color: "var(--text-primary)" }}>{m}</button>
@@ -942,7 +982,7 @@ function MyProjectsWin({ zIndex, onFocus, open, onClose, getNextZ, autoNavigate 
 function NotesWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
   const { t } = useLang();
   return (
-    <Win title={t.notes.windowTitle} width={212} initX={58} initY={148} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar="LN 28  COL 1 · UTF-8 · CRLF">
+    <Win title={t.notes.windowTitle} width={212} initX={58} initY={148} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar="LN 28  COL 1 · UTF-8 · CRLF" resizable>
       <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
         {[t.fileViewer.fileMenu, t.fileViewer.editMenu, t.fileViewer.formatMenu, t.fileViewer.viewMenu].map(m => (
           <button key={m} style={{ ...PX, fontSize: 8, padding: "3px 6px", background: "transparent", border: "none", cursor: "pointer", color: "var(--text-primary)", textTransform: "uppercase" }}
@@ -1174,7 +1214,7 @@ function AboutWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
     { label: "EMAIL", url: "mailto:asanchomarmol@gmail.com", icon: Mail },
   ];
   return (
-    <Win title={t.about.title} width={260} initX={580} initY={80} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar={t.about.lastUpdated}>
+    <Win title={t.about.title} width={260} initX={580} initY={80} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar={t.about.lastUpdated} resizable>
       {/* Avatar */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 12px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
         <div style={{ width: 44, height: 44, border: "2px solid var(--border-color)", flexShrink: 0, overflow: "hidden" }}>
@@ -1220,7 +1260,7 @@ function BlogWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: 
 
   return (
     <Win title={t.blog.title} width={420} initX={140} initY={70} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
-      statusBar={t.blog.statusBar}>
+      statusBar={t.blog.statusBar} resizable>
       {/* Browser toolbar */}
       <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 8px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
         <CtrlBtn onClick={() => setOpenPost(null)} w={22} h={18}><ArrowLeft size={9} strokeWidth={2}/></CtrlBtn>
