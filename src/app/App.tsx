@@ -1880,6 +1880,7 @@ function PetChatWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
   const [input, setInput] = useState("");
   const [anim, setAnim] = useState<PetAnimState>({ msgIdx: 0, phase: "thinking", chars: 0 });
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Reset on language change, re-animate greeting
   useEffect(() => {
@@ -1905,7 +1906,7 @@ function PetChatWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
     return () => clearTimeout(tid);
   }, [anim.phase, anim.chars, anim.msgIdx, msgs]);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, anim.chars]);
+  useEffect(() => { const el = scrollRef.current; if (el) el.scrollTop = el.scrollHeight; }, [msgs, anim.chars]);
 
   const sendText = (q: string) => {
     if (!q.trim()) return;
@@ -1923,7 +1924,7 @@ function PetChatWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
 
   return (
     <Win title={t.pet.chatTitle} width={260} initX={720} initY={260} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}>
-      <div style={{ height: 240, overflowY: "auto", padding: "6px 8px", display: "flex", flexDirection: "column", gap: 6 }}>
+      <div ref={scrollRef} style={{ height: 240, overflowY: "auto", padding: "6px 8px", display: "flex", flexDirection: "column", gap: 6 }}>
         {msgs.map((m, i) => (
           <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: m.from === "pet" ? "flex-start" : "flex-end" }}>
             <div style={{
