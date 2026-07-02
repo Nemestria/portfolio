@@ -2242,9 +2242,6 @@ export default function App() {
   };
 
   // Global preferences
-  // Page zoom — scroll wheel on desktop adjusts readability scale
-  const [zoom, setZoom] = useState(1.0);
-
   const [palette,    setPalette]    = useState("MONO");
   const [bgPattern,  setBgPattern]  = useState<BgPattern>("dots");
   const [volume,     setVolume]     = useState(0.8);
@@ -2261,8 +2258,6 @@ export default function App() {
 
   useEffect(() => { setSfxVolumeGain(sfxVolume); }, [sfxVolume]);
   useEffect(() => { localStorage.setItem("vertigo-lang", lang); }, [lang]);
-  useEffect(() => { document.documentElement.style.zoom = String(zoom); return () => { document.documentElement.style.zoom = ""; }; }, [zoom]);
-
   // Single monotonic z-counter shared by every window in the app, including
   // file-viewer popups spawned inside MyProjectsWin — guarantees whatever was
   // clicked last is always strictly on top, regardless of window type.
@@ -2367,19 +2362,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Desktop — wheel on background zooms page for readability */}
-        <div
-          style={{ position: "absolute", top: 20, bottom: 58, left: 0, right: 0 }}
-          onWheel={e => {
-            // Don't zoom when scrolling inside a window's scrollable content
-            let el = e.target as HTMLElement;
-            while (el && el !== e.currentTarget) {
-              if (el.scrollHeight > el.clientHeight + 2) return;
-              el = el.parentElement as HTMLElement;
-            }
-            setZoom(z => Math.min(1.5, Math.max(0.7, +(z + (e.deltaY < 0 ? 0.05 : -0.05)).toFixed(2))));
-          }}
-        >
+        <div style={{ position: "absolute", top: 20, bottom: 58, left: 0, right: 0 }}>
           <div style={{ position: "absolute", top: 22, left: 20, ...SERIF, fontSize: 11, color: "var(--text-tertiary)", letterSpacing: "0.2em", textTransform: "uppercase", userSelect: "none", pointerEvents: "none" }}>
             {t.desktop.label}
           </div>
