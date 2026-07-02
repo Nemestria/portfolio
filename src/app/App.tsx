@@ -1962,7 +1962,7 @@ function PetChatWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
         <input
           type="text" value={input} placeholder={t.pet.inputPlaceholder}
           onChange={e => setInput(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter") send(); }}
+          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); send(); } }}
           style={{ flex: 1, border: "none", borderRight: "1px solid var(--border-color)", padding: "5px 7px", ...MONO, fontSize: 10, background: "var(--bg-panel)", color: "var(--text-primary)", outline: "none" }}
         />
         <button onClick={send} style={{ padding: "5px 10px", background: "var(--bg-active)", color: "var(--bg-window)", border: "none", cursor: "pointer", ...PX, fontSize: 7 }}>▶</button>
