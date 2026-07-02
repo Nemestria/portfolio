@@ -682,9 +682,9 @@ function PhotoViewer({ zIndex, onFocus, open, onClose }: { zIndex: number; onFoc
         ))}
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 8px" }}>
-        <CtrlBtn onClick={() => { setIdx(i => (i - 1 + PHOTOS.length) % PHOTOS.length); setZoom(1); }} w={56} h={18}><span style={{ ...PX, fontSize: 8 }}>{t.photo.prev}</span></CtrlBtn>
+        <CtrlBtn onClick={() => setIdx(i => (i - 1 + PHOTOS.length) % PHOTOS.length)} w={56} h={18}><span style={{ ...PX, fontSize: 8 }}>{t.photo.prev}</span></CtrlBtn>
         <span style={{ ...PX, fontSize: 8, color: "var(--text-secondary)" }}>{idx + 1} / {PHOTOS.length}</span>
-        <CtrlBtn onClick={() => { setIdx(i => (i + 1) % PHOTOS.length); setZoom(1); }} w={56} h={18}><span style={{ ...PX, fontSize: 8 }}>{t.photo.next}</span></CtrlBtn>
+        <CtrlBtn onClick={() => setIdx(i => (i + 1) % PHOTOS.length)} w={56} h={18}><span style={{ ...PX, fontSize: 8 }}>{t.photo.next}</span></CtrlBtn>
       </div>
     </Win>
   );
