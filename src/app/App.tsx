@@ -3,11 +3,11 @@ import {
   Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
   Folder, Music, Image, Info, Home, Monitor,
   Mail, Rss, SlidersHorizontal, User, ExternalLink, Paintbrush,
-  ArrowLeft, ArrowRight, RotateCw, File, Film, Globe, Sun, Moon, AlertTriangle,
+  ArrowLeft, ArrowRight, RotateCw, File, Film, Globe, Sun, Moon, AlertTriangle, ListChecks,
 } from "lucide-react";
 import "../styles/themes.css";
 import { BUILTIN_TRACKS } from "./data/tracks";
-import { STRINGS, type Lang, type Strings } from "./data/i18n";
+import { STRINGS, type Lang, type Strings, type TrackerItem } from "./data/i18n";
 
 // ── Language Context ─────────────────────────────────────────────────────────
 
@@ -24,6 +24,7 @@ const GLOBAL_CSS = `
   @keyframes led-blink { 0%,100% { opacity: 1 } 50% { opacity: 0.2 } }
   @keyframes splash-fadein { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: translateY(0) } }
   @keyframes splash-exit { from { opacity: 1 } to { opacity: 0 } }
+  @keyframes pet-bob { 0%,100% { transform: translateY(0px) } 50% { transform: translateY(-5px) } }
 
   button { color: var(--text-primary); font-family: inherit; }
 
@@ -1594,6 +1595,139 @@ function BgGenWin({ zIndex, onFocus, open, onClose, onApplyBg, bgSvg }: {
   );
 }
 
+// ── TrackerWin ────────────────────────────────────────────────────────────────
+
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  wip:  { bg: "var(--bg-active)",  text: "var(--bg-window)" },
+  next: { bg: "var(--bg-panel)",   text: "var(--text-secondary)" },
+  done: { bg: "#1a3a1a",           text: "#4dffaa" },
+  hold: { bg: "var(--bg-panel)",   text: "var(--text-tertiary)" },
+};
+
+function TrackerWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
+  const { t } = useLang();
+  const labels: Record<string, string> = {
+    wip: t.tracker.wipLabel, next: t.tracker.nextLabel,
+    done: t.tracker.doneLabel, hold: t.tracker.holdLabel,
+  };
+  return (
+    <Win title={t.tracker.title} width={268} initX={280} initY={150} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
+      statusBar={t.tracker.statusBar}>
+      <div style={{ maxHeight: 320, overflowY: "auto" }}>
+        {(t.tracker.items as TrackerItem[]).map((item, i) => {
+          const col = STATUS_COLORS[item.status] ?? STATUS_COLORS.hold;
+          return (
+            <div key={i} style={{ padding: "6px 8px", borderBottom: "1px solid var(--border-color)", display: "flex", gap: 8, alignItems: "flex-start" }}>
+              <span style={{ ...PX, fontSize: 7, padding: "2px 5px", background: col.bg, color: col.text, border: "1px solid var(--border-color)", whiteSpace: "nowrap", flexShrink: 0 }}>
+                {labels[item.status] ?? item.status}
+              </span>
+              <div>
+                <div style={{ ...MONO, fontSize: BODY_FS - 1, color: "var(--text-primary)" }}>{item.label}</div>
+                {item.note && <div style={{ ...MONO, fontSize: 9, color: "var(--text-tertiary)", marginTop: 1 }}>{item.note}</div>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Win>
+  );
+}
+
+// ── Pet ───────────────────────────────────────────────────────────────────────
+
+type PetMsg = { from: "pet" | "user"; text: string };
+
+function matchPetResponse(input: string, responses: Strings["pet"]["responses"]): string {
+  const q = input.toLowerCase().trim();
+  if (/^(hi|hello|hey|hola|ey|bon|buenas|salut|que pasa|que tal|com va)/.test(q)) return responses.hello;
+  if (/navigate|navegar|use|usar|how|cómo|what do|que faig|qué hago|explore|funciona/.test(q)) return responses.navigate;
+  if (/password|contrasenya|contraseña|pista|clue|hint|code|codi|clau|clave/.test(q)) return responses.password;
+  if (/project|proyect|work|treballs|treball|obra|portfolio|portafolio|portfoli|sword|axe|espada|destral/.test(q)) return responses.projects;
+  if (/who|quien|qui |alejandro|about|sobre|acerca/.test(q)) return responses.about;
+  if (/contact|contacto|contacte|hire|contratar|email|mail|newsletter|network/.test(q)) return responses.contact;
+  if (/music|musica|música|sound|audio|play|visua/.test(q)) return responses.music;
+  if (/stack|tech|react|tools|code|código|codi|tecnolog|built|construi/.test(q)) return responses.stack;
+  if (/tracker|todo|goal|objectiu|objetivo|working|trabajando|treballant|next|siguiente/.test(q)) return responses.tracker;
+  return responses.unknown;
+}
+
+function PetChatWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
+  const { t } = useLang();
+  const [msgs, setMsgs] = useState<PetMsg[]>(() => [{ from: "pet", text: t.pet.greeting }]);
+  const [input, setInput] = useState("");
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMsgs([{ from: "pet", text: t.pet.greeting }]);
+  }, [t.pet.greeting]);
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs]);
+
+  const send = () => {
+    const q = input.trim();
+    if (!q) return;
+    playClick();
+    setMsgs(prev => [...prev, { from: "user", text: q }, { from: "pet", text: matchPetResponse(q, t.pet.responses) }]);
+    setInput("");
+  };
+
+  return (
+    <Win title={t.pet.chatTitle} width={240} initX={720} initY={260} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}>
+      <div style={{ height: 220, overflowY: "auto", padding: "6px 8px", display: "flex", flexDirection: "column", gap: 6 }}>
+        {msgs.map((m, i) => (
+          <div key={i} style={{ display: "flex", justifyContent: m.from === "pet" ? "flex-start" : "flex-end" }}>
+            <div style={{
+              maxWidth: "82%", padding: "4px 7px",
+              background: m.from === "pet" ? "var(--bg-panel)" : "var(--bg-active)",
+              color: m.from === "pet" ? "var(--text-primary)" : "var(--bg-window)",
+              border: "1px solid var(--border-color)",
+              ...MONO, fontSize: 10, lineHeight: 1.55,
+            }}>
+              {m.from === "pet" && <span style={{ ...PX, fontSize: 6, color: "var(--text-secondary)", display: "block", marginBottom: 2 }}>{t.pet.name}</span>}
+              {m.text}
+            </div>
+          </div>
+        ))}
+        <div ref={bottomRef} />
+      </div>
+      <div style={{ borderTop: "1px solid var(--border-color)", display: "flex" }}>
+        <input
+          type="text" value={input} placeholder={t.pet.inputPlaceholder}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter") send(); }}
+          style={{ flex: 1, border: "none", borderRight: "1px solid var(--border-color)", padding: "5px 7px", ...MONO, fontSize: 10, background: "var(--bg-panel)", color: "var(--text-primary)", outline: "none" }}
+        />
+        <button onClick={send} style={{ padding: "5px 10px", background: "var(--bg-active)", color: "var(--bg-window)", border: "none", cursor: "pointer", ...PX, fontSize: 7 }}>▶</button>
+      </div>
+    </Win>
+  );
+}
+
+function PetWidget({ onOpen }: { onOpen: () => void }) {
+  const { t } = useLang();
+  const [hov, setHov] = useState(false);
+  return (
+    <div
+      onClick={() => { playOpen(); onOpen(); }}
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      title={`Chat with ${t.pet.name}`}
+      style={{ position: "fixed", bottom: 68, right: 16, cursor: "pointer", userSelect: "none", zIndex: 99, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}
+    >
+      <pre style={{
+        ...MONO, fontSize: 11, lineHeight: 1.3, margin: 0, padding: "4px 6px",
+        background: hov ? "var(--bg-hover)" : "var(--bg-window)",
+        border: "1px solid var(--border-color)",
+        color: "var(--text-primary)",
+        animation: "pet-bob 2.4s ease-in-out infinite",
+        transition: "background 0.1s",
+      }}>
+        {"/\\_/\\\n( •ω•)\n > ♥ <"}
+      </pre>
+      <span style={{ ...PX, fontSize: 6, color: "var(--text-secondary)" }}>{t.pet.name}</span>
+    </div>
+  );
+}
+
 // ── Dock Icon ─────────────────────────────────────────────────────────────────
 
 function DockIcon({ icon: Icon, label, onClick, active = false }: { icon: React.ElementType; label: string; onClick?: () => void; active?: boolean }) {
@@ -1634,9 +1768,9 @@ function DesktopIcon({ icon: Icon, label, x, y, onOpen }: { icon: React.ElementT
 
 // ── App ───────────────────────────────────────────────────────────────────────
 
-type WinId = "visualizer" | "photo" | "notes" | "sysinfo" | "prefs" | "about" | "bggen" | "projects" | "blog";
+type WinId = "visualizer" | "photo" | "notes" | "sysinfo" | "prefs" | "about" | "bggen" | "projects" | "blog" | "tracker" | "chat";
 
-const DEFAULT_Z: Record<WinId, number> = { visualizer: 12, photo: 13, notes: 14, sysinfo: 10, prefs: 9, about: 8, bggen: 7, projects: 15, blog: 11 };
+const DEFAULT_Z: Record<WinId, number> = { visualizer: 12, photo: 13, notes: 14, sysinfo: 10, prefs: 9, about: 8, bggen: 7, projects: 15, blog: 11, tracker: 16, chat: 17 };
 
 function bgStyle(pattern: BgPattern): React.CSSProperties {
   if (pattern === "grid") return { backgroundImage: "repeating-linear-gradient(0deg,rgba(0,0,0,0.04) 0,rgba(0,0,0,0.04) 1px,transparent 1px,transparent 32px),repeating-linear-gradient(90deg,rgba(0,0,0,0.04) 0,rgba(0,0,0,0.04) 1px,transparent 1px,transparent 32px)" };
@@ -1811,6 +1945,8 @@ export default function App() {
   const [aboutOpen,   setAboutOpen]   = useState(false);
   const [bggenOpen,   setBggenOpen]   = useState(false);
   const [blogOpen,    setBlogOpen]    = useState(false);
+  const [trackerOpen, setTrackerOpen] = useState(false);
+  const [chatOpen,    setChatOpen]    = useState(false);
 
   // SVG background from generator
   const [bgSvg, setBgSvg] = useState<BgSvgCfg | null>(null);
@@ -1891,6 +2027,7 @@ export default function App() {
     setVizOpen(true); setPhotoOpen(true); setNotesOpen(true);
     setSysinfoOpen(false); setPrefsOpen(false); setAboutOpen(false);
     setProjOpen(false); setBggenOpen(false); setContactOpen(false); setNetworkOpen(false); setBlogOpen(false);
+    setTrackerOpen(false); setChatOpen(false);
     setBgSvg(null);
     setZ(DEFAULT_Z);
     zCounterRef.current = Math.max(...Object.values(DEFAULT_Z));
@@ -1962,6 +2099,7 @@ export default function App() {
           <DesktopIcon icon={Info}       label={t.desktop.about}      x={18} y={282} onOpen={() => toggle("notes",      notesOpen, setNotesOpen)} />
           <DesktopIcon icon={Paintbrush} label={t.desktop.bgGen}      x={18} y={358} onOpen={() => toggle("bggen",     bggenOpen, setBggenOpen)} />
           <DesktopIcon icon={Globe}      label={t.desktop.blog}       x={18} y={434} onOpen={() => toggle("blog",      blogOpen,  setBlogOpen)} />
+          <DesktopIcon icon={ListChecks} label={t.desktop.tracker}   x={18} y={510} onOpen={() => toggle("tracker", trackerOpen, setTrackerOpen)} />
 
           <React.Fragment key={layoutKey}>
             <MyProjectsWin   zIndex={z.projects}   onFocus={() => focus("projects")}   open={projOpen}    onClose={() => setProjOpen(false)} getNextZ={nextZ} autoNavigate={autoNavSignal} />
@@ -1973,6 +2111,8 @@ export default function App() {
             <AboutWin        zIndex={z.about}       onFocus={() => focus("about")}      open={aboutOpen}   onClose={() => setAboutOpen(false)} />
             <BgGenWin        zIndex={z.bggen}       onFocus={() => focus("bggen")}      open={bggenOpen}   onClose={() => setBggenOpen(false)} bgSvg={bgSvg} onApplyBg={cfg => { setBgSvg(cfg); if (cfg) setBgPattern("flat"); }} />
             <BlogWin         zIndex={z.blog}        onFocus={() => focus("blog")}       open={blogOpen}    onClose={() => setBlogOpen(false)} />
+            <TrackerWin      zIndex={z.tracker}     onFocus={() => focus("tracker")}    open={trackerOpen} onClose={() => setTrackerOpen(false)} />
+            <PetChatWin      zIndex={z.chat}        onFocus={() => focus("chat")}       open={chatOpen}    onClose={() => setChatOpen(false)} />
           </React.Fragment>
         </div>
 
@@ -1985,6 +2125,9 @@ export default function App() {
 
         {/* Splash */}
         {splashVisible && <SplashScreen onEnter={handleEnter} exiting={splashExiting} />}
+
+        {/* Pet — always visible after splash */}
+        {!splashVisible && <PetWidget onOpen={() => { if (!chatOpen) { playOpen(); setChatOpen(true); focus("chat"); } else focus("chat"); }} />}
 
         {/* Dock */}
         <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 58, background: "var(--bg-panel)", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", gap: 18, zIndex: 100 }}>

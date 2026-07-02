@@ -3,6 +3,8 @@ export type Lang = "es" | "en" | "ca";
 export interface NoteLine { text: string; type: "comment" | "blank" | "accent" | "body" }
 export type BlogBlock = { type: "p"; text: string } | { type: "img"; src: string; caption?: string };
 export interface BlogPost { title: string; date: string; excerpt: string; body: BlogBlock[] }
+export type TrackerStatus = "wip" | "next" | "done" | "hold";
+export interface TrackerItem { label: string; status: TrackerStatus; note?: string; }
 
 export interface Strings {
   splash: {
@@ -24,7 +26,7 @@ export interface Strings {
   };
   desktop: {
     label: string;
-    myProjects: string; music: string; photos: string; about: string; bgGen: string; blog: string;
+    myProjects: string; music: string; photos: string; about: string; bgGen: string; blog: string; tracker: string;
   };
   fatalError: {
     title: string; subtitle: string; body: string; cta: string;
@@ -80,6 +82,19 @@ export interface Strings {
   notes: {
     windowTitle: string; lines: NoteLine[];
   };
+  tracker: {
+    title: string; statusBar: string;
+    wipLabel: string; nextLabel: string; doneLabel: string; holdLabel: string;
+    items: TrackerItem[];
+  };
+  pet: {
+    name: string; chatTitle: string; inputPlaceholder: string; greeting: string;
+    responses: {
+      hello: string; navigate: string; password: string;
+      projects: string; about: string; contact: string;
+      music: string; stack: string; tracker: string; unknown: string;
+    };
+  };
   projectContent: { project01: string; project02: string; project03: string };
 }
 
@@ -103,7 +118,7 @@ const ES: Strings = {
   },
   desktop: {
     label: "Escritorio",
-    myProjects: "MIS PROYECTOS", music: "MÚSICA", photos: "FOTOS", about: "SOBRE MÍ", bgGen: "GEN. FONDO", blog: "BLOG",
+    myProjects: "MIS PROYECTOS", music: "MÚSICA", photos: "FOTOS", about: "SOBRE MÍ", bgGen: "GEN. FONDO", blog: "BLOG", tracker: "TRACKER",
   },
   fatalError: {
     title: "ERROR FATAL",
@@ -251,6 +266,34 @@ const ES: Strings = {
       { text: "// fin del archivo_", type: "comment" },
     ],
   },
+  tracker: {
+    title: "TRACKER.EXE", statusBar: "ACTUALIZADO · 2026.07",
+    wipLabel: "EN CURSO", nextLabel: "SIGUIENTE", doneLabel: "HECHO ✓", holdLabel: "PAUSADO",
+    items: [
+      { label: "Set de espadas (Proy. 01)", status: "done" },
+      { label: "Set de hachas (Proy. 02)", status: "done" },
+      { label: "Entorno urbano Bloodborne", status: "wip", note: "Puliendo iluminación final" },
+      { label: "Portfolio web retro", status: "wip", note: "¡Estás mirando!" },
+      { label: "Proyecto de personaje", status: "next" },
+      { label: "Dominio personalizado", status: "next", note: "pendiente de decidir" },
+    ],
+  },
+  pet: {
+    name: "BIT", chatTitle: "BIT.EXE — ASISTENTE", inputPlaceholder: "pregunta algo...",
+    greeting: "¡Hola! Soy BIT. Pregúntame sobre cómo navegar, los proyectos, el stack técnico... ¡o lo que quieras!",
+    responses: {
+      hello: "¡Hola! Me alegra verte por aquí. ¿En qué puedo ayudarte?",
+      navigate: "Haz doble clic en los iconos del escritorio para abrir apps. Arrastra las ventanas. El dock de abajo tiene accesos rápidos. ¡Revisa MIS PROYECTOS!",
+      password: "¿La contraseña? Échale un vistazo al escritorio de la escena 3D... puede que haya una nota por ahí. 👀",
+      projects: "Alejandro es artista de entornos 3D. En MIS PROYECTOS puedes ver el set de espadas, el de hachas y el entorno urbano.",
+      about: "Alejandro es artista 3D y desarrollador creativo, vive cerca de Barcelona. ¡Construye entornos, props y webs retro como ésta!",
+      contact: "Pulsa CONTACTO en el dock. O NETWORK para suscribirte al boletín. ¡No muerde!",
+      music: "Abre MÚSICA desde el escritorio para cargar pistas o usar las integradas. ¡El osciloscopio es muy satisfactorio!",
+      stack: "React + TypeScript + Vite, todo en un App.tsx. Audio sintetizado puro sin archivos. Estética retro en CSS puro.",
+      tracker: "Abre el TRACKER desde el escritorio para ver en qué está trabajando Alejandro ahora mismo y qué viene después.",
+      unknown: "Hmm, no sé responderte eso. Prueba: navegar, proyectos, sobre mí, contacto, música, stack, tracker.",
+    },
+  },
   projectContent: {
     project01: "// PROYECTO_01 — SET DE ESPADAS\n\nAsset listo para videojuego, flujo de trabajo de low a high poly y retopologizado. Texturas comprimidas y optimizadas para UE5.\n\nNo me ceñí del todo al concepto, ya que quise acercarme algo más al realismo en lugar de quedarme solo en lo estilizado.\n\nArte conceptual original de Maeve.\n\nHERRAMIENTAS: 3DS Max, Blender, ZBrush,\n       Substance Painter, Substance Designer,\n       Unreal Engine 5.7\nAÑO:  2025",
     project02: "// PROYECTO_02 — SET DE HACHAS\n\nCon este trabajo me centré en el texturizado estilizado al estilo Darksiders y formas exageradas para desarrollar un asset listo para videojuego.\n\nGracias a Jakob Gavelli por la referencia y a Visual Architects por la mentoría.\n\nHERRAMIENTAS: 3DS Max, Blender, ZBrush,\n       Substance Painter, Substance Designer,\n       Unreal Engine 5.7\nAÑO:  2025",
@@ -278,7 +321,7 @@ const EN: Strings = {
   },
   desktop: {
     label: "Desktop",
-    myProjects: "MY PROJECTS", music: "MUSIC", photos: "PHOTOS", about: "ABOUT", bgGen: "BG GEN", blog: "BLOG",
+    myProjects: "MY PROJECTS", music: "MUSIC", photos: "PHOTOS", about: "ABOUT", bgGen: "BG GEN", blog: "BLOG", tracker: "TRACKER",
   },
   fatalError: {
     title: "FATAL ERROR",
@@ -425,6 +468,34 @@ const EN: Strings = {
       { text: "// end of file_", type: "comment" },
     ],
   },
+  tracker: {
+    title: "TRACKER.EXE", statusBar: "UPDATED · 2026.07",
+    wipLabel: "IN PROGRESS", nextLabel: "NEXT UP", doneLabel: "DONE ✓", holdLabel: "ON HOLD",
+    items: [
+      { label: "Sword set (Project 01)", status: "done" },
+      { label: "Axe set (Project 02)", status: "done" },
+      { label: "Bloodborne urban environment", status: "wip", note: "Polishing final lighting" },
+      { label: "Retro web portfolio", status: "wip", note: "You're looking at it!" },
+      { label: "Character project", status: "next" },
+      { label: "Custom domain", status: "next", note: "decision pending" },
+    ],
+  },
+  pet: {
+    name: "BIT", chatTitle: "BIT.EXE — ASSISTANT", inputPlaceholder: "ask something...",
+    greeting: "Hey! I'm BIT. Ask me about navigating the site, projects, tech stack... or anything else!",
+    responses: {
+      hello: "Hey there! Glad you're here. What can I help you with?",
+      navigate: "Double-click desktop icons to open apps. Drag windows around. The dock at the bottom has quick access. Check MY PROJECTS!",
+      password: "The password? Look around the desk in the 3D scene... there might be a note somewhere. 👀",
+      projects: "Alejandro is a 3D environment artist. Open MY PROJECTS to see the sword set, axe set and urban environment.",
+      about: "Alejandro is a 3D artist and creative developer based near Barcelona. He builds environments, props and retro websites like this one!",
+      contact: "Hit CONTACT in the dock. Or NETWORK to subscribe to his newsletter. He doesn't bite!",
+      music: "Open MUSIC from the desktop to load tracks or use the built-in ones. The oscilloscope is very satisfying!",
+      stack: "React + TypeScript + Vite, all in one App.tsx. Pure synthesized audio, no audio files. Retro aesthetics through pure CSS.",
+      tracker: "Open the TRACKER from the desktop to see what Alejandro is working on right now and what's coming next.",
+      unknown: "Hmm, I don't know that one! Try asking about: navigation, projects, about, contact, music, stack, or tracker.",
+    },
+  },
   projectContent: {
     project01: "// PROJECT_01 — SWORD SET\n\nGame-ready asset, workflow from low to high poly and retopologized. Textures compressed and optimized for UE5.\n\nI didn't stick completely to the concept since I wanted to approach a bit of realism more than just stylized.\n\nOriginal concept art from Maeve.\n\nTOOLS: 3DS Max, Blender, ZBrush,\n       Substance Painter, Substance Designer,\n       Unreal Engine 5.7\nYEAR:  2025",
     project02: "// PROJECT_02 — AXE SET\n\nWith this work I focused on Darksiders-style stylized texturing and exaggerated forms to develop a game-ready asset for videogames.\n\nThanks to Jakob Gavelli for the reference and to Visual Architects for the mentorship.\n\nTOOLS: 3DS Max, Blender, ZBrush,\n       Substance Painter, Substance Designer,\n       Unreal Engine 5.7\nYEAR:  2025",
@@ -452,7 +523,7 @@ const CA: Strings = {
   },
   desktop: {
     label: "Escriptori",
-    myProjects: "ELS MEUS PROJECTES", music: "MÚSICA", photos: "FOTOS", about: "SOBRE MI", bgGen: "GEN. FONS", blog: "BLOG",
+    myProjects: "ELS MEUS PROJECTES", music: "MÚSICA", photos: "FOTOS", about: "SOBRE MI", bgGen: "GEN. FONS", blog: "BLOG", tracker: "TRACKER",
   },
   fatalError: {
     title: "ERROR FATAL",
@@ -598,6 +669,34 @@ const CA: Strings = {
       { text: "", type: "blank" },
       { text: "// fi de l'arxiu_", type: "comment" },
     ],
+  },
+  tracker: {
+    title: "TRACKER.EXE", statusBar: "ACTUALITZAT · 2026.07",
+    wipLabel: "EN CURS", nextLabel: "SEGÜENT", doneLabel: "FET ✓", holdLabel: "EN PAUSA",
+    items: [
+      { label: "Conjunt d'espases (Proj. 01)", status: "done" },
+      { label: "Conjunt de destrals (Proj. 02)", status: "done" },
+      { label: "Entorn urbà Bloodborne", status: "wip", note: "Polint il·luminació final" },
+      { label: "Portfolio web retro", status: "wip", note: "Ho estàs mirant!" },
+      { label: "Projecte de personatge", status: "next" },
+      { label: "Domini personalitzat", status: "next", note: "pendent de decidir" },
+    ],
+  },
+  pet: {
+    name: "BIT", chatTitle: "BIT.EXE — ASSISTENT", inputPlaceholder: "pregunta alguna cosa...",
+    greeting: "Hola! Soc en BIT. Pregunta'm sobre com navegar, els projectes, el stack tècnic... o el que vulguis!",
+    responses: {
+      hello: "Hola! M'alegra veure't per aquí. En què et puc ajudar?",
+      navigate: "Fes doble clic als icones de l'escriptori per obrir apps. Arrossega les finestres. El dock a baix té accés ràpid. Revisa ELS MEUS PROJECTES!",
+      password: "La contrasenya? Dona una ullada a l'escriptori de l'escena 3D... pot ser hi ha una nota per allà. 👀",
+      projects: "L'Alejandro és artista d'entorns 3D. Obre ELS MEUS PROJECTES per veure el conjunt d'espases, destrals i l'entorn urbà.",
+      about: "L'Alejandro és artista 3D i desenvolupador creatiu, viu prop de Barcelona. Construeix entorns, props i webs retro com aquesta!",
+      contact: "Clica CONTACTE al dock. O XARXA per subscriure't al butlletí. No mossega!",
+      music: "Obre MÚSICA des de l'escriptori per carregar pistes o fer servir les integrades. L'oscil·loscopi és molt satisfactori!",
+      stack: "React + TypeScript + Vite, tot en un App.tsx. Àudio sintetitzat pur sense arxius. Estètica retro en CSS pur.",
+      tracker: "Obre el TRACKER des de l'escriptori per veure en què treballa l'Alejandro ara mateix i què ve després.",
+      unknown: "Hmm, no sé respondre a això. Prova: navegar, projectes, sobre mi, contacte, música, stack o tracker.",
+    },
   },
   projectContent: {
     project01: "// PROJECTE_01 — SET D'ESPASES\n\nAsset llest per a videojoc, flux de treball de low a high poly i retopologitzat. Textures comprimides i optimitzades per UE5.\n\nNo em vaig cenyir del tot al concepte, ja que vaig voler apropar-me una mica més al realisme en lloc de quedar-me només en l'estilitzat.\n\nArt conceptual original de Maeve.\n\nEINES: 3DS Max, Blender, ZBrush,\n       Substance Painter, Substance Designer,\n       Unreal Engine 5.7\nANY:   2025",
