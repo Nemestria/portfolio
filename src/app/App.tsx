@@ -1617,9 +1617,9 @@ function TrackerWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
   };
 
   return (
-    <Win title={t.tracker.title} width={560} initX={140} initY={80} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
+    <Win title={t.tracker.title} width={920} initX={60} initY={40} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
       statusBar={t.tracker.statusBar} resizable>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", maxHeight: 380, overflowY: "auto" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", maxHeight: 580, overflowY: "auto" }}>
         {(t.tracker.lanes as TrackerLane[]).map((lane, li) => (
           <div key={li} style={{ borderRight: li < 3 ? "1px solid var(--border-color)" : "none" }}>
             {/* Lane accent bar + header */}
