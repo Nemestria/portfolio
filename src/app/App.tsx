@@ -1953,8 +1953,8 @@ function PetChatWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
   const isAnimating = (i: number) => i === anim.msgIdx && anim.phase !== "done";
 
   return (
-    <Win title={t.pet.chatTitle} width={260} initX={720} initY={260} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}>
-      <div ref={scrollRef} style={{ height: 240, overflowY: "auto", padding: "6px 8px", display: "flex", flexDirection: "column", gap: 6 }}>
+    <Win title={t.pet.chatTitle} width={300} initX={720} initY={260} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}>
+      <div ref={scrollRef} style={{ height: 280, overflowY: "auto", padding: "6px 8px", display: "flex", flexDirection: "column", gap: 6 }}>
         {msgs.map((m, i) => (
           <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: m.from === "pet" ? "flex-start" : "flex-end" }}>
             <div style={{
@@ -1962,9 +1962,9 @@ function PetChatWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
               background: m.from === "pet" ? "var(--bg-panel)" : "var(--bg-active)",
               color: m.from === "pet" ? "var(--text-primary)" : "var(--bg-window)",
               border: "1px solid var(--border-color)",
-              ...MONO, fontSize: 10, lineHeight: 1.55,
+              ...MONO, fontSize: 12, lineHeight: 1.55,
             }}>
-              {m.from === "pet" && <span style={{ ...PX, fontSize: 6, color: "var(--text-secondary)", display: "block", marginBottom: 2 }}>{t.pet.name}</span>}
+              {m.from === "pet" && <span style={{ ...PX, fontSize: 7, color: "var(--text-secondary)", display: "block", marginBottom: 2 }}>{t.pet.name}</span>}
               {m.from === "pet" && isAnimating(i)
                 ? (anim.phase === "thinking" ? <ThinkingDots /> : <>{m.text.slice(0, anim.chars)}<span style={{ opacity: 0.7 }}>▌</span></>)
                 : m.text}
@@ -1974,7 +1974,7 @@ function PetChatWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
               <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4, maxWidth: "85%" }}>
                 {(t.pet.quickReplies as Array<{ label: string; query: string }>).map((qr, qi) => (
                   <button key={qi} onClick={() => sendText(qr.query)} style={{
-                    ...PX, fontSize: 6, padding: "2px 5px", cursor: "pointer",
+                    ...PX, fontSize: 7, padding: "2px 5px", cursor: "pointer",
                     background: "var(--bg-panel)", color: "var(--text-secondary)",
                     border: "1px solid var(--border-color)", transition: "background 0.1s",
                   }}
@@ -1995,9 +1995,9 @@ function PetChatWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
           type="text" value={input} placeholder={t.pet.inputPlaceholder}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); send(); } }}
-          style={{ flex: 1, border: "none", borderRight: "1px solid var(--border-color)", padding: "5px 7px", ...MONO, fontSize: 10, background: "var(--bg-panel)", color: "var(--text-primary)", outline: "none" }}
+          style={{ flex: 1, border: "none", borderRight: "1px solid var(--border-color)", padding: "5px 7px", ...MONO, fontSize: 12, background: "var(--bg-panel)", color: "var(--text-primary)", outline: "none" }}
         />
-        <button onClick={send} style={{ padding: "5px 10px", background: "var(--bg-active)", color: "var(--bg-window)", border: "none", cursor: "pointer", ...PX, fontSize: 7 }}>▶</button>
+        <button onClick={send} style={{ padding: "5px 10px", background: "var(--bg-active)", color: "var(--bg-window)", border: "none", cursor: "pointer", ...PX, fontSize: 8 }}>▶</button>
       </div>
     </Win>
   );
