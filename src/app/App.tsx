@@ -25,6 +25,7 @@ const GLOBAL_CSS = `
   @keyframes splash-fadein { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: translateY(0) } }
   @keyframes splash-exit { from { opacity: 1 } to { opacity: 0 } }
   @keyframes pet-bob { 0%,100% { transform: translateY(0px) } 50% { transform: translateY(-5px) } }
+  @keyframes draven-think { 0%,66% { opacity: 1 } 33%,100% { opacity: 0.15 } }
 
   button { color: var(--text-primary); font-family: inherit; }
 
@@ -1721,57 +1722,116 @@ function JournalWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
 
 // ── Pet ───────────────────────────────────────────────────────────────────────
 
-type PetMsg = { from: "pet" | "user"; text: string };
+type PetMsg = { from: "pet" | "user"; text: string; showReplies?: boolean };
+type PetAnimState = { msgIdx: number; phase: "thinking" | "typing" | "done"; chars: number };
 
-function matchPetResponse(input: string, responses: Strings["pet"]["responses"]): string {
+function matchPetResponse(input: string, t_pet: Strings["pet"]): { text: string; showReplies: boolean } {
   const q = input.toLowerCase().trim();
-  if (/^(hi|hello|hey|hola|ey|bon|buenas|salut|que pasa|que tal|com va)/.test(q)) return responses.hello;
-  if (/navigate|navegar|use|usar|how|cómo|what do|que faig|qué hago|explore|funciona/.test(q)) return responses.navigate;
-  if (/password|contrasenya|contraseña|pista|clue|hint|code|codi|clau|clave/.test(q)) return responses.password;
-  if (/project|proyect|work|treballs|treball|obra|portfolio|portafolio|portfoli|sword|axe|espada|destral/.test(q)) return responses.projects;
-  if (/who|quien|qui |alejandro|about|sobre|acerca/.test(q)) return responses.about;
-  if (/contact|contacto|contacte|hire|contratar|email|mail|newsletter|network/.test(q)) return responses.contact;
-  if (/music|musica|música|sound|audio|play|visua/.test(q)) return responses.music;
-  if (/stack|tech|react|tools|code|código|codi|tecnolog|built|construi/.test(q)) return responses.stack;
-  if (/tracker|todo|goal|objectiu|objetivo|working|trabajando|treballant|next|siguiente/.test(q)) return responses.tracker;
-  return responses.unknown;
+  const r = t_pet.responses;
+  if (/^(hi|hello|hey|hola|ey|bon|buenas|salut|que pasa|que tal|com va)/.test(q)) return { text: r.hello, showReplies: false };
+  if (/navigate|navegar|use|usar|how|cómo|what do|que faig|qué hago|explore|funciona/.test(q)) return { text: r.navigate, showReplies: false };
+  if (/password|contrasenya|contraseña|pista|clue|hint|code|codi|clau|clave/.test(q)) return { text: r.password, showReplies: false };
+  if (/project|proyect|work|treballs|treball|obra|portfolio|portafolio|portfoli|sword|axe|espada|destral/.test(q)) return { text: r.projects, showReplies: false };
+  if (/who|quien|qui |alejandro|about|sobre|acerca/.test(q)) return { text: r.about, showReplies: false };
+  if (/contact|contacto|contacte|hire|contratar|email|mail|newsletter|network/.test(q)) return { text: r.contact, showReplies: false };
+  if (/music|musica|música|sound|audio|play|visua/.test(q)) return { text: r.music, showReplies: false };
+  if (/stack|tech|react|tools|code|código|codi|tecnolog|built|construi/.test(q)) return { text: r.stack, showReplies: false };
+  if (/tracker|todo|goal|objectiu|objetivo|working|trabajando|treballant|next|siguiente/.test(q)) return { text: r.tracker, showReplies: false };
+  const quips = t_pet.funnyQuips as string[];
+  return { text: quips[Math.floor(Math.random() * quips.length)], showReplies: true };
+}
+
+function ThinkingDots() {
+  return (
+    <span>
+      {[0, 0.33, 0.66].map((delay, i) => (
+        <span key={i} style={{ animation: `draven-think 1s ease-in-out ${delay}s infinite`, display: "inline-block", marginRight: 2 }}>●</span>
+      ))}
+    </span>
+  );
 }
 
 function PetChatWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
   const { t } = useLang();
   const [msgs, setMsgs] = useState<PetMsg[]>(() => [{ from: "pet", text: t.pet.greeting }]);
   const [input, setInput] = useState("");
+  const [anim, setAnim] = useState<PetAnimState>({ msgIdx: 0, phase: "thinking", chars: 0 });
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // Reset on language change, re-animate greeting
   useEffect(() => {
     setMsgs([{ from: "pet", text: t.pet.greeting }]);
+    setAnim({ msgIdx: 0, phase: "thinking", chars: 0 });
   }, [t.pet.greeting]);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs]);
+  // Drive typing animation
+  useEffect(() => {
+    if (anim.phase === "done" || anim.msgIdx < 0) return;
+    if (anim.phase === "thinking") {
+      const delay = 500 + Math.random() * 600;
+      const tid = setTimeout(() => setAnim(prev => ({ ...prev, phase: "typing", chars: 0 })), delay);
+      return () => clearTimeout(tid);
+    }
+    const msg = msgs[anim.msgIdx];
+    if (!msg) return;
+    if (anim.chars >= msg.text.length) {
+      setAnim(prev => ({ ...prev, phase: "done" }));
+      return;
+    }
+    const tid = setTimeout(() => setAnim(prev => ({ ...prev, chars: prev.chars + 1 })), 18);
+    return () => clearTimeout(tid);
+  }, [anim.phase, anim.chars, anim.msgIdx, msgs]);
 
-  const send = () => {
-    const q = input.trim();
-    if (!q) return;
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, anim.chars]);
+
+  const sendText = (q: string) => {
+    if (!q.trim()) return;
     playClick();
-    setMsgs(prev => [...prev, { from: "user", text: q }, { from: "pet", text: matchPetResponse(q, t.pet.responses) }]);
+    const { text: reply, showReplies } = matchPetResponse(q.trim(), t.pet);
+    const newMsgs: PetMsg[] = [...msgs, { from: "user", text: q.trim() }, { from: "pet", text: reply, showReplies }];
+    setMsgs(newMsgs);
     setInput("");
+    setAnim({ msgIdx: newMsgs.length - 1, phase: "thinking", chars: 0 });
   };
 
+  const send = () => sendText(input);
+
+  const isAnimating = (i: number) => i === anim.msgIdx && anim.phase !== "done";
+
   return (
-    <Win title={t.pet.chatTitle} width={240} initX={720} initY={260} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}>
-      <div style={{ height: 220, overflowY: "auto", padding: "6px 8px", display: "flex", flexDirection: "column", gap: 6 }}>
+    <Win title={t.pet.chatTitle} width={260} initX={720} initY={260} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}>
+      <div style={{ height: 240, overflowY: "auto", padding: "6px 8px", display: "flex", flexDirection: "column", gap: 6 }}>
         {msgs.map((m, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: m.from === "pet" ? "flex-start" : "flex-end" }}>
+          <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: m.from === "pet" ? "flex-start" : "flex-end" }}>
             <div style={{
-              maxWidth: "82%", padding: "4px 7px",
+              maxWidth: "85%", padding: "4px 7px",
               background: m.from === "pet" ? "var(--bg-panel)" : "var(--bg-active)",
               color: m.from === "pet" ? "var(--text-primary)" : "var(--bg-window)",
               border: "1px solid var(--border-color)",
               ...MONO, fontSize: 10, lineHeight: 1.55,
             }}>
               {m.from === "pet" && <span style={{ ...PX, fontSize: 6, color: "var(--text-secondary)", display: "block", marginBottom: 2 }}>{t.pet.name}</span>}
-              {m.text}
+              {m.from === "pet" && isAnimating(i)
+                ? (anim.phase === "thinking" ? <ThinkingDots /> : <>{m.text.slice(0, anim.chars)}<span style={{ opacity: 0.7 }}>▌</span></>)
+                : m.text}
             </div>
+            {/* Quick-reply suggestion buttons */}
+            {m.from === "pet" && m.showReplies && !isAnimating(i) && i === msgs.length - 1 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4, maxWidth: "85%" }}>
+                {(t.pet.quickReplies as Array<{ label: string; query: string }>).map((qr, qi) => (
+                  <button key={qi} onClick={() => sendText(qr.query)} style={{
+                    ...PX, fontSize: 6, padding: "2px 5px", cursor: "pointer",
+                    background: "var(--bg-panel)", color: "var(--text-secondary)",
+                    border: "1px solid var(--border-color)", transition: "background 0.1s",
+                  }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "var(--bg-hover)")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "var(--bg-panel)")}
+                  >
+                    {qr.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         ))}
         <div ref={bottomRef} />

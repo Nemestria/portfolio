@@ -97,10 +97,12 @@ export interface Strings {
   };
   pet: {
     name: string; chatTitle: string; inputPlaceholder: string; greeting: string;
+    funnyQuips: string[];
+    quickReplies: Array<{ label: string; query: string }>;
     responses: {
       hello: string; navigate: string; password: string;
       projects: string; about: string; contact: string;
-      music: string; stack: string; tracker: string; unknown: string;
+      music: string; stack: string; tracker: string;
     };
   };
   projectContent: { project01: string; project02: string; project03: string };
@@ -323,19 +325,39 @@ const ES: Strings = {
     ],
   },
   pet: {
-    name: "BIT", chatTitle: "BIT.EXE — ASISTENTE", inputPlaceholder: "pregunta algo...",
-    greeting: "¡Hola! Soy BIT. Pregúntame sobre cómo navegar, los proyectos, el stack técnico... ¡o lo que quieras!",
+    name: "Draven", chatTitle: "DRAVEN.EXE — MI GATO", inputPlaceholder: "pregunta algo...",
+    greeting: "¡Miau! Soy Draven, el gato de Alejandro. Llevo vigilando este escritorio desde que él me adoptó. Puedo ayudarte a navegar, hablar de proyectos, el stack... ¡o simplemente chatear!",
+    funnyQuips: [
+      "Ese prompt tiene menos polígonos que un cubo de Blender.",
+      "Error 404: respuesta no encontrada. Mis normales apuntan en otra dirección.",
+      "Stack overflow en mi corteza felina. Por favor, reinicia la pregunta.",
+      "Eso está fuera de mi bounding box de conocimiento.",
+      "Mi UV map no cubre esa área geográfica de datos.",
+      "He subdividido demasiado la malla para procesar eso.",
+      "Null pointer exception en mis pensamientos felinos. Inténtalo de nuevo.",
+      "Ese tema tiene más artifacts que una textura a 4×4 píxeles.",
+      "He consultado mi shader graph y no hay output node para eso.",
+      "Error de compilación en mi cerebro: topología no triangulada.",
+    ],
+    quickReplies: [
+      { label: "NAVEGAR", query: "cómo navegar" },
+      { label: "PROYECTOS", query: "proyectos" },
+      { label: "SOBRE MÍ", query: "sobre alejandro" },
+      { label: "CONTACTO", query: "contacto" },
+      { label: "MÚSICA", query: "música" },
+      { label: "STACK", query: "stack" },
+      { label: "TRACKER", query: "tracker" },
+    ],
     responses: {
       hello: "¡Hola! Me alegra verte por aquí. ¿En qué puedo ayudarte?",
       navigate: "Haz doble clic en los iconos del escritorio para abrir apps. Arrastra las ventanas. El dock de abajo tiene accesos rápidos. ¡Revisa MIS PROYECTOS!",
       password: "¿La contraseña? Échale un vistazo al escritorio de la escena 3D... puede que haya una nota por ahí. 👀",
       projects: "Alejandro es artista de entornos 3D. En MIS PROYECTOS puedes ver el set de espadas, el de hachas y el entorno urbano.",
-      about: "Alejandro es artista 3D y desarrollador creativo, vive cerca de Barcelona. ¡Construye entornos, props y webs retro como ésta!",
-      contact: "Pulsa CONTACTO en el dock. O NETWORK para suscribirte al boletín. ¡No muerde!",
+      about: "Alejandro es artista 3D y desarrollador creativo, vive cerca de Barcelona. ¡Construye entornos, props y webs retro como ésta! (Y me alimenta a mí, lo cual es lo más importante.)",
+      contact: "Pulsa CONTACTO en el dock. O NETWORK para suscribirte al boletín. ¡No muerde! Yo sí, pero eso es otra historia.",
       music: "Abre MÚSICA desde el escritorio para cargar pistas o usar las integradas. ¡El osciloscopio es muy satisfactorio!",
       stack: "React + TypeScript + Vite, todo en un App.tsx. Audio sintetizado puro sin archivos. Estética retro en CSS puro.",
       tracker: "Abre el TRACKER desde el escritorio para ver en qué está trabajando Alejandro ahora mismo y qué viene después.",
-      unknown: "Hmm, no sé responderte eso. Prueba: navegar, proyectos, sobre mí, contacto, música, stack, tracker.",
     },
   },
   projectContent: {
@@ -561,19 +583,39 @@ const EN: Strings = {
     ],
   },
   pet: {
-    name: "BIT", chatTitle: "BIT.EXE — ASSISTANT", inputPlaceholder: "ask something...",
-    greeting: "Hey! I'm BIT. Ask me about navigating the site, projects, tech stack... or anything else!",
+    name: "Draven", chatTitle: "DRAVEN.EXE — MY CAT", inputPlaceholder: "ask something...",
+    greeting: "Meow! I'm Draven, Alejandro's cat. I've been guarding this desk since he adopted me. Ask me about navigation, projects, the tech stack... or just chat!",
+    funnyQuips: [
+      "That query has fewer polygons than a default Blender cube.",
+      "Error 404: answer not found. My normals are pointing the wrong way.",
+      "Stack overflow in my feline cortex. Please restart the question.",
+      "That's outside my knowledge bounding box.",
+      "My UV map doesn't cover that geographic data area.",
+      "I've over-subdivided my mesh and can't process that.",
+      "Null pointer exception in my cat brain. Try again.",
+      "That topic has more artifacts than a 4×4 texture.",
+      "I checked my shader graph and there's no output node for that.",
+      "Compile error in my brain: untriangulated topology.",
+    ],
+    quickReplies: [
+      { label: "NAVIGATE", query: "how to navigate" },
+      { label: "PROJECTS", query: "projects" },
+      { label: "ABOUT", query: "about alejandro" },
+      { label: "CONTACT", query: "contact" },
+      { label: "MUSIC", query: "music" },
+      { label: "STACK", query: "tech stack" },
+      { label: "TRACKER", query: "tracker" },
+    ],
     responses: {
       hello: "Hey there! Glad you're here. What can I help you with?",
       navigate: "Double-click desktop icons to open apps. Drag windows around. The dock at the bottom has quick access. Check MY PROJECTS!",
       password: "The password? Look around the desk in the 3D scene... there might be a note somewhere. 👀",
       projects: "Alejandro is a 3D environment artist. Open MY PROJECTS to see the sword set, axe set and urban environment.",
-      about: "Alejandro is a 3D artist and creative developer based near Barcelona. He builds environments, props and retro websites like this one!",
-      contact: "Hit CONTACT in the dock. Or NETWORK to subscribe to his newsletter. He doesn't bite!",
+      about: "Alejandro is a 3D artist and creative developer based near Barcelona. He builds environments, props and retro websites like this one! (And he feeds me, which is the most important thing.)",
+      contact: "Hit CONTACT in the dock. Or NETWORK to subscribe to his newsletter. He doesn't bite! I do, but that's another story.",
       music: "Open MUSIC from the desktop to load tracks or use the built-in ones. The oscilloscope is very satisfying!",
       stack: "React + TypeScript + Vite, all in one App.tsx. Pure synthesized audio, no audio files. Retro aesthetics through pure CSS.",
       tracker: "Open the TRACKER from the desktop to see what Alejandro is working on right now and what's coming next.",
-      unknown: "Hmm, I don't know that one! Try asking about: navigation, projects, about, contact, music, stack, or tracker.",
     },
   },
   projectContent: {
@@ -799,19 +841,39 @@ const CA: Strings = {
     ],
   },
   pet: {
-    name: "BIT", chatTitle: "BIT.EXE — ASSISTENT", inputPlaceholder: "pregunta alguna cosa...",
-    greeting: "Hola! Soc en BIT. Pregunta'm sobre com navegar, els projectes, el stack tècnic... o el que vulguis!",
+    name: "Draven", chatTitle: "DRAVEN.EXE — EL MEU GAT", inputPlaceholder: "pregunta alguna cosa...",
+    greeting: "Miol! Soc en Draven, el gat de l'Alejandro. Porto vigilant aquest escriptori des que ell em va adoptar. Pregunta'm com navegar, els projectes, el stack... o simplement xerrem!",
+    funnyQuips: [
+      "Aquesta consulta té menys polígons que un cub de Blender.",
+      "Error 404: resposta no trobada. Les meves normals apunten cap a l'altra banda.",
+      "Stack overflow a la meva escorça felina. Reinicia la pregunta, si us plau.",
+      "Això està fora del meu bounding box de coneixement.",
+      "El meu UV map no cobreix aquesta àrea geogràfica de dades.",
+      "He subdividit massa la meva malla per processar-ho.",
+      "Null pointer exception als meus pensaments felins. Torna-ho a intentar.",
+      "Aquest tema té més artefactes que una textura de 4×4 px.",
+      "He consultat el meu shader graph i no hi ha cap output node per a això.",
+      "Error de compilació al meu cervell: topologia no triangulada.",
+    ],
+    quickReplies: [
+      { label: "NAVEGAR", query: "com navegar" },
+      { label: "PROJECTES", query: "projectes" },
+      { label: "SOBRE MI", query: "sobre alejandro" },
+      { label: "CONTACTE", query: "contacte" },
+      { label: "MÚSICA", query: "música" },
+      { label: "STACK", query: "stack" },
+      { label: "TRACKER", query: "tracker" },
+    ],
     responses: {
       hello: "Hola! M'alegra veure't per aquí. En què et puc ajudar?",
       navigate: "Fes doble clic als icones de l'escriptori per obrir apps. Arrossega les finestres. El dock a baix té accés ràpid. Revisa ELS MEUS PROJECTES!",
       password: "La contrasenya? Dona una ullada a l'escriptori de l'escena 3D... pot ser hi ha una nota per allà. 👀",
       projects: "L'Alejandro és artista d'entorns 3D. Obre ELS MEUS PROJECTES per veure el conjunt d'espases, destrals i l'entorn urbà.",
-      about: "L'Alejandro és artista 3D i desenvolupador creatiu, viu prop de Barcelona. Construeix entorns, props i webs retro com aquesta!",
-      contact: "Clica CONTACTE al dock. O XARXA per subscriure't al butlletí. No mossega!",
+      about: "L'Alejandro és artista 3D i desenvolupador creatiu, viu prop de Barcelona. Construeix entorns, props i webs retro com aquesta! (I em dona menjar, que és el més important.)",
+      contact: "Clica CONTACTE al dock. O XARXA per subscriure't al butlletí. No mossega! Jo sí, però això és una altra història.",
       music: "Obre MÚSICA des de l'escriptori per carregar pistes o fer servir les integrades. L'oscil·loscopi és molt satisfactori!",
       stack: "React + TypeScript + Vite, tot en un App.tsx. Àudio sintetitzat pur sense arxius. Estètica retro en CSS pur.",
       tracker: "Obre el TRACKER des de l'escriptori per veure en què treballa l'Alejandro ara mateix i què ve després.",
-      unknown: "Hmm, no sé respondre a això. Prova: navegar, projectes, sobre mi, contacte, música, stack o tracker.",
     },
   },
   projectContent: {
