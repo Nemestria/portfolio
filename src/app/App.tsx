@@ -27,7 +27,7 @@ const GLOBAL_CSS = `
   @keyframes pet-bob { 0%,100% { transform: translateY(0px) } 50% { transform: translateY(-5px) } }
   @keyframes draven-think { 0%,66% { opacity: 1 } 33%,100% { opacity: 0.15 } }
 
-  button { color: var(--text-primary); font-family: inherit; }
+  button { color: var(--text-primary); font-family: inherit; transition: opacity 0.12s, transform 0.12s ease, background 0.1s, color 0.1s, border-color 0.1s, box-shadow 0.12s; }
 
   input[type=range] {
     -webkit-appearance: none; appearance: none;
@@ -351,8 +351,8 @@ function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar,
           <div style={{ display: "flex", gap: 2, flexShrink: 0 }}>
             <button onClick={() => { playClick(); setMinimized(v => !v); }} style={{ width: 13, height: 13, background: "var(--bg-panel)", border: "1px solid var(--border-color)", cursor: "pointer", fontSize: 10, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>–</button>
             <button onClick={handleClose}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--color-error)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-panel)"; }}
+              onMouseEnter={e => { e.currentTarget.style.background = "var(--color-error)"; e.currentTarget.style.transform = "scale(1.18)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "var(--bg-panel)"; e.currentTarget.style.transform = "scale(1)"; }}
               style={{ width: 13, height: 13, background: "var(--bg-panel)", border: "1px solid var(--border-color)", cursor: "pointer", fontSize: 10, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
           </div>
         </div>
@@ -1630,7 +1630,11 @@ function TrackerWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
             {lane.items.map((item, ii) => {
               const col = STATUS_COLORS[item.status] ?? STATUS_COLORS.hold;
               return (
-                <div key={ii} style={{ padding: "5px 7px", borderBottom: "1px solid var(--border-color)", borderLeft: `2px solid ${LANE_COLORS[li]}22` }}>
+                <div key={ii}
+                  style={{ padding: "5px 7px", borderBottom: "1px solid var(--border-color)", borderLeft: `2px solid ${LANE_COLORS[li]}22`, transition: "transform 0.12s ease, background 0.1s" }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.background = "var(--bg-hover)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.background = ""; }}
+                >
                   <span style={{ ...PX, fontSize: 6, padding: "1px 4px", background: col.bg, color: col.text, display: "inline-block", marginBottom: 3 }}>
                     {labels[item.status] ?? item.status}
                   </span>
@@ -1690,9 +1694,10 @@ function JournalWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
               onClick={() => { playClick(); setExpanded(expanded === i ? null : i); }}
               style={{ padding: "6px 8px", borderBottom: "1px solid var(--border-color)", cursor: "pointer", display: "flex", gap: 8, alignItems: "flex-start",
                 background: expanded === i ? "var(--bg-panel)" : "transparent",
+                transition: "transform 0.12s ease, background 0.1s",
               }}
-              onMouseEnter={el => (el.currentTarget.style.background = "var(--bg-hover)")}
-              onMouseLeave={el => (el.currentTarget.style.background = expanded === i ? "var(--bg-panel)" : "transparent")}
+              onMouseEnter={el => { el.currentTarget.style.background = "var(--bg-hover)"; el.currentTarget.style.transform = "translateY(-1px)"; }}
+              onMouseLeave={el => { el.currentTarget.style.background = expanded === i ? "var(--bg-panel)" : "transparent"; el.currentTarget.style.transform = ""; }}
             >
               <div style={{ flexShrink: 0 }}>
                 <StarRating rating={e.rating ?? 0} />
@@ -2001,7 +2006,7 @@ function DockIcon({ icon: Icon, label, onClick, active = false }: { icon: React.
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer" }}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => { setHov(false); setPress(false); }}
       onMouseDown={() => setPress(true)} onMouseUp={() => setPress(false)} onClick={onClick}>
-      <div style={{ width: 36, height: 36, background: lit ? "var(--bg-active)" : hov ? "var(--bg-hover)" : "var(--bg-panel)", border: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", transform: press ? "translateY(1px)" : "none", transition: "background 0.08s, transform 0.05s" }}>
+      <div style={{ width: 36, height: 36, background: lit ? "var(--bg-active)" : hov ? "var(--bg-hover)" : "var(--bg-panel)", border: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", transform: press ? "translateY(1px)" : hov ? "translateY(-2px)" : "none", transition: "background 0.1s, transform 0.13s ease" }}>
         <Icon size={16} strokeWidth={1.5} style={{ color: lit ? "var(--bg-window)" : "var(--text-primary)" }} />
       </div>
       <span style={{ ...PX, fontSize: 7, textTransform: "uppercase", color: lit ? "var(--bg-active)" : "var(--text-primary)" }}>{label}</span>
@@ -2019,7 +2024,7 @@ function DesktopIcon({ icon: Icon, label, x, y, onOpen }: { icon: React.ElementT
       onMouseEnter={() => setHov(true)} onMouseLeave={() => { setHov(false); setPress(false); }}
       onMouseDown={() => setPress(true)} onMouseUp={() => setPress(false)}
       onClick={onOpen}>
-      <div style={{ width: 36, height: 36, background: press ? "var(--bg-hover)" : hov ? "var(--bg-hover)" : "var(--bg-panel)", border: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", transform: press ? "translateY(1px)" : "none", transition: "background 0.06s, transform 0.05s" }}>
+      <div style={{ width: 36, height: 36, background: press ? "var(--bg-hover)" : hov ? "var(--bg-hover)" : "var(--bg-panel)", border: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", transform: press ? "translateY(1px)" : hov ? "translateY(-2px)" : "none", transition: "background 0.1s, transform 0.13s ease" }}>
         <Icon size={18} strokeWidth={1.5} style={{ color: "var(--text-primary)" }} />
       </div>
       <span style={{ ...PX, fontSize: 7, textTransform: "uppercase", textAlign: "center", color: "var(--text-primary)", lineHeight: 1.5, padding: "1px 3px", background: hov ? "var(--bg-active)" : "transparent", transition: "background 0.06s" }}>
