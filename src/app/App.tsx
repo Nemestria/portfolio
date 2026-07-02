@@ -1940,7 +1940,7 @@ function PetChatWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
                 : m.text}
             </div>
             {/* Quick-reply suggestion buttons */}
-            {m.from === "pet" && m.showReplies && !isAnimating(i) && i === msgs.length - 1 && (
+            {m.from === "pet" && !isAnimating(i) && i === msgs.length - 1 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4, maxWidth: "85%" }}>
                 {(t.pet.quickReplies as Array<{ label: string; query: string }>).map((qr, qi) => (
                   <button key={qi} onClick={() => sendText(qr.query)} style={{
