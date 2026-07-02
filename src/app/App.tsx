@@ -1216,7 +1216,7 @@ function AboutWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
     { label: "EMAIL", url: "mailto:asanchomarmol@gmail.com", icon: Mail },
   ];
   return (
-    <Win title={t.about.title} width={260} initX={580} initY={80} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar={t.about.lastUpdated} resizable>
+    <Win title={t.about.title} width={340} initX={560} initY={80} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar={t.about.lastUpdated} resizable>
       {/* Avatar */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 12px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
         <div style={{ width: 44, height: 44, border: "2px solid var(--border-color)", flexShrink: 0, overflow: "hidden" }}>
@@ -1230,7 +1230,7 @@ function AboutWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
       </div>
 
       {/* Bio */}
-      <div style={{ padding: "10px 12px", borderBottom: "1px solid var(--border-color)" }}>
+      <div style={{ padding: "10px 12px", borderBottom: "1px solid var(--border-color)", maxHeight: 220, overflowY: "auto" }}>
         <div style={{ ...MONO, fontSize: BODY_FS, color: "var(--text-primary)", lineHeight: 1.75 }}>
           {t.about.bio}
         </div>
@@ -2049,9 +2049,9 @@ function bgStyle(pattern: BgPattern): React.CSSProperties {
 
 // ── Splash Screen ─────────────────────────────────────────────────────────────
 
-function SplashScreen({ onEnter, exiting }: { onEnter: (withSound: boolean) => void; exiting: boolean }) {
+function SplashScreen({ onEnter, exiting, skipLanguage }: { onEnter: (withSound: boolean) => void; exiting: boolean; skipLanguage?: boolean }) {
   const [progress, setProgress] = useState(0);
-  const [phase, setPhase] = useState<"language" | "loading" | "ready">("language");
+  const [phase, setPhase] = useState<"language" | "loading" | "ready">(skipLanguage ? "loading" : "language");
   const { lang, setLang, t } = useLang();
 
   useEffect(() => {
@@ -2199,8 +2199,11 @@ export default function App() {
   const [layoutKey, setLayoutKey] = useState(0);
   const [z, setZ] = useState<Record<WinId, number>>(DEFAULT_Z);
 
-  // Language — defaults to Spanish; Catalan and English are available
-  const [lang, setLang] = useState<Lang>("es");
+  // Language — inherit from 3d-gateway via localStorage, else default ES
+  const [lang, setLang] = useState<Lang>(() => {
+    const saved = localStorage.getItem("vertigo-lang") as Lang | null;
+    return (saved === "es" || saved === "en" || saved === "ca") ? saved : "es";
+  });
   const t = STRINGS[lang];
 
   // Window open states
@@ -2226,7 +2229,8 @@ export default function App() {
   const [networkOpen,  setNetworkOpen]  = useState(false);
 
   // Splash + audio unlock
-  const [splashVisible, setSplashVisible] = useState(true);
+  const langPreset = !!(localStorage.getItem("vertigo-lang"));
+  const [splashVisible, setSplashVisible] = useState(!langPreset);
   const [splashExiting, setSplashExiting] = useState(false);
   const [autoplay,      setAutoplay]      = useState(false);
 
@@ -2237,6 +2241,9 @@ export default function App() {
   };
 
   // Global preferences
+  // Page zoom — scroll wheel on desktop adjusts readability scale
+  const [zoom, setZoom] = useState(1.0);
+
   const [palette,    setPalette]    = useState("MONO");
   const [bgPattern,  setBgPattern]  = useState<BgPattern>("dots");
   const [volume,     setVolume]     = useState(0.8);
@@ -2252,6 +2259,8 @@ export default function App() {
   }, [palette, darkMode]);
 
   useEffect(() => { setSfxVolumeGain(sfxVolume); }, [sfxVolume]);
+  useEffect(() => { localStorage.setItem("vertigo-lang", lang); }, [lang]);
+  useEffect(() => { document.documentElement.style.zoom = String(zoom); return () => { document.documentElement.style.zoom = ""; }; }, [zoom]);
 
   // Single monotonic z-counter shared by every window in the app, including
   // file-viewer popups spawned inside MyProjectsWin — guarantees whatever was
@@ -2357,8 +2366,19 @@ export default function App() {
           </div>
         </div>
 
-        {/* Desktop */}
-        <div style={{ position: "absolute", top: 20, bottom: 58, left: 0, right: 0 }}>
+        {/* Desktop — wheel on background zooms page for readability */}
+        <div
+          style={{ position: "absolute", top: 20, bottom: 58, left: 0, right: 0 }}
+          onWheel={e => {
+            // Don't zoom when scrolling inside a window's scrollable content
+            let el = e.target as HTMLElement;
+            while (el && el !== e.currentTarget) {
+              if (el.scrollHeight > el.clientHeight + 2) return;
+              el = el.parentElement as HTMLElement;
+            }
+            setZoom(z => Math.min(1.5, Math.max(0.7, +(z + (e.deltaY < 0 ? 0.05 : -0.05)).toFixed(2))));
+          }}
+        >
           <div style={{ position: "absolute", top: 22, left: 20, ...SERIF, fontSize: 11, color: "var(--text-tertiary)", letterSpacing: "0.2em", textTransform: "uppercase", userSelect: "none", pointerEvents: "none" }}>
             {t.desktop.label}
           </div>
@@ -2398,7 +2418,7 @@ export default function App() {
         {showFatalError && <FatalErrorModal onGoToProjects={handleGoToProjects} />}
 
         {/* Splash */}
-        {splashVisible && <SplashScreen onEnter={handleEnter} exiting={splashExiting} />}
+        {splashVisible && <SplashScreen onEnter={handleEnter} exiting={splashExiting} skipLanguage={langPreset} />}
 
         {/* Pet — always visible after splash */}
         {!splashVisible && <PetWidget onOpen={() => { if (!chatOpen) { playOpen(); setChatOpen(true); focus("chat"); } else focus("chat"); }} />}
