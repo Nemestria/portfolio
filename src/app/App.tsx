@@ -1106,7 +1106,21 @@ function NetworkModal({ onClose }: { onClose: () => void }) {
         {done ? (
           <div style={{ textAlign: "center", padding: "10px 0" }}>
             <div style={{ ...PX, fontSize: 9, color: "var(--bg-active)", marginBottom: 8 }}>{t.network.subscribed}</div>
-            <div style={{ ...MONO, fontSize: 11, color: "var(--text-secondary)" }}>{t.network.subscribedBody}</div>
+            <div style={{ ...MONO, fontSize: 11, color: "var(--text-secondary)", marginBottom: 12, lineHeight: 1.7 }}>{t.network.subscribedBody}</div>
+            <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
+              <a href="https://www.instagram.com/soyvertigo/" target="_blank" rel="noopener noreferrer"
+                style={{ ...PX, fontSize: 8, color: "var(--bg-active)", textDecoration: "none", padding: "5px 10px", border: "1px solid var(--border-color)", background: "var(--bg-panel)", transition: "background 0.1s" }}
+                onMouseEnter={e => (e.currentTarget.style.background = "var(--bg-hover)")}
+                onMouseLeave={e => (e.currentTarget.style.background = "var(--bg-panel)")}>
+                {t.network.instagram}
+              </a>
+              <a href="https://www.linkedin.com/in/environment-artist" target="_blank" rel="noopener noreferrer"
+                style={{ ...PX, fontSize: 8, color: "var(--bg-active)", textDecoration: "none", padding: "5px 10px", border: "1px solid var(--border-color)", background: "var(--bg-panel)", transition: "background 0.1s" }}
+                onMouseEnter={e => (e.currentTarget.style.background = "var(--bg-hover)")}
+                onMouseLeave={e => (e.currentTarget.style.background = "var(--bg-panel)")}>
+                {t.network.linkedin}
+              </a>
+            </div>
           </div>
         ) : (
           <>

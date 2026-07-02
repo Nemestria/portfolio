@@ -41,6 +41,7 @@ export interface Strings {
   network: {
     title: string; subscribed: string; subscribedBody: string; intro: string;
     emailLabel: string; emailPlaceholder: string; subscribe: string; footer: string;
+    notWorking: string; socialMsg: string; instagram: string; linkedin: string;
   };
   prefs: {
     title: string; statusBar: string; displayMode: string; light: string; dark: string;
@@ -152,12 +153,16 @@ const ES: Strings = {
   },
   network: {
     title: "RED.EXE — BOLETÍN",
-    subscribed: "SUSCRITO ✓",
-    subscribedBody: "tendrás noticias mías eventualmente.",
+    subscribed: "¡RECIBIDO! ✓",
+    subscribedBody: "No funciona de verdad, ¡pero aprecio mucho la intención! Si quieres, mándame un hola por aquí:",
     intro: "Novedades sobre proyectos nuevos, experimentos y cosas que me parecen interesantes. Sin spam. Poco frecuente.",
     emailLabel: "Correo electrónico", emailPlaceholder: "tu@ejemplo.com",
     subscribe: "SUSCRIBIRSE →",
     footer: "integración del boletín pendiente",
+    notWorking: "No funciona de verdad, ¡pero aprecio mucho la intención!",
+    socialMsg: "Si quieres, mándame un hola por aquí:",
+    instagram: "@soyvertigo",
+    linkedin: "LinkedIn",
   },
   prefs: {
     title: "AJUSTES.EXE", statusBar: "LOS CAMBIOS SE APLICAN AL INSTANTE",
@@ -421,12 +426,16 @@ const EN: Strings = {
   },
   network: {
     title: "NETWORK.EXE — NEWSLETTER",
-    subscribed: "SUBSCRIBED ✓",
-    subscribedBody: "you'll hear from me eventually.",
+    subscribed: "GOT IT! ✓",
+    subscribedBody: "Not actually working, but I appreciate the intention! If you want, just hit me a hello here:",
     intro: "Get updates on new projects, experiments and things I find interesting. No spam. Infrequent.",
     emailLabel: "Email address", emailPlaceholder: "you@example.com",
     subscribe: "SUBSCRIBE →",
     footer: "newsletter integration TBD",
+    notWorking: "Not actually working, but I appreciate the intention!",
+    socialMsg: "If you want, just hit me a hello here:",
+    instagram: "@soyvertigo",
+    linkedin: "LinkedIn",
   },
   prefs: {
     title: "PREFERENCES.EXE", statusBar: "CHANGES APPLY INSTANTLY",
@@ -689,12 +698,16 @@ const CA: Strings = {
   },
   network: {
     title: "XARXA.EXE — BUTLLETÍ",
-    subscribed: "SUBSCRIT ✓",
-    subscribedBody: "tindràs notícies meves amb el temps.",
+    subscribed: "REBUT! ✓",
+    subscribedBody: "No funciona de veritat, però agraeixo molt la intenció! Si vols, envia'm un hola per aquí:",
     intro: "Novetats sobre projectes nous, experiments i coses que trobo interessants. Sense spam. Poc freqüent.",
     emailLabel: "Adreça de correu", emailPlaceholder: "tu@exemple.com",
     subscribe: "SUBSCRIURE'S →",
     footer: "integració del butlletí pendent",
+    notWorking: "No funciona de veritat, però agraeixo molt la intenció!",
+    socialMsg: "Si vols, envia'm un hola per aquí:",
+    instagram: "@soyvertigo",
+    linkedin: "LinkedIn",
   },
   prefs: {
     title: "AJUSTOS.EXE", statusBar: "ELS CANVIS S'APLIQUEN A L'INSTANT",
