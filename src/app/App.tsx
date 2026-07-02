@@ -3,11 +3,11 @@ import {
   Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
   Folder, Music, Image, Info, Home, Monitor,
   Mail, Rss, SlidersHorizontal, User, ExternalLink, Paintbrush,
-  ArrowLeft, ArrowRight, RotateCw, File, Film, Globe, Sun, Moon, AlertTriangle, ListChecks,
+  ArrowLeft, ArrowRight, RotateCw, File, Film, Globe, Sun, Moon, AlertTriangle, ListChecks, BookOpen,
 } from "lucide-react";
 import "../styles/themes.css";
 import { BUILTIN_TRACKS } from "./data/tracks";
-import { STRINGS, type Lang, type Strings, type TrackerItem } from "./data/i18n";
+import { STRINGS, type Lang, type Strings, type TrackerLane, type JournalEntry } from "./data/i18n";
 
 // ── Language Context ─────────────────────────────────────────────────────────
 
@@ -1604,30 +1604,116 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   hold: { bg: "var(--bg-panel)",   text: "var(--text-tertiary)" },
 };
 
+// One accent colour per lane — fixed so they're legible on every palette.
+const LANE_COLORS = ["var(--bg-active)", "#c084fc", "#fb923c", "#4ade80"];
+
 function TrackerWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
   const { t } = useLang();
   const labels: Record<string, string> = {
     wip: t.tracker.wipLabel, next: t.tracker.nextLabel,
     done: t.tracker.doneLabel, hold: t.tracker.holdLabel,
   };
+
   return (
-    <Win title={t.tracker.title} width={268} initX={280} initY={150} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
-      statusBar={t.tracker.statusBar}>
-      <div style={{ maxHeight: 320, overflowY: "auto" }}>
-        {(t.tracker.items as TrackerItem[]).map((item, i) => {
-          const col = STATUS_COLORS[item.status] ?? STATUS_COLORS.hold;
-          return (
-            <div key={i} style={{ padding: "6px 8px", borderBottom: "1px solid var(--border-color)", display: "flex", gap: 8, alignItems: "flex-start" }}>
-              <span style={{ ...PX, fontSize: 7, padding: "2px 5px", background: col.bg, color: col.text, border: "1px solid var(--border-color)", whiteSpace: "nowrap", flexShrink: 0 }}>
-                {labels[item.status] ?? item.status}
-              </span>
-              <div>
-                <div style={{ ...MONO, fontSize: BODY_FS - 1, color: "var(--text-primary)" }}>{item.label}</div>
-                {item.note && <div style={{ ...MONO, fontSize: 9, color: "var(--text-tertiary)", marginTop: 1 }}>{item.note}</div>}
-              </div>
+    <Win title={t.tracker.title} width={560} initX={140} initY={80} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
+      statusBar={t.tracker.statusBar} resizable>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", maxHeight: 380, overflowY: "auto" }}>
+        {(t.tracker.lanes as TrackerLane[]).map((lane, li) => (
+          <div key={li} style={{ borderRight: li < 3 ? "1px solid var(--border-color)" : "none" }}>
+            {/* Lane accent bar + header */}
+            <div style={{ height: 3, background: LANE_COLORS[li] }} />
+            <div style={{ padding: "5px 7px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
+              <span style={{ ...PX, fontSize: 7, color: LANE_COLORS[li], letterSpacing: "0.03em" }}>{lane.label}</span>
             </div>
+            {/* Items */}
+            {lane.items.map((item, ii) => {
+              const col = STATUS_COLORS[item.status] ?? STATUS_COLORS.hold;
+              return (
+                <div key={ii} style={{ padding: "5px 7px", borderBottom: "1px solid var(--border-color)", borderLeft: `2px solid ${LANE_COLORS[li]}22` }}>
+                  <span style={{ ...PX, fontSize: 6, padding: "1px 4px", background: col.bg, color: col.text, display: "inline-block", marginBottom: 3 }}>
+                    {labels[item.status] ?? item.status}
+                  </span>
+                  <div style={{ ...MONO, fontSize: 9.5, color: "var(--text-primary)", lineHeight: 1.35 }}>{item.label}</div>
+                  {item.note && <div style={{ ...MONO, fontSize: 8.5, color: "var(--text-tertiary)", marginTop: 1 }}>{item.note}</div>}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </Win>
+  );
+}
+
+// ── JournalWin ────────────────────────────────────────────────────────────────
+
+function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
+  return (
+    <span style={{ color: "var(--bg-active)", fontSize: 11, letterSpacing: 1 }}>
+      {"★".repeat(rating)}
+      <span style={{ color: "var(--text-tertiary)" }}>{"★".repeat(max - rating)}</span>
+    </span>
+  );
+}
+
+function JournalWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
+  const { t } = useLang();
+  const [tab, setTab] = useState<"movie" | "book">("movie");
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const entries = (t.journal.entries as JournalEntry[]).filter(e => e.type === tab);
+
+  return (
+    <Win title={t.journal.title} width={340} initX={420} initY={100} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} resizable>
+      {/* Tab bar */}
+      <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)" }}>
+        {(["movie", "book"] as const).map((type) => {
+          const label = type === "movie" ? t.journal.moviesTab : t.journal.booksTab;
+          const active = tab === type;
+          return (
+            <button key={type} onClick={() => { playClick(); setTab(type); setExpanded(null); }}
+              style={{ flex: 1, padding: "6px 0", ...PX, fontSize: 7, cursor: "pointer",
+                background: active ? "var(--bg-active)" : "var(--bg-panel)",
+                color: active ? "var(--bg-window)" : "var(--text-secondary)",
+                border: "none", borderRight: type === "movie" ? "1px solid var(--border-color)" : "none",
+              }}>
+              {label}
+            </button>
           );
         })}
+      </div>
+      {/* Entry list */}
+      <div style={{ maxHeight: 320, overflowY: "auto" }}>
+        {entries.map((e, i) => (
+          <div key={i}>
+            <div
+              onClick={() => { playClick(); setExpanded(expanded === i ? null : i); }}
+              style={{ padding: "6px 8px", borderBottom: "1px solid var(--border-color)", cursor: "pointer", display: "flex", gap: 8, alignItems: "flex-start",
+                background: expanded === i ? "var(--bg-panel)" : "transparent",
+              }}
+              onMouseEnter={el => (el.currentTarget.style.background = "var(--bg-hover)")}
+              onMouseLeave={el => (el.currentTarget.style.background = expanded === i ? "var(--bg-panel)" : "transparent")}
+            >
+              <div style={{ flexShrink: 0 }}>
+                <StarRating rating={e.rating ?? 0} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ ...MONO, fontSize: BODY_FS - 1, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.title}</div>
+                <div style={{ ...MONO, fontSize: 9, color: "var(--text-tertiary)" }}>
+                  {e.author}{e.year ? ` · ${e.year}` : ""}{e.date ? ` · ${e.date}` : ""}
+                </div>
+              </div>
+              <span style={{ ...PX, fontSize: 7, color: "var(--text-tertiary)", flexShrink: 0 }}>{expanded === i ? "▲" : "▼"}</span>
+            </div>
+            {expanded === i && (
+              <div style={{ padding: "6px 10px 8px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)", ...MONO, fontSize: BODY_FS - 1, color: "var(--text-secondary)", lineHeight: 1.55, fontStyle: "italic" }}>
+                {e.note ?? t.journal.noNote}
+              </div>
+            )}
+          </div>
+        ))}
+        {entries.length === 0 && (
+          <div style={{ padding: 16, textAlign: "center", ...MONO, fontSize: 10, color: "var(--text-tertiary)" }}>—</div>
+        )}
       </div>
     </Win>
   );
@@ -1768,9 +1854,9 @@ function DesktopIcon({ icon: Icon, label, x, y, onOpen }: { icon: React.ElementT
 
 // ── App ───────────────────────────────────────────────────────────────────────
 
-type WinId = "visualizer" | "photo" | "notes" | "sysinfo" | "prefs" | "about" | "bggen" | "projects" | "blog" | "tracker" | "chat";
+type WinId = "visualizer" | "photo" | "notes" | "sysinfo" | "prefs" | "about" | "bggen" | "projects" | "blog" | "tracker" | "chat" | "journal";
 
-const DEFAULT_Z: Record<WinId, number> = { visualizer: 12, photo: 13, notes: 14, sysinfo: 10, prefs: 9, about: 8, bggen: 7, projects: 15, blog: 11, tracker: 16, chat: 17 };
+const DEFAULT_Z: Record<WinId, number> = { visualizer: 12, photo: 13, notes: 14, sysinfo: 10, prefs: 9, about: 8, bggen: 7, projects: 15, blog: 11, tracker: 16, chat: 17, journal: 18 };
 
 function bgStyle(pattern: BgPattern): React.CSSProperties {
   if (pattern === "grid") return { backgroundImage: "repeating-linear-gradient(0deg,rgba(0,0,0,0.04) 0,rgba(0,0,0,0.04) 1px,transparent 1px,transparent 32px),repeating-linear-gradient(90deg,rgba(0,0,0,0.04) 0,rgba(0,0,0,0.04) 1px,transparent 1px,transparent 32px)" };
@@ -1947,6 +2033,7 @@ export default function App() {
   const [blogOpen,    setBlogOpen]    = useState(false);
   const [trackerOpen, setTrackerOpen] = useState(false);
   const [chatOpen,    setChatOpen]    = useState(false);
+  const [journalOpen, setJournalOpen] = useState(false);
 
   // SVG background from generator
   const [bgSvg, setBgSvg] = useState<BgSvgCfg | null>(null);
@@ -2027,7 +2114,7 @@ export default function App() {
     setVizOpen(true); setPhotoOpen(true); setNotesOpen(true);
     setSysinfoOpen(false); setPrefsOpen(false); setAboutOpen(false);
     setProjOpen(false); setBggenOpen(false); setContactOpen(false); setNetworkOpen(false); setBlogOpen(false);
-    setTrackerOpen(false); setChatOpen(false);
+    setTrackerOpen(false); setChatOpen(false); setJournalOpen(false);
     setBgSvg(null);
     setZ(DEFAULT_Z);
     zCounterRef.current = Math.max(...Object.values(DEFAULT_Z));
@@ -2100,6 +2187,7 @@ export default function App() {
           <DesktopIcon icon={Paintbrush} label={t.desktop.bgGen}      x={18} y={358} onOpen={() => toggle("bggen",     bggenOpen, setBggenOpen)} />
           <DesktopIcon icon={Globe}      label={t.desktop.blog}       x={18} y={434} onOpen={() => toggle("blog",      blogOpen,  setBlogOpen)} />
           <DesktopIcon icon={ListChecks} label={t.desktop.tracker}   x={18} y={510} onOpen={() => toggle("tracker", trackerOpen, setTrackerOpen)} />
+          <DesktopIcon icon={BookOpen}  label={t.desktop.journal}   x={18} y={586} onOpen={() => toggle("journal", journalOpen, setJournalOpen)} />
 
           <React.Fragment key={layoutKey}>
             <MyProjectsWin   zIndex={z.projects}   onFocus={() => focus("projects")}   open={projOpen}    onClose={() => setProjOpen(false)} getNextZ={nextZ} autoNavigate={autoNavSignal} />
@@ -2113,6 +2201,7 @@ export default function App() {
             <BlogWin         zIndex={z.blog}        onFocus={() => focus("blog")}       open={blogOpen}    onClose={() => setBlogOpen(false)} />
             <TrackerWin      zIndex={z.tracker}     onFocus={() => focus("tracker")}    open={trackerOpen} onClose={() => setTrackerOpen(false)} />
             <PetChatWin      zIndex={z.chat}        onFocus={() => focus("chat")}       open={chatOpen}    onClose={() => setChatOpen(false)} />
+            <JournalWin      zIndex={z.journal}     onFocus={() => focus("journal")}    open={journalOpen} onClose={() => setJournalOpen(false)} />
           </React.Fragment>
         </div>
 

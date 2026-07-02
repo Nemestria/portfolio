@@ -5,6 +5,9 @@ export type BlogBlock = { type: "p"; text: string } | { type: "img"; src: string
 export interface BlogPost { title: string; date: string; excerpt: string; body: BlogBlock[] }
 export type TrackerStatus = "wip" | "next" | "done" | "hold";
 export interface TrackerItem { label: string; status: TrackerStatus; note?: string; }
+export interface TrackerLane { label: string; items: TrackerItem[]; }
+export type JournalMediaType = "movie" | "book";
+export interface JournalEntry { type: JournalMediaType; title: string; author?: string; year?: number; date?: string; rating?: number; note?: string; }
 
 export interface Strings {
   splash: {
@@ -26,7 +29,7 @@ export interface Strings {
   };
   desktop: {
     label: string;
-    myProjects: string; music: string; photos: string; about: string; bgGen: string; blog: string; tracker: string;
+    myProjects: string; music: string; photos: string; about: string; bgGen: string; blog: string; tracker: string; journal: string;
   };
   fatalError: {
     title: string; subtitle: string; body: string; cta: string;
@@ -85,7 +88,12 @@ export interface Strings {
   tracker: {
     title: string; statusBar: string;
     wipLabel: string; nextLabel: string; doneLabel: string; holdLabel: string;
-    items: TrackerItem[];
+    lanes: TrackerLane[];
+  };
+  journal: {
+    title: string; moviesTab: string; booksTab: string;
+    noNote: string; ratingLabel: string;
+    entries: JournalEntry[];
   };
   pet: {
     name: string; chatTitle: string; inputPlaceholder: string; greeting: string;
@@ -118,7 +126,7 @@ const ES: Strings = {
   },
   desktop: {
     label: "Escritorio",
-    myProjects: "MIS PROYECTOS", music: "MÚSICA", photos: "FOTOS", about: "SOBRE MÍ", bgGen: "GEN. FONDO", blog: "BLOG", tracker: "TRACKER",
+    myProjects: "MIS PROYECTOS", music: "MÚSICA", photos: "FOTOS", about: "SOBRE MÍ", bgGen: "GEN. FONDO", blog: "BLOG", tracker: "TRACKER", journal: "DIARIO",
   },
   fatalError: {
     title: "ERROR FATAL",
@@ -269,13 +277,49 @@ const ES: Strings = {
   tracker: {
     title: "TRACKER.EXE", statusBar: "ACTUALIZADO · 2026.07",
     wipLabel: "EN CURSO", nextLabel: "SIGUIENTE", doneLabel: "HECHO ✓", holdLabel: "PAUSADO",
-    items: [
-      { label: "Set de espadas (Proy. 01)", status: "done" },
-      { label: "Set de hachas (Proy. 02)", status: "done" },
-      { label: "Entorno urbano Bloodborne", status: "wip", note: "Puliendo iluminación final" },
-      { label: "Portfolio web retro", status: "wip", note: "¡Estás mirando!" },
-      { label: "Proyecto de personaje", status: "next" },
-      { label: "Dominio personalizado", status: "next", note: "pendiente de decidir" },
+    lanes: [
+      {
+        label: "WEB DESIGN",
+        items: [
+          { label: "Portfolio web retro", status: "wip", note: "¡Estás mirando!" },
+          { label: "Dominio personalizado", status: "next", note: "pendiente de decidir" },
+          { label: "[Cliente — sustitúyeme]", status: "next" },
+        ],
+      },
+      {
+        label: "3D ART",
+        items: [
+          { label: "Set de espadas", status: "done" },
+          { label: "Set de hachas", status: "done" },
+          { label: "Entorno Bloodborne", status: "wip", note: "Puliendo iluminación" },
+          { label: "Proyecto personaje", status: "next" },
+        ],
+      },
+      {
+        label: "GAME DESIGN",
+        items: [
+          { label: "Concepto de juego", status: "next" },
+          { label: "Documento de diseño", status: "hold", note: "pendiente de ideas" },
+        ],
+      },
+      {
+        label: "SPORT & LIFE",
+        items: [
+          { label: "Entrenamiento regular", status: "wip" },
+          { label: "[Objetivo — sustitúyeme]", status: "wip" },
+          { label: "[Meta — sustitúyeme]", status: "next" },
+        ],
+      },
+    ],
+  },
+  journal: {
+    title: "DIARIO.EXE", moviesTab: "PELÍCULAS", booksTab: "LIBROS",
+    noNote: "sin nota", ratingLabel: "valoración",
+    entries: [
+      { type: "movie", title: "[Peli 1 — sustitúyeme]", author: "Director", year: 2024, date: "2026.01", rating: 4, note: "Añade tu reseña aquí." },
+      { type: "movie", title: "[Peli 2 — sustitúyeme]", author: "Director", year: 2023, date: "2025.11", rating: 3 },
+      { type: "book", title: "[Libro 1 — sustitúyeme]", author: "Autor", year: 2022, date: "2026.03", rating: 5, note: "Añade tu reseña aquí." },
+      { type: "book", title: "[Libro 2 — sustitúyeme]", author: "Autor", year: 2024, date: "2025.12", rating: 4 },
     ],
   },
   pet: {
@@ -321,7 +365,7 @@ const EN: Strings = {
   },
   desktop: {
     label: "Desktop",
-    myProjects: "MY PROJECTS", music: "MUSIC", photos: "PHOTOS", about: "ABOUT", bgGen: "BG GEN", blog: "BLOG", tracker: "TRACKER",
+    myProjects: "MY PROJECTS", music: "MUSIC", photos: "PHOTOS", about: "ABOUT", bgGen: "BG GEN", blog: "BLOG", tracker: "TRACKER", journal: "JOURNAL",
   },
   fatalError: {
     title: "FATAL ERROR",
@@ -471,13 +515,49 @@ const EN: Strings = {
   tracker: {
     title: "TRACKER.EXE", statusBar: "UPDATED · 2026.07",
     wipLabel: "IN PROGRESS", nextLabel: "NEXT UP", doneLabel: "DONE ✓", holdLabel: "ON HOLD",
-    items: [
-      { label: "Sword set (Project 01)", status: "done" },
-      { label: "Axe set (Project 02)", status: "done" },
-      { label: "Bloodborne urban environment", status: "wip", note: "Polishing final lighting" },
-      { label: "Retro web portfolio", status: "wip", note: "You're looking at it!" },
-      { label: "Character project", status: "next" },
-      { label: "Custom domain", status: "next", note: "decision pending" },
+    lanes: [
+      {
+        label: "WEB DESIGN",
+        items: [
+          { label: "Retro web portfolio", status: "wip", note: "You're looking at it!" },
+          { label: "Custom domain", status: "next", note: "decision pending" },
+          { label: "[Client — replace me]", status: "next" },
+        ],
+      },
+      {
+        label: "3D ART",
+        items: [
+          { label: "Sword set", status: "done" },
+          { label: "Axe set", status: "done" },
+          { label: "Bloodborne env.", status: "wip", note: "Polishing lighting" },
+          { label: "Character project", status: "next" },
+        ],
+      },
+      {
+        label: "GAME DESIGN",
+        items: [
+          { label: "Game concept", status: "next" },
+          { label: "Design document", status: "hold", note: "ideas pending" },
+        ],
+      },
+      {
+        label: "SPORT & LIFE",
+        items: [
+          { label: "Regular training", status: "wip" },
+          { label: "[Goal — replace me]", status: "wip" },
+          { label: "[Target — replace me]", status: "next" },
+        ],
+      },
+    ],
+  },
+  journal: {
+    title: "JOURNAL.EXE", moviesTab: "MOVIES", booksTab: "BOOKS",
+    noNote: "no note", ratingLabel: "rating",
+    entries: [
+      { type: "movie", title: "[Movie 1 — replace me]", author: "Director", year: 2024, date: "2026.01", rating: 4, note: "Add your review here." },
+      { type: "movie", title: "[Movie 2 — replace me]", author: "Director", year: 2023, date: "2025.11", rating: 3 },
+      { type: "book", title: "[Book 1 — replace me]", author: "Author", year: 2022, date: "2026.03", rating: 5, note: "Add your review here." },
+      { type: "book", title: "[Book 2 — replace me]", author: "Author", year: 2024, date: "2025.12", rating: 4 },
     ],
   },
   pet: {
@@ -523,7 +603,7 @@ const CA: Strings = {
   },
   desktop: {
     label: "Escriptori",
-    myProjects: "ELS MEUS PROJECTES", music: "MÚSICA", photos: "FOTOS", about: "SOBRE MI", bgGen: "GEN. FONS", blog: "BLOG", tracker: "TRACKER",
+    myProjects: "ELS MEUS PROJECTES", music: "MÚSICA", photos: "FOTOS", about: "SOBRE MI", bgGen: "GEN. FONS", blog: "BLOG", tracker: "TRACKER", journal: "DIARI",
   },
   fatalError: {
     title: "ERROR FATAL",
@@ -673,13 +753,49 @@ const CA: Strings = {
   tracker: {
     title: "TRACKER.EXE", statusBar: "ACTUALITZAT · 2026.07",
     wipLabel: "EN CURS", nextLabel: "SEGÜENT", doneLabel: "FET ✓", holdLabel: "EN PAUSA",
-    items: [
-      { label: "Conjunt d'espases (Proj. 01)", status: "done" },
-      { label: "Conjunt de destrals (Proj. 02)", status: "done" },
-      { label: "Entorn urbà Bloodborne", status: "wip", note: "Polint il·luminació final" },
-      { label: "Portfolio web retro", status: "wip", note: "Ho estàs mirant!" },
-      { label: "Projecte de personatge", status: "next" },
-      { label: "Domini personalitzat", status: "next", note: "pendent de decidir" },
+    lanes: [
+      {
+        label: "WEB DESIGN",
+        items: [
+          { label: "Portfolio web retro", status: "wip", note: "Ho estàs mirant!" },
+          { label: "Domini personalitzat", status: "next", note: "pendent de decidir" },
+          { label: "[Client — substitueix-me]", status: "next" },
+        ],
+      },
+      {
+        label: "3D ART",
+        items: [
+          { label: "Conjunt d'espases", status: "done" },
+          { label: "Conjunt de destrals", status: "done" },
+          { label: "Entorn Bloodborne", status: "wip", note: "Polint il·luminació" },
+          { label: "Projecte personatge", status: "next" },
+        ],
+      },
+      {
+        label: "GAME DESIGN",
+        items: [
+          { label: "Concepte de joc", status: "next" },
+          { label: "Document de disseny", status: "hold", note: "idees pendents" },
+        ],
+      },
+      {
+        label: "SPORT & LIFE",
+        items: [
+          { label: "Entrenament regular", status: "wip" },
+          { label: "[Objectiu — substitueix-me]", status: "wip" },
+          { label: "[Meta — substitueix-me]", status: "next" },
+        ],
+      },
+    ],
+  },
+  journal: {
+    title: "DIARI.EXE", moviesTab: "PEL·LÍCULES", booksTab: "LLIBRES",
+    noNote: "sense nota", ratingLabel: "valoració",
+    entries: [
+      { type: "movie", title: "[Pel·li 1 — substitueix-me]", author: "Director", year: 2024, date: "2026.01", rating: 4, note: "Afegeix la teva ressenya aquí." },
+      { type: "movie", title: "[Pel·li 2 — substitueix-me]", author: "Director", year: 2023, date: "2025.11", rating: 3 },
+      { type: "book", title: "[Llibre 1 — substitueix-me]", author: "Autor", year: 2022, date: "2026.03", rating: 5, note: "Afegeix la teva ressenya aquí." },
+      { type: "book", title: "[Llibre 2 — substitueix-me]", author: "Autor", year: 2024, date: "2025.12", rating: 4 },
     ],
   },
   pet: {
