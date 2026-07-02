@@ -29,7 +29,7 @@ export interface Strings {
   };
   desktop: {
     label: string;
-    myProjects: string; music: string; photos: string; about: string; bgGen: string; blog: string; tracker: string; journal: string;
+    myProjects: string; music: string; photos: string; about: string; bgGen: string; blog: string; tracker: string; journal: string; feedback: string;
   };
   fatalError: {
     title: string; subtitle: string; body: string; cta: string;
@@ -95,6 +95,13 @@ export interface Strings {
     noNote: string; ratingLabel: string;
     entries: JournalEntry[];
   };
+  feedback: {
+    title: string; question: string;
+    hate: string; neutral: string; love: string; other: string;
+    otherPlaceholder: string; send: string;
+    thanks: string; thanksDetail: string;
+    hateTip: string;
+  };
   pet: {
     name: string; chatTitle: string; inputPlaceholder: string; greeting: string;
     funnyQuips: string[];
@@ -128,7 +135,7 @@ const ES: Strings = {
   },
   desktop: {
     label: "Escritorio",
-    myProjects: "MIS PROYECTOS", music: "MÚSICA", photos: "FOTOS", about: "SOBRE MÍ", bgGen: "GEN. FONDO", blog: "BLOG", tracker: "TRACKER", journal: "DIARIO",
+    myProjects: "MIS PROYECTOS", music: "MÚSICA", photos: "FOTOS", about: "SOBRE MÍ", bgGen: "GEN. FONDO", blog: "BLOG", tracker: "TRACKER", journal: "DIARIO", feedback: "BUZÓN",
   },
   fatalError: {
     title: "ERROR FATAL",
@@ -324,6 +331,16 @@ const ES: Strings = {
       { type: "book", title: "[Libro 2 — sustitúyeme]", author: "Autor", year: 2024, date: "2025.12", rating: 4 },
     ],
   },
+  feedback: {
+    title: "BUZÓN.EXE — FEEDBACK",
+    question: "¿Te ha gustado la web?",
+    hate: "La odio", neutral: "Meh", love: "¡Me encanta!", other: "Otro",
+    otherPlaceholder: "cuéntame más...",
+    send: "ENVIAR →",
+    thanks: "¡Recibido! Gracias por tu feedback.",
+    thanksDetail: "Draven lo leerá primero.",
+    hateTip: "(si puedes alcanzarlo)",
+  },
   pet: {
     name: "Draven", chatTitle: "DRAVEN.EXE — MI GATO", inputPlaceholder: "pregunta algo...",
     greeting: "¡Miau! Soy Draven, el gato de Alejandro. Llevo vigilando este escritorio desde que él me adoptó. Puedo ayudarte a navegar, hablar de proyectos, el stack... ¡o simplemente chatear!",
@@ -387,7 +404,7 @@ const EN: Strings = {
   },
   desktop: {
     label: "Desktop",
-    myProjects: "MY PROJECTS", music: "MUSIC", photos: "PHOTOS", about: "ABOUT", bgGen: "BG GEN", blog: "BLOG", tracker: "TRACKER", journal: "JOURNAL",
+    myProjects: "MY PROJECTS", music: "MUSIC", photos: "PHOTOS", about: "ABOUT", bgGen: "BG GEN", blog: "BLOG", tracker: "TRACKER", journal: "JOURNAL", feedback: "MAILBOX",
   },
   fatalError: {
     title: "FATAL ERROR",
@@ -582,6 +599,16 @@ const EN: Strings = {
       { type: "book", title: "[Book 2 — replace me]", author: "Author", year: 2024, date: "2025.12", rating: 4 },
     ],
   },
+  feedback: {
+    title: "MAILBOX.EXE — FEEDBACK",
+    question: "Did you like this website?",
+    hate: "Hate it", neutral: "Meh", love: "Love it!", other: "Other",
+    otherPlaceholder: "tell me more...",
+    send: "SEND →",
+    thanks: "Got it! Thanks for the feedback.",
+    thanksDetail: "Draven will read it first.",
+    hateTip: "(if you can catch it)",
+  },
   pet: {
     name: "Draven", chatTitle: "DRAVEN.EXE — MY CAT", inputPlaceholder: "ask something...",
     greeting: "Meow! I'm Draven, Alejandro's cat. I've been guarding this desk since he adopted me. Ask me about navigation, projects, the tech stack... or just chat!",
@@ -645,7 +672,7 @@ const CA: Strings = {
   },
   desktop: {
     label: "Escriptori",
-    myProjects: "ELS MEUS PROJECTES", music: "MÚSICA", photos: "FOTOS", about: "SOBRE MI", bgGen: "GEN. FONS", blog: "BLOG", tracker: "TRACKER", journal: "DIARI",
+    myProjects: "ELS MEUS PROJECTES", music: "MÚSICA", photos: "FOTOS", about: "SOBRE MI", bgGen: "GEN. FONS", blog: "BLOG", tracker: "TRACKER", journal: "DIARI", feedback: "BÚSTIA",
   },
   fatalError: {
     title: "ERROR FATAL",
@@ -839,6 +866,16 @@ const CA: Strings = {
       { type: "book", title: "[Llibre 1 — substitueix-me]", author: "Autor", year: 2022, date: "2026.03", rating: 5, note: "Afegeix la teva ressenya aquí." },
       { type: "book", title: "[Llibre 2 — substitueix-me]", author: "Autor", year: 2024, date: "2025.12", rating: 4 },
     ],
+  },
+  feedback: {
+    title: "BÚSTIA.EXE — FEEDBACK",
+    question: "T'ha agradat la web?",
+    hate: "La odio", neutral: "Meh", love: "M'encanta!", other: "Altre",
+    otherPlaceholder: "explica'm més...",
+    send: "ENVIAR →",
+    thanks: "Rebut! Gràcies pel feedback.",
+    thanksDetail: "En Draven ho llegirà primer.",
+    hateTip: "(si pots atrapar-lo)",
   },
   pet: {
     name: "Draven", chatTitle: "DRAVEN.EXE — EL MEU GAT", inputPlaceholder: "pregunta alguna cosa...",

@@ -3,7 +3,7 @@ import {
   Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
   Folder, Music, Image, Info, Home, Monitor,
   Mail, Rss, SlidersHorizontal, User, ExternalLink, Paintbrush,
-  ArrowLeft, ArrowRight, RotateCw, File, Film, Globe, Sun, Moon, AlertTriangle, ListChecks, BookOpen,
+  ArrowLeft, ArrowRight, RotateCw, File, Film, Globe, Sun, Moon, AlertTriangle, ListChecks, BookOpen, MessageSquare,
 } from "lucide-react";
 import "../styles/themes.css";
 import { BUILTIN_TRACKS } from "./data/tracks";
@@ -1720,6 +1720,123 @@ function JournalWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
   );
 }
 
+// ── Feedback ──────────────────────────────────────────────────────────────────
+
+type FeedbackChoice = "hate" | "neutral" | "love" | "other" | null;
+
+function RepelButton({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
+  const ref = useRef<HTMLButtonElement>(null);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const animating = useRef(false);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const btn = ref.current;
+      if (!btn) return;
+      const rect = btn.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = e.clientX - cx;
+      const dy = e.clientY - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const threshold = 90;
+      if (dist < threshold) {
+        const force = (threshold - dist) / threshold;
+        const nx = -dx * force * 3.5;
+        const ny = -dy * force * 3.5;
+        setOffset({ x: nx, y: ny });
+        animating.current = true;
+      } else if (animating.current) {
+        setOffset({ x: 0, y: 0 });
+        animating.current = false;
+      }
+    };
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
+
+  return (
+    <button
+      ref={ref}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        ...PX, fontSize: 8, padding: "5px 10px", cursor: "pointer",
+        background: "var(--bg-panel)", color: "var(--text-primary)",
+        border: "1px solid var(--border-color)",
+        transform: `translate(${offset.x}px, ${offset.y}px)`,
+        transition: animating.current ? "transform 0.06s ease-out" : "transform 0.4s cubic-bezier(0.34,1.56,0.64,1)",
+        userSelect: "none",
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
+function FeedbackWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
+  const { t } = useLang();
+  const [choice, setChoice] = useState<FeedbackChoice>(null);
+  const [otherText, setOtherText] = useState("");
+  const [sent, setSent] = useState(false);
+
+  const choose = (c: FeedbackChoice) => { playClick(); setChoice(c); };
+
+  const send = () => {
+    if (!choice) return;
+    playClick();
+    setSent(true);
+  };
+
+  const btnStyle = (active: boolean): React.CSSProperties => ({
+    ...PX, fontSize: 8, padding: "5px 10px", cursor: "pointer",
+    background: active ? "var(--bg-active)" : "var(--bg-panel)",
+    color: active ? "var(--bg-window)" : "var(--text-primary)",
+    border: `1px solid ${active ? "var(--bg-active)" : "var(--border-color)"}`,
+  });
+
+  return (
+    <Win title={t.feedback.title} width={260} initX={500} initY={280} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}>
+      <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 12 }}>
+        {sent ? (
+          <div style={{ textAlign: "center", padding: "10px 0" }}>
+            <div style={{ ...PX, fontSize: 10, color: "var(--bg-active)", marginBottom: 6 }}>✓ {t.feedback.thanks}</div>
+            <div style={{ ...MONO, fontSize: 9, color: "var(--text-secondary)" }}>{t.feedback.thanksDetail}</div>
+          </div>
+        ) : (
+          <>
+            <div style={{ ...PX, fontSize: 9, color: "var(--text-primary)", textAlign: "center" }}>{t.feedback.question}</div>
+            {/* Row with repelling Hate button + normal buttons */}
+            <div style={{ display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap", minHeight: 36 }}>
+              {/* Hate button in its own overflow-visible container so it can escape */}
+              <div style={{ position: "relative", overflow: "visible" }}>
+                <RepelButton label={t.feedback.hate} onClick={() => choose("hate")} />
+                {choice !== "hate" && <div style={{ ...MONO, fontSize: 6, color: "var(--text-tertiary)", textAlign: "center", marginTop: 2, pointerEvents: "none" }}>{t.feedback.hateTip}</div>}
+              </div>
+              <button style={btnStyle(choice === "neutral")} onClick={() => choose("neutral")}>{t.feedback.neutral}</button>
+              <button style={btnStyle(choice === "love")} onClick={() => choose("love")}>{t.feedback.love}</button>
+              <button style={btnStyle(choice === "other")} onClick={() => choose("other")}>{t.feedback.other}</button>
+            </div>
+            {choice === "other" && (
+              <textarea
+                value={otherText} onChange={e => setOtherText(e.target.value)}
+                placeholder={t.feedback.otherPlaceholder}
+                rows={3}
+                style={{ ...MONO, fontSize: 9, padding: "5px 7px", background: "var(--bg-panel)", color: "var(--text-primary)", border: "1px solid var(--border-color)", outline: "none", resize: "none" }}
+              />
+            )}
+            {choice && (
+              <button onClick={send} style={{ ...PX, fontSize: 8, padding: "5px 10px", background: "var(--bg-active)", color: "var(--bg-window)", border: "none", cursor: "pointer", alignSelf: "flex-end" }}>
+                {t.feedback.send}
+              </button>
+            )}
+          </>
+        )}
+      </div>
+    </Win>
+  );
+}
+
 // ── Pet ───────────────────────────────────────────────────────────────────────
 
 type PetMsg = { from: "pet" | "user"; text: string; showReplies?: boolean };
@@ -1914,9 +2031,9 @@ function DesktopIcon({ icon: Icon, label, x, y, onOpen }: { icon: React.ElementT
 
 // ── App ───────────────────────────────────────────────────────────────────────
 
-type WinId = "visualizer" | "photo" | "notes" | "sysinfo" | "prefs" | "about" | "bggen" | "projects" | "blog" | "tracker" | "chat" | "journal";
+type WinId = "visualizer" | "photo" | "notes" | "sysinfo" | "prefs" | "about" | "bggen" | "projects" | "blog" | "tracker" | "chat" | "journal" | "feedback";
 
-const DEFAULT_Z: Record<WinId, number> = { visualizer: 12, photo: 13, notes: 14, sysinfo: 10, prefs: 9, about: 8, bggen: 7, projects: 15, blog: 11, tracker: 16, chat: 17, journal: 18 };
+const DEFAULT_Z: Record<WinId, number> = { visualizer: 12, photo: 13, notes: 14, sysinfo: 10, prefs: 9, about: 8, bggen: 7, projects: 15, blog: 11, tracker: 16, chat: 17, journal: 18, feedback: 19 };
 
 function bgStyle(pattern: BgPattern): React.CSSProperties {
   if (pattern === "grid") return { backgroundImage: "repeating-linear-gradient(0deg,rgba(0,0,0,0.04) 0,rgba(0,0,0,0.04) 1px,transparent 1px,transparent 32px),repeating-linear-gradient(90deg,rgba(0,0,0,0.04) 0,rgba(0,0,0,0.04) 1px,transparent 1px,transparent 32px)" };
@@ -2092,8 +2209,9 @@ export default function App() {
   const [bggenOpen,   setBggenOpen]   = useState(false);
   const [blogOpen,    setBlogOpen]    = useState(false);
   const [trackerOpen, setTrackerOpen] = useState(false);
-  const [chatOpen,    setChatOpen]    = useState(false);
-  const [journalOpen, setJournalOpen] = useState(false);
+  const [chatOpen,     setChatOpen]     = useState(false);
+  const [journalOpen,  setJournalOpen]  = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   // SVG background from generator
   const [bgSvg, setBgSvg] = useState<BgSvgCfg | null>(null);
@@ -2114,11 +2232,11 @@ export default function App() {
   };
 
   // Global preferences
-  const [palette,    setPalette]    = useState("Y2K");
+  const [palette,    setPalette]    = useState("MONO");
   const [bgPattern,  setBgPattern]  = useState<BgPattern>("dots");
   const [volume,     setVolume]     = useState(0.8);
   const [sfxVolume,  setSfxVolumeState] = useState(0.5);
-  const [darkMode,   setDarkMode]   = useState(false);
+  const [darkMode,   setDarkMode]   = useState(true);
 
   // Apply palette CSS vars
   useEffect(() => {
@@ -2174,7 +2292,7 @@ export default function App() {
     setVizOpen(true); setPhotoOpen(true); setNotesOpen(true);
     setSysinfoOpen(false); setPrefsOpen(false); setAboutOpen(false);
     setProjOpen(false); setBggenOpen(false); setContactOpen(false); setNetworkOpen(false); setBlogOpen(false);
-    setTrackerOpen(false); setChatOpen(false); setJournalOpen(false);
+    setTrackerOpen(false); setChatOpen(false); setJournalOpen(false); setFeedbackOpen(false);
     setBgSvg(null);
     setZ(DEFAULT_Z);
     zCounterRef.current = Math.max(...Object.values(DEFAULT_Z));
@@ -2247,7 +2365,8 @@ export default function App() {
           <DesktopIcon icon={Paintbrush} label={t.desktop.bgGen}      x={18} y={358} onOpen={() => toggle("bggen",     bggenOpen, setBggenOpen)} />
           <DesktopIcon icon={Globe}      label={t.desktop.blog}       x={18} y={434} onOpen={() => toggle("blog",      blogOpen,  setBlogOpen)} />
           <DesktopIcon icon={ListChecks} label={t.desktop.tracker}   x={18} y={510} onOpen={() => toggle("tracker", trackerOpen, setTrackerOpen)} />
-          <DesktopIcon icon={BookOpen}  label={t.desktop.journal}   x={18} y={586} onOpen={() => toggle("journal", journalOpen, setJournalOpen)} />
+          <DesktopIcon icon={BookOpen}     label={t.desktop.journal}   x={18} y={586} onOpen={() => toggle("journal",  journalOpen,  setJournalOpen)} />
+          <DesktopIcon icon={MessageSquare} label={t.desktop.feedback}  x={18} y={662} onOpen={() => toggle("feedback", feedbackOpen, setFeedbackOpen)} />
 
           <React.Fragment key={layoutKey}>
             <MyProjectsWin   zIndex={z.projects}   onFocus={() => focus("projects")}   open={projOpen}    onClose={() => setProjOpen(false)} getNextZ={nextZ} autoNavigate={autoNavSignal} />
@@ -2261,7 +2380,8 @@ export default function App() {
             <BlogWin         zIndex={z.blog}        onFocus={() => focus("blog")}       open={blogOpen}    onClose={() => setBlogOpen(false)} />
             <TrackerWin      zIndex={z.tracker}     onFocus={() => focus("tracker")}    open={trackerOpen} onClose={() => setTrackerOpen(false)} />
             <PetChatWin      zIndex={z.chat}        onFocus={() => focus("chat")}       open={chatOpen}    onClose={() => setChatOpen(false)} />
-            <JournalWin      zIndex={z.journal}     onFocus={() => focus("journal")}    open={journalOpen} onClose={() => setJournalOpen(false)} />
+            <JournalWin      zIndex={z.journal}     onFocus={() => focus("journal")}    open={journalOpen}   onClose={() => setJournalOpen(false)} />
+            <FeedbackWin     zIndex={z.feedback}    onFocus={() => focus("feedback")}   open={feedbackOpen}  onClose={() => setFeedbackOpen(false)} />
           </React.Fragment>
         </div>
 
