@@ -308,11 +308,12 @@ function CtrlBtn({ children, onClick, w = 28, h = 22, active = false, title }: {
       style={{
         width: w, height: h,
         background: down ? "var(--bg-active)" : "var(--bg-panel)",
+        color: down ? "var(--bg-window)" : "var(--text-primary)",
         border: "1px solid var(--border-color)", cursor: "pointer",
         display: "flex", alignItems: "center", justifyContent: "center",
         boxShadow: down ? "inset 1px 1px 0 rgba(0,0,0,0.25)" : "none",
         transform: down ? "translateY(1px)" : "none",
-        transition: "background 0.05s, transform 0.05s", flexShrink: 0,
+        transition: "background 0.05s, transform 0.05s, color 0.05s", flexShrink: 0,
       }}>
       {children}
     </button>
@@ -2027,7 +2028,7 @@ function DesktopIcon({ icon: Icon, label, x, y, onOpen }: { icon: React.ElementT
       <div style={{ width: 36, height: 36, background: press ? "var(--bg-hover)" : hov ? "var(--bg-hover)" : "var(--bg-panel)", border: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", transform: press ? "translateY(1px)" : hov ? "translateY(-2px)" : "none", transition: "background 0.1s, transform 0.13s ease" }}>
         <Icon size={18} strokeWidth={1.5} style={{ color: "var(--text-primary)" }} />
       </div>
-      <span style={{ ...PX, fontSize: 7, textTransform: "uppercase", textAlign: "center", color: "var(--text-primary)", lineHeight: 1.5, padding: "1px 3px", background: hov ? "var(--bg-active)" : "transparent", transition: "background 0.06s" }}>
+      <span style={{ ...PX, fontSize: 7, textTransform: "uppercase", textAlign: "center", color: hov ? "var(--bg-window)" : "var(--text-primary)", lineHeight: 1.5, padding: "1px 3px", background: hov ? "var(--bg-active)" : "transparent", transition: "background 0.06s, color 0.06s" }}>
         {label}
       </span>
     </div>
