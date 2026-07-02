@@ -996,7 +996,6 @@ function NotesWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
         ))}
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 2, paddingRight: 4 }}>
           <button onClick={() => setFontDelta(d => Math.max(d - 1, -2))} style={{ ...PX, fontSize: 7, width: 16, height: 14, background: "transparent", border: "none", cursor: "pointer", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "center" }}>A-</button>
-          <span style={{ ...PX, fontSize: 6, color: "var(--text-tertiary)", minWidth: 20, textAlign: "center" }}>{fs}pt</span>
           <button onClick={() => setFontDelta(d => Math.min(d + 1, 4))} style={{ ...PX, fontSize: 8, width: 16, height: 14, background: "transparent", border: "none", cursor: "pointer", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "center" }}>A+</button>
         </div>
       </div>
