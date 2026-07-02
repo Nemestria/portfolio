@@ -26,6 +26,20 @@ const GLOBAL_CSS = `
   @keyframes splash-exit { from { opacity: 1 } to { opacity: 0 } }
   @keyframes pet-bob { 0%,100% { transform: translateY(0px) } 50% { transform: translateY(-5px) } }
   @keyframes draven-think { 0%,66% { opacity: 1 } 33%,100% { opacity: 0.15 } }
+  @keyframes glitch-cycle {
+    0%   { transform: translateX(0) skewX(0deg);   filter: none; opacity: 1; }
+    18%  { transform: translateX(-9px) skewX(-4deg); filter: hue-rotate(90deg) saturate(4) brightness(1.4); opacity: 0.75; }
+    36%  { transform: translateX(9px)  skewX(4deg);  filter: hue-rotate(270deg) saturate(3) invert(0.15); opacity: 0.8; }
+    54%  { transform: translateX(-5px) skewX(-2deg); filter: hue-rotate(180deg) brightness(1.2); opacity: 0.6; }
+    72%  { transform: translateX(5px);  filter: none; opacity: 0.85; }
+    100% { transform: translateX(0);   filter: none; opacity: 1; }
+  }
+  @keyframes glitch-strip {
+    0%,100% { clip-path: inset(0 0 95% 0); transform: translateX(0); }
+    25%     { clip-path: inset(20% 0 60% 0); transform: translateX(-12px); }
+    50%     { clip-path: inset(55% 0 25% 0); transform: translateX(12px); }
+    75%     { clip-path: inset(80% 0 5% 0);  transform: translateX(-6px); }
+  }
 
   button { color: var(--text-primary); font-family: inherit; }
 
@@ -2044,10 +2058,28 @@ function bgStyle(pattern: BgPattern): React.CSSProperties {
 
 // ── Splash Screen ─────────────────────────────────────────────────────────────
 
+const LANG_CYCLE: Lang[] = ["es", "en", "ca"];
+
 function SplashScreen({ onEnter, exiting }: { onEnter: (withSound: boolean) => void; exiting: boolean }) {
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState<"language" | "loading" | "ready">("language");
   const { lang, setLang, t } = useLang();
+  const [cycleIdx, setCycleIdx] = useState(0);
+  const [glitching, setGlitching] = useState(false);
+  const glitchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-cycle languages with glitch during language selection
+  useEffect(() => {
+    if (phase !== "language") return;
+    const iv = setInterval(() => {
+      setGlitching(true);
+      glitchTimeout.current = setTimeout(() => {
+        setCycleIdx(prev => (prev + 1) % 3);
+        setGlitching(false);
+      }, 200);
+    }, 2600);
+    return () => { clearInterval(iv); if (glitchTimeout.current) clearTimeout(glitchTimeout.current); };
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== "loading") return;
@@ -2069,6 +2101,12 @@ function SplashScreen({ onEnter, exiting }: { onEnter: (withSound: boolean) => v
   const blocks = Math.round(progress / 5);
   const bar = "█".repeat(blocks) + "░".repeat(20 - blocks);
 
+  // Text shown cycling
+  const cycledLang = LANG_CYCLE[cycleIdx];
+  const tc = STRINGS[cycledLang].splash;
+
+  const langLabels: Record<Lang, string> = { es: "ESPAÑOL", en: "ENGLISH", ca: "CATALÀ" };
+
   return (
     <div style={{
       position: "fixed", inset: 0, zIndex: 9999,
@@ -2080,60 +2118,53 @@ function SplashScreen({ onEnter, exiting }: { onEnter: (withSound: boolean) => v
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "repeating-linear-gradient(0deg,rgba(0,0,0,0.18) 0,rgba(0,0,0,0.18) 1px,transparent 1px,transparent 3px)" }}/>
       {/* Noise */}
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.04, backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundSize: "140px" }}/>
+      {/* Glitch strip overlay — visible only during transition */}
+      {glitching && (
+        <div style={{
+          position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2,
+          backgroundImage: "repeating-linear-gradient(0deg, transparent 0, transparent 18px, rgba(255,255,255,0.04) 18px, rgba(255,255,255,0.04) 19px)",
+          animation: "glitch-strip 0.2s steps(4) forwards",
+          mixBlendMode: "screen",
+        }}/>
+      )}
 
-      <div style={{ position: "relative", zIndex: 1, textAlign: "center", width: "100%", maxWidth: 440, padding: "0 32px" }}>
+      <div style={{
+        position: "relative", zIndex: 1, textAlign: "center", width: "100%", maxWidth: 440, padding: "0 32px",
+        animation: glitching ? "glitch-cycle 0.2s steps(4) forwards" : undefined,
+      }}>
         <div style={{ ...PX, fontSize: 11, color: "var(--bg-active)", letterSpacing: 3, marginBottom: 6 }}>
           {t.splash.title}
         </div>
         <div style={{ ...MONO, fontSize: 11, color: "rgba(255,255,255,0.25)", letterSpacing: 8, marginBottom: 52 }}>
-          {t.splash.tagline}
+          {phase === "language" ? tc.tagline : t.splash.tagline}
         </div>
 
         {phase === "language" ? (
           <div style={{ animation: "splash-fadein 0.3s ease" }}>
             <div style={{ ...MONO, fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 22, letterSpacing: 1 }}>
-              ELIGE IDIOMA / SELECT LANGUAGE / TRIA IDIOMA
+              {tc.pickLanguage}
             </div>
-            <button
-              onClick={() => pickLanguage("es")}
-              style={{
-                display: "block", width: "100%", marginBottom: 12, cursor: "pointer",
-                ...PX, fontSize: 8, letterSpacing: 1,
-                background: lang === "es" ? "var(--bg-active)" : "transparent", color: lang === "es" ? "#fff" : "rgba(255,255,255,0.7)",
-                border: "2px solid var(--bg-active)", padding: "14px 0",
-                transition: "background 0.15s, color 0.15s",
-              }}
-            >
-              ESPAÑOL
-            </button>
-            <button
-              onClick={() => pickLanguage("en")}
-              style={{
-                display: "block", width: "100%", marginBottom: 12, cursor: "pointer",
-                ...PX, fontSize: 8, letterSpacing: 1,
-                background: "transparent", color: "rgba(255,255,255,0.7)",
-                border: "1px solid rgba(255,255,255,0.3)", padding: "14px 0",
-                transition: "color 0.15s, border-color 0.15s",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)"; }}
-              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
-            >
-              ENGLISH
-            </button>
-            <button
-              onClick={() => pickLanguage("ca")}
-              style={{
-                display: "block", width: "100%", cursor: "pointer",
-                ...PX, fontSize: 8, letterSpacing: 1,
-                background: "transparent", color: "rgba(255,255,255,0.7)",
-                border: "1px solid rgba(255,255,255,0.3)", padding: "14px 0",
-                transition: "color 0.15s, border-color 0.15s",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)"; }}
-              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
-            >
-              CATALÀ
-            </button>
+            {LANG_CYCLE.map((l, i) => {
+              const isActive = i === cycleIdx;
+              return (
+                <button key={l}
+                  onClick={() => pickLanguage(l)}
+                  style={{
+                    display: "block", width: "100%", marginBottom: i < 2 ? 12 : 0, cursor: "pointer",
+                    ...PX, fontSize: 8, letterSpacing: 1,
+                    background: isActive ? "var(--bg-active)" : "transparent",
+                    color: isActive ? "#fff" : "rgba(255,255,255,0.55)",
+                    border: isActive ? "2px solid var(--bg-active)" : "1px solid rgba(255,255,255,0.22)",
+                    padding: "14px 0",
+                    transition: "background 0.15s, color 0.15s, border-color 0.15s",
+                  }}
+                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)"; } }}
+                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.color = "rgba(255,255,255,0.55)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.22)"; } }}
+                >
+                  {langLabels[l]}
+                </button>
+              );
+            })}
           </div>
         ) : phase === "loading" ? (
           <div style={{ animation: "splash-fadein 0.3s ease" }}>
