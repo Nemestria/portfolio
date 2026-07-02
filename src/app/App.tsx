@@ -984,18 +984,25 @@ function MyProjectsWin({ zIndex, onFocus, open, onClose, getNextZ, autoNavigate 
 
 function NotesWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
   const { t } = useLang();
+  const [fontDelta, setFontDelta] = useState(0);
+  const fs = BODY_FS + fontDelta;
   return (
     <Win title={t.notes.windowTitle} width={268} initX={58} initY={148} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar="LN 28  COL 1 · UTF-8 · CRLF" resizable>
-      <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
+      <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)", alignItems: "center" }}>
         {[t.fileViewer.fileMenu, t.fileViewer.editMenu, t.fileViewer.formatMenu, t.fileViewer.viewMenu].map(m => (
           <button key={m} style={{ ...PX, fontSize: 8, padding: "3px 6px", background: "transparent", border: "none", cursor: "pointer", color: "var(--text-primary)", textTransform: "uppercase" }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>{m}</button>
         ))}
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 2, paddingRight: 4 }}>
+          <button onClick={() => setFontDelta(d => Math.max(d - 1, -2))} style={{ ...PX, fontSize: 7, width: 16, height: 14, background: "transparent", border: "none", cursor: "pointer", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "center" }}>A-</button>
+          <span style={{ ...PX, fontSize: 6, color: "var(--text-tertiary)", minWidth: 20, textAlign: "center" }}>{fs}pt</span>
+          <button onClick={() => setFontDelta(d => Math.min(d + 1, 4))} style={{ ...PX, fontSize: 8, width: 16, height: 14, background: "transparent", border: "none", cursor: "pointer", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "center" }}>A+</button>
+        </div>
       </div>
       <div style={{ padding: "8px 10px", maxHeight: 240, overflowY: "auto", width: "100%", boxSizing: "border-box" }}>
         {t.notes.lines.map((line, i) => (
-          <div key={i} style={{ ...MONO, fontSize: BODY_FS, lineHeight: 1.8, color: line.type === "comment" ? "var(--text-tertiary)" : line.type === "accent" ? "var(--text-secondary)" : "var(--text-primary)", whiteSpace: "pre-wrap", width: "100%" }}>
+          <div key={i} style={{ ...MONO, fontSize: fs, lineHeight: 1.8, color: line.type === "comment" ? "var(--text-tertiary)" : line.type === "accent" ? "var(--text-secondary)" : "var(--text-primary)", whiteSpace: "pre-wrap", width: "100%" }}>
             {line.text || " "}
           </div>
         ))}
@@ -1225,6 +1232,8 @@ function PrefsWin({ zIndex, onFocus, open, onClose, palette, onPalette, volume, 
 
 function AboutWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
   const { t } = useLang();
+  const [fontDelta, setFontDelta] = useState(0);
+  const fs = BODY_FS + fontDelta;
   const links = [
     { label: "LINKEDIN", url: "https://www.linkedin.com/in/environment-artist", icon: ExternalLink },
     { label: "INSTAGRAM", url: "https://www.instagram.com/soyvertigo/", icon: ExternalLink },
@@ -1237,16 +1246,20 @@ function AboutWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
         <div style={{ width: 44, height: 44, border: "2px solid var(--border-color)", flexShrink: 0, overflow: "hidden" }}>
           <img src="/photos/002.png" alt="ASANCHO" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}/>
         </div>
-        <div>
+        <div style={{ flex: 1 }}>
           <div style={{ ...PX, fontSize: 9, color: "var(--text-primary)", marginBottom: 3 }}>ASANCHO</div>
           <div style={{ ...MONO, fontSize: 10, color: "var(--text-secondary)" }}>{t.about.role}</div>
           <div style={{ ...MONO, fontSize: 10, color: "var(--text-tertiary)" }}>{t.about.roleSub}</div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <button onClick={() => setFontDelta(d => Math.max(d - 1, -2))} style={{ ...PX, fontSize: 7, width: 16, height: 14, background: "transparent", border: "none", cursor: "pointer", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "center" }}>A-</button>
+          <button onClick={() => setFontDelta(d => Math.min(d + 1, 4))} style={{ ...PX, fontSize: 8, width: 16, height: 14, background: "transparent", border: "none", cursor: "pointer", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "center" }}>A+</button>
         </div>
       </div>
 
       {/* Bio */}
       <div style={{ padding: "10px 12px", borderBottom: "1px solid var(--border-color)", maxHeight: 220, overflowY: "auto" }}>
-        <div style={{ ...MONO, fontSize: BODY_FS, color: "var(--text-primary)", lineHeight: 1.75 }}>
+        <div style={{ ...MONO, fontSize: fs, color: "var(--text-primary)", lineHeight: 1.75 }}>
           {t.about.bio}
         </div>
       </div>
@@ -1271,9 +1284,11 @@ function AboutWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
 
 function BlogWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: () => void; open?: boolean; onClose?: () => void }) {
   const [openPost, setOpenPost] = useState<number | null>(null);
+  const [fontDelta, setFontDelta] = useState(0);
   const { t } = useLang();
   const post = openPost !== null ? t.blog.posts[openPost] : null;
   const url = post ? `http://asancho.dev/blog/post-${openPost! + 1}` : "http://asancho.dev/blog";
+  const fs = BODY_FS + fontDelta;
 
   return (
     <Win title={t.blog.title} width={420} initX={140} initY={70} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
@@ -1286,6 +1301,8 @@ function BlogWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: 
         <div style={{ flex: 1, ...MONO, fontSize: 10, color: "var(--text-secondary)", background: "var(--bg-window)", border: "1px solid var(--border-color)", padding: "3px 7px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {url}
         </div>
+        <button onClick={() => setFontDelta(d => Math.max(d - 1, -2))} style={{ ...PX, fontSize: 7, width: 16, height: 14, background: "transparent", border: "none", cursor: "pointer", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "center" }}>A-</button>
+        <button onClick={() => setFontDelta(d => Math.min(d + 1, 4))} style={{ ...PX, fontSize: 8, width: 16, height: 14, background: "transparent", border: "none", cursor: "pointer", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "center" }}>A+</button>
       </div>
 
       {/* Page content */}
@@ -1301,7 +1318,7 @@ function BlogWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: 
             <div style={{ ...PX, fontSize: 12, color: "var(--text-primary)", lineHeight: 1.5, marginBottom: 6 }}>{post.title}</div>
             <div style={{ ...MONO, fontSize: 10, color: "var(--text-tertiary)", marginBottom: 18 }}>{post.date}</div>
             {post.body.map((block, i) => block.type === "p" ? (
-              <p key={i} style={{ ...MONO, fontSize: BODY_FS, color: "var(--text-primary)", lineHeight: 1.8, marginBottom: 14 }}>
+              <p key={i} style={{ ...MONO, fontSize: fs, color: "var(--text-primary)", lineHeight: 1.8, marginBottom: 14 }}>
                 {block.text}
               </p>
             ) : (
