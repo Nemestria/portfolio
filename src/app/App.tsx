@@ -993,9 +993,9 @@ function NotesWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>{m}</button>
         ))}
       </div>
-      <div style={{ padding: "8px 10px", maxHeight: 240, overflowY: "auto" }}>
+      <div style={{ padding: "8px 10px", maxHeight: 240, overflowY: "auto", width: "100%", boxSizing: "border-box" }}>
         {t.notes.lines.map((line, i) => (
-          <div key={i} style={{ ...MONO, fontSize: BODY_FS, lineHeight: 1.8, color: line.type === "comment" ? "var(--text-tertiary)" : line.type === "accent" ? "var(--text-secondary)" : "var(--text-primary)", whiteSpace: "pre-wrap" }}>
+          <div key={i} style={{ ...MONO, fontSize: BODY_FS, lineHeight: 1.8, color: line.type === "comment" ? "var(--text-tertiary)" : line.type === "accent" ? "var(--text-secondary)" : "var(--text-primary)", whiteSpace: "pre-wrap", width: "100%" }}>
             {line.text || " "}
           </div>
         ))}
