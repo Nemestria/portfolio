@@ -67,27 +67,57 @@ const GLOBAL_CSS = `
      PhotoViewer's initX=672, sit fully off-screen below ~768px) and dragged/
      resized via mouse-only handlers with no touch equivalent — unusable as
      authored on a phone. Rather than touch-enable free-floating drag/resize
-     (bad fit for touch anyway), each window is pinned to fill the workspace
-     edge-to-edge below this breakpoint, stacking by the existing z-index so
-     the focused one reads full-screen, which is the idiomatic mobile pattern.
-     Every rule here is scoped to the media query so nothing changes above it. */
+     (bad fit for touch anyway), each window is pinned near the top below this
+     breakpoint, capped at 40% of viewport height so several stacked windows
+     don't each swallow the whole screen — content beyond that clips and
+     scrolls with a finger instead.
+
+     Also bumps tap targets and the retro UI chrome's font sizes for
+     legibility, per explicit direction that some visual tidiness can be
+     traded for that. (A CSS zoom transform on the whole app was tried first —
+     it scaled everything uniformly in one line, but broke layout badly:
+     boxes sized in vw/vh don't scale with an ancestor's zoom, so the app's
+     own 100vw/100vh root rendered at the wrong footprint. Explicit
+     per-element overrides below are more code but don't have that failure
+     mode.) Body copy itself (BODY_FS) is bumped in JS, not here — see its
+     definition. Every rule here is scoped to the media query so nothing
+     changes above it. */
   @media (max-width: 768px) {
     .win-root {
       position: fixed !important;
-      inset: 26px 6px 64px 6px !important;
+      top: 30px !important;
+      left: 6px !important;
+      right: 6px !important;
+      bottom: auto !important;
       width: auto !important;
-      height: auto !important;
+      height: 40vh !important;
+      max-height: 40vh !important;
     }
     .win-box { height: 100% !important; display: flex !important; flex-direction: column !important; }
-    .win-content { flex: 1 1 auto !important; min-height: 0 !important; overflow-y: auto !important; }
+    .win-content { flex: 1 1 auto !important; min-height: 0 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; }
     .resize-handle { display: none !important; }
+
+    .win-titlebar { height: 34px !important; padding: 0 10px !important; }
+    .win-title-text { font-size: 12px !important; }
+    .win-ctrl-btn { width: 26px !important; height: 26px !important; font-size: 15px !important; }
 
     .modal-box { width: calc(100vw - 32px) !important; max-width: 420px !important; }
 
-    .system-bar { overflow-x: auto !important; }
+    .system-bar { height: 30px !important; overflow-x: auto !important; }
     .sysbar-decorative { display: none !important; }
+    .lang-btn { font-size: 12px !important; padding: 4px 9px !important; }
 
-    .workspace { overflow-y: auto !important; }
+    .icon-box { width: 48px !important; height: 48px !important; }
+    .icon-box svg { width: 22px !important; height: 22px !important; }
+    /* Some dock labels (e.g. "ALEJANDRO SANCHO") are far wider than the
+       48px icon column at the bumped font size — cap and wrap instead of
+       letting them force the whole dock wider than the viewport. */
+    .icon-label { font-size: 10px !important; max-width: 54px !important; white-space: normal !important; text-align: center !important; }
+    .dock { height: 76px !important; gap: 8px !important; overflow-x: auto !important; }
+
+    /* Matches the taller .system-bar/.dock above — the workspace's own
+       top/bottom offsets are set inline against their old 20px/58px sizes. */
+    .workspace { top: 30px !important; bottom: 76px !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; }
   }
 `;
 
@@ -98,7 +128,8 @@ const EMBED = typeof window !== "undefined" && new URLSearchParams(window.locati
 // Body-copy baseline: bump 11→12.5 in embed mode so prose is legible after the
 // gateway's ~0.9× CSS scale. Retro UI chrome (7-8px PX labels) is intentionally
 // small and stays unchanged — it's decoration, not reading content.
-const BODY_FS = EMBED ? 12.5 : 11;
+const MOBILE = typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches;
+const BODY_FS = EMBED ? 12.5 : MOBILE ? 14 : 11;
 
 // 3d-gateway passes its chosen language as ?lang=es|en|ca on the iframe src.
 // localStorage can't carry this across origins (gateway and portfolio are
@@ -401,13 +432,13 @@ function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar,
   return (
     <div className="absolute win-root" style={{ left: pos.x, top: pos.y, width: currentWidth, zIndex, userSelect: "none" }} onMouseDown={onFocus}>
       <div className="win-box" style={{ border: "1px solid var(--border-color)", background: "var(--bg-window)", position: "relative" }}>
-        <div onMouseDown={onMouseDown} style={{ ...TITLEBAR, height: 22, borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 6px", cursor: "move" }}>
-          <span style={{ ...PX, fontSize: 9, color: "var(--titlebar-text)", textTransform: "uppercase", letterSpacing: "0.04em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "calc(100% - 36px)" }}>
+        <div className="win-titlebar" onMouseDown={onMouseDown} style={{ ...TITLEBAR, height: 22, borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 6px", cursor: "move" }}>
+          <span className="win-title-text" style={{ ...PX, fontSize: 9, color: "var(--titlebar-text)", textTransform: "uppercase", letterSpacing: "0.04em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "calc(100% - 36px)" }}>
             {title}
           </span>
           <div style={{ display: "flex", gap: 2, flexShrink: 0 }}>
-            <button onClick={() => { playClick(); setMinimized(v => !v); }} style={{ width: 13, height: 13, background: "var(--bg-panel)", border: "1px solid var(--border-color)", cursor: "pointer", fontSize: 10, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>–</button>
-            <button onClick={handleClose}
+            <button className="win-ctrl-btn" onClick={() => { playClick(); setMinimized(v => !v); }} style={{ width: 13, height: 13, background: "var(--bg-panel)", border: "1px solid var(--border-color)", cursor: "pointer", fontSize: 10, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>–</button>
+            <button className="win-ctrl-btn" onClick={handleClose}
               onMouseEnter={e => { e.currentTarget.style.background = "var(--color-error)"; e.currentTarget.style.color = "var(--bg-window)"; e.currentTarget.style.transform = "scale(1.18)"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "var(--bg-panel)"; e.currentTarget.style.color = "var(--text-primary)"; e.currentTarget.style.transform = "scale(1)"; }}
               style={{ width: 13, height: 13, background: "var(--bg-panel)", color: "var(--text-primary)", border: "1px solid var(--border-color)", cursor: "pointer", fontSize: 10, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
@@ -2097,10 +2128,10 @@ function DockIcon({ icon: Icon, label, onClick, active = false }: { icon: React.
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer" }}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => { setHov(false); setPress(false); }}
       onMouseDown={() => setPress(true)} onMouseUp={() => setPress(false)} onClick={onClick}>
-      <div style={{ width: 36, height: 36, background: lit ? "var(--bg-active)" : hov ? "var(--bg-hover)" : "var(--bg-panel)", border: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", transform: press ? "translateY(1px)" : hov ? "translateY(-2px)" : "none", transition: "background 0.1s, transform 0.13s ease" }}>
+      <div className="icon-box" style={{ width: 36, height: 36, background: lit ? "var(--bg-active)" : hov ? "var(--bg-hover)" : "var(--bg-panel)", border: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", transform: press ? "translateY(1px)" : hov ? "translateY(-2px)" : "none", transition: "background 0.1s, transform 0.13s ease" }}>
         <Icon size={16} strokeWidth={1.5} style={{ color: lit ? "var(--bg-window)" : "var(--text-primary)" }} />
       </div>
-      <span style={{ ...PX, fontSize: 7, textTransform: "uppercase", color: lit ? "var(--bg-active)" : "var(--text-primary)" }}>{label}</span>
+      <span className="icon-label" style={{ ...PX, fontSize: 7, textTransform: "uppercase", color: lit ? "var(--bg-active)" : "var(--text-primary)" }}>{label}</span>
     </div>
   );
 }
@@ -2115,10 +2146,10 @@ function DesktopIcon({ icon: Icon, label, x, y, onOpen }: { icon: React.ElementT
       onMouseEnter={() => setHov(true)} onMouseLeave={() => { setHov(false); setPress(false); }}
       onMouseDown={() => setPress(true)} onMouseUp={() => setPress(false)}
       onClick={onOpen}>
-      <div style={{ width: 36, height: 36, background: press ? "var(--bg-hover)" : hov ? "var(--bg-hover)" : "var(--bg-panel)", border: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", transform: press ? "translateY(1px)" : hov ? "translateY(-2px)" : "none", transition: "background 0.1s, transform 0.13s ease" }}>
+      <div className="icon-box" style={{ width: 36, height: 36, background: press ? "var(--bg-hover)" : hov ? "var(--bg-hover)" : "var(--bg-panel)", border: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", transform: press ? "translateY(1px)" : hov ? "translateY(-2px)" : "none", transition: "background 0.1s, transform 0.13s ease" }}>
         <Icon size={18} strokeWidth={1.5} style={{ color: "var(--text-primary)" }} />
       </div>
-      <span style={{ ...PX, fontSize: 7, textTransform: "uppercase", textAlign: "center", color: hov ? "var(--bg-window)" : "var(--text-primary)", lineHeight: 1.5, padding: "1px 3px", background: hov ? "var(--bg-active)" : "transparent", transition: "background 0.06s, color 0.06s" }}>
+      <span className="icon-label" style={{ ...PX, fontSize: 7, textTransform: "uppercase", textAlign: "center", color: hov ? "var(--bg-window)" : "var(--text-primary)", lineHeight: 1.5, padding: "1px 3px", background: hov ? "var(--bg-active)" : "transparent", transition: "background 0.06s, color 0.06s" }}>
         {label}
       </span>
     </div>
@@ -2409,7 +2440,7 @@ export default function App() {
   return (
     <LanguageContext.Provider value={{ lang, setLang, t }}>
       <style>{GLOBAL_CSS}</style>
-      <div style={{ width: "100vw", height: "100vh", background: "var(--bg-main)", position: "relative", overflow: "hidden", ...(bgSvg ? {} : bgStyle(bgPattern)) }}>
+      <div className="app-root" style={{ width: "100vw", height: "100vh", background: "var(--bg-main)", position: "relative", overflow: "hidden", ...(bgSvg ? {} : bgStyle(bgPattern)) }}>
 
         {/* SVG background layer */}
         {bgSvg && (
@@ -2440,7 +2471,7 @@ export default function App() {
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{ display: "flex", gap: 2 }}>
               {(["es", "ca", "en"] as Lang[]).map(l => (
-                <button key={l} onClick={() => { playClick(); setLang(l); }} title={l === "es" ? "Español" : l === "ca" ? "Català" : "English"}
+                <button key={l} className="lang-btn" onClick={() => { playClick(); setLang(l); }} title={l === "es" ? "Español" : l === "ca" ? "Català" : "English"}
                   style={{ ...PX, fontSize: 8, textTransform: "uppercase", background: lang === l ? "var(--bg-active)" : "transparent", color: lang === l ? "var(--bg-window)" : "var(--text-secondary)", border: "1px solid var(--border-color)", cursor: "pointer", padding: "1px 5px" }}>
                   {l}
                 </button>
@@ -2501,7 +2532,7 @@ export default function App() {
         {!splashVisible && <PetWidget onOpen={() => { if (!chatOpen) { playOpen(); setChatOpen(true); focus("chat"); } else focus("chat"); }} />}
 
         {/* Dock */}
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 58, background: "var(--bg-panel)", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", gap: 18, zIndex: 100 }}>
+        <div className="dock" style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 58, background: "var(--bg-panel)", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", gap: 18, zIndex: 100 }}>
           <DockIcon icon={Home}             label={t.dock.home}    onClick={() => { playClick(); resetLayout(); }} />
           <DockIcon icon={Mail}             label={t.dock.contact} onClick={() => { playOpen(); setContactOpen(true); }} active={contactOpen} />
           <DockIcon icon={Rss}              label={t.dock.network} onClick={() => { playOpen(); setNetworkOpen(true); }}  active={networkOpen} />
