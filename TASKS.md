@@ -72,9 +72,9 @@
 
 1. **Content lock** — all items in "Remaining — Content Gaps" above resolved (videos, track names, bios reconciled, all 3 blog posts real, Spanish in Alejandro's own voice)
 2. **Pass** — full manual click-through in both languages (`pnpm dev` or preview tools): every window, every palette × light/dark, splash → desktop flow, FATAL ERROR trigger
-3. **Responsive check** — resize to ~1024×768 and a couple of common viewports; decide if a mobile pass (see Future Work) is needed before launch or after
+3. **Responsive check** — resize to ~1024×768 and a couple of common viewports to confirm desktop is unaffected; mobile pass done (see "Recent fixes" above), a deeper mobile pass (touch-drag, real mobile nav) remains optional Future Work
 4. **Final deploy** — confirm live Vercel URL matches `master`, no console errors, OG/share preview looks right
-5. **Optional:** connect `3d-gateway` entry point once that project reaches its own Checkpoint 5 (see `../3d-gateway/CHECKPOINTS.md`) — out of scope for this repo until then
+5. `3d-gateway` entry point is already connected (its Checkpoint 4/5) and now also shares language via `?lang=` and skips straight here on mobile — remaining gateway work (real model, perf pass, domain decision) is tracked in `../3d-gateway/CHECKPOINTS.md`, not blocking here
 
 ## Notes
 - App.tsx is ~1900+ lines, monolithic by design — refactor only when it blocks new work
