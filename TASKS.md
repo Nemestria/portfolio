@@ -44,6 +44,12 @@
 **Workflow**
 - Standing auto-wire: new files dropped into `public/music/`, `public/photos/`, `public/projects/PROJECT_0X/` get wired into their data structures proactively, no need to ask each time
 
+**Recent fixes**
+- Language now inherits from `../3d-gateway` via a `?lang=` URL param on the iframe embed (localStorage can't cross origins) — falls back to the splash picker when visited directly
+- Fixed invisible window-close "×" on hover: it only flipped `background` to `var(--color-error)` without swapping `color`, so in MONO (light and dark) — where `--color-error` equals `--text-primary` by design — the glyph vanished; also marginal in the other palettes' dark variants. Now pairs with `var(--bg-window)` on hover, verified across all 5 palettes × light/dark
+- `Win` chrome (shared by NotesWin, BlogWin, TrackerWin, JournalWin, AboutWin, file viewers) now resizes vertically, not just horizontally — drag the corner handle; content area switches to fixed-height + internal scroll only after first touched, so untouched windows are unaffected
+- Mobile pass (CSS-only, `@media (max-width: 768px)` in `GLOBAL_CSS`, all desktop layout untouched above that breakpoint): windows (some sit at desktop pixel coords fully off-screen on a phone, e.g. PhotoViewer's `initX=672`) now pin edge-to-edge and stack by z-index instead — the idiomatic single-screen-at-a-time mobile pattern, since free drag/resize was mouse-only anyway; resize handles hidden; modals/FatalError capped to viewport width; decorative system-bar chrome (File/Edit/View/Special, SYSTEM v2.1, online/guest/date) hidden, keeping DEBUG + language toggle + clock. `../3d-gateway` now skips its 3D experience entirely on phones and redirects straight here (see its own TASKS-equivalent notes)
+
 ## Remaining — Content Gaps (what's left to call the site "done")
 
 - [ ] `OVERVIEW.MP4` or YouTube ID — for all 3 projects, drop file into `public/projects/PROJECT_0{1,2,3}/` (or send YouTube links to wire `youtubeId`)
@@ -60,7 +66,7 @@
 - [ ] Project filtering or additional projects beyond the current 3
 - [ ] Testimonials/recommendations window
 - [ ] Keyboard shortcuts
-- [ ] Mobile/narrow-viewport layout pass (currently desktop-first, ~1024×768 target)
+- [x] Mobile/narrow-viewport layout pass — lightweight CSS-only reflow (see "Recent fixes" above), not a ground-up mobile redesign: windows go full-screen/stacked, decorative chrome hidden, resize disabled. Room for a deeper pass later (touch-drag, a real mobile nav) if wanted
 
 ## Checkpoints to Call the Site Complete
 

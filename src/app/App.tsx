@@ -61,6 +61,34 @@ const GLOBAL_CSS = `
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: var(--bg-panel); }
   ::-webkit-scrollbar-thumb { background: var(--text-secondary); border: 1px solid var(--border-color); }
+
+  /* ── Mobile (narrow viewport) ──────────────────────────────────────────────
+     Windows are absolutely positioned at desktop pixel coords (some, like
+     PhotoViewer's initX=672, sit fully off-screen below ~768px) and dragged/
+     resized via mouse-only handlers with no touch equivalent — unusable as
+     authored on a phone. Rather than touch-enable free-floating drag/resize
+     (bad fit for touch anyway), each window is pinned to fill the workspace
+     edge-to-edge below this breakpoint, stacking by the existing z-index so
+     the focused one reads full-screen, which is the idiomatic mobile pattern.
+     Every rule here is scoped to the media query so nothing changes above it. */
+  @media (max-width: 768px) {
+    .win-root {
+      position: fixed !important;
+      inset: 26px 6px 64px 6px !important;
+      width: auto !important;
+      height: auto !important;
+    }
+    .win-box { height: 100% !important; display: flex !important; flex-direction: column !important; }
+    .win-content { flex: 1 1 auto !important; min-height: 0 !important; overflow-y: auto !important; }
+    .resize-handle { display: none !important; }
+
+    .modal-box { width: calc(100vw - 32px) !important; max-width: 420px !important; }
+
+    .system-bar { overflow-x: auto !important; }
+    .sysbar-decorative { display: none !important; }
+
+    .workspace { overflow-y: auto !important; }
+  }
 `;
 
 // ── Embed mode ────────────────────────────────────────────────────────────────
@@ -71,6 +99,16 @@ const EMBED = typeof window !== "undefined" && new URLSearchParams(window.locati
 // gateway's ~0.9× CSS scale. Retro UI chrome (7-8px PX labels) is intentionally
 // small and stays unchanged — it's decoration, not reading content.
 const BODY_FS = EMBED ? 12.5 : 11;
+
+// 3d-gateway passes its chosen language as ?lang=es|en|ca on the iframe src.
+// localStorage can't carry this across origins (gateway and portfolio are
+// separate Vercel deployments), so the URL param is the only inheritance
+// channel — read once at load, same pattern as EMBED above.
+const URL_LANG = (() => {
+  if (typeof window === "undefined") return null;
+  const l = new URLSearchParams(window.location.search).get("lang");
+  return l === "es" || l === "en" || l === "ca" ? (l as Lang) : null;
+})();
 
 // ── Fonts ─────────────────────────────────────────────────────────────────────
 
@@ -231,28 +269,37 @@ type BgPattern = "flat" | "grid" | "dots" | "scanlines";
 
 // ── Hooks ─────────────────────────────────────────────────────────────────────
 
-function useResizable(initW: number, minW = 160) {
+function useResizable(initW: number, minW = 160, minH = 120) {
   const [w, setW] = useState(initW);
-  const drag = useRef({ on: false, startX: 0, startW: 0 });
+  // null = natural/auto height (untouched) — only becomes a fixed px value once
+  // the visitor actually drags the corner handle vertically, so windows that
+  // are never resized look pixel-identical to before this existed.
+  const [h, setH] = useState<number | null>(null);
+  const drag = useRef({ on: false, startX: 0, startY: 0, startW: 0, startH: 0 });
+  // Points at the content wrapper so its live rendered height can be used as
+  // the drag baseline the first time h is still null.
+  const boxRef = useRef<HTMLDivElement>(null);
 
   const onResizeDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    drag.current = { on: true, startX: e.clientX, startW: w };
-  }, [w]);
+    const startH = h ?? boxRef.current?.getBoundingClientRect().height ?? minH;
+    drag.current = { on: true, startX: e.clientX, startY: e.clientY, startW: w, startH };
+  }, [w, h, minH]);
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       if (!drag.current.on) return;
       setW(Math.max(minW, drag.current.startW + e.clientX - drag.current.startX));
+      setH(Math.max(minH, drag.current.startH + e.clientY - drag.current.startY));
     };
     const onUp = () => { drag.current.on = false; };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
     return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
-  }, [minW]);
+  }, [minW, minH]);
 
-  return { w, onResizeDown };
+  return { w, h, onResizeDown, boxRef };
 }
 
 function useDraggable(init: { x: number; y: number }) {
@@ -331,7 +378,7 @@ interface WinProps {
 
 function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar, open, onClose, resizable }: WinProps) {
   const { pos, onMouseDown } = useDraggable({ x: initX, y: initY });
-  const { w, onResizeDown } = useResizable(width, 180);
+  const { w, h, onResizeDown, boxRef } = useResizable(width, 180);
   const [minimized, setMinimized] = useState(false);
   const [internalClosed, setInternalClosed] = useState(false);
 
@@ -343,8 +390,8 @@ function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar,
   const currentWidth = resizable ? w : width;
 
   return (
-    <div className="absolute" style={{ left: pos.x, top: pos.y, width: currentWidth, zIndex, userSelect: "none" }} onMouseDown={onFocus}>
-      <div style={{ border: "1px solid var(--border-color)", background: "var(--bg-window)", position: "relative" }}>
+    <div className="absolute win-root" style={{ left: pos.x, top: pos.y, width: currentWidth, zIndex, userSelect: "none" }} onMouseDown={onFocus}>
+      <div className="win-box" style={{ border: "1px solid var(--border-color)", background: "var(--bg-window)", position: "relative" }}>
         <div onMouseDown={onMouseDown} style={{ ...TITLEBAR, height: 22, borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 6px", cursor: "move" }}>
           <span style={{ ...PX, fontSize: 9, color: "var(--titlebar-text)", textTransform: "uppercase", letterSpacing: "0.04em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "calc(100% - 36px)" }}>
             {title}
@@ -352,14 +399,16 @@ function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar,
           <div style={{ display: "flex", gap: 2, flexShrink: 0 }}>
             <button onClick={() => { playClick(); setMinimized(v => !v); }} style={{ width: 13, height: 13, background: "var(--bg-panel)", border: "1px solid var(--border-color)", cursor: "pointer", fontSize: 10, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>–</button>
             <button onClick={handleClose}
-              onMouseEnter={e => { e.currentTarget.style.background = "var(--color-error)"; e.currentTarget.style.transform = "scale(1.18)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "var(--bg-panel)"; e.currentTarget.style.transform = "scale(1)"; }}
-              style={{ width: 13, height: 13, background: "var(--bg-panel)", border: "1px solid var(--border-color)", cursor: "pointer", fontSize: 10, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+              onMouseEnter={e => { e.currentTarget.style.background = "var(--color-error)"; e.currentTarget.style.color = "var(--bg-window)"; e.currentTarget.style.transform = "scale(1.18)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "var(--bg-panel)"; e.currentTarget.style.color = "var(--text-primary)"; e.currentTarget.style.transform = "scale(1)"; }}
+              style={{ width: 13, height: 13, background: "var(--bg-panel)", color: "var(--text-primary)", border: "1px solid var(--border-color)", cursor: "pointer", fontSize: 10, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
           </div>
         </div>
         {!minimized && (
           <>
-            {children}
+            <div ref={boxRef} className="win-content" style={resizable && h != null ? { height: h, overflowY: "auto" } : undefined}>
+              {children}
+            </div>
             {statusBar && (
               <div style={{ borderTop: "1px solid var(--border-color)", background: "var(--bg-window)", padding: "2px 8px", ...PX, fontSize: 8, color: "var(--text-secondary)", textTransform: "uppercase", whiteSpace: "nowrap", overflow: "hidden" }}>
                 {statusBar}
@@ -369,6 +418,7 @@ function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar,
               <div
                 onMouseDown={onResizeDown}
                 title="Resize"
+                className="resize-handle"
                 style={{
                   position: "absolute", bottom: 0, right: 0,
                   width: 14, height: 14, cursor: "nwse-resize",
@@ -392,14 +442,14 @@ function Modal({ title, onClose, children, width = 360 }: { title: string; onClo
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 900, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.45)" }}
       onClick={handleClose}>
-      <div style={{ width, background: "var(--bg-window)", border: "2px solid var(--border-color)", boxShadow: "4px 4px 0 var(--border-color)" }}
+      <div className="modal-box" style={{ width, background: "var(--bg-window)", border: "2px solid var(--border-color)", boxShadow: "4px 4px 0 var(--border-color)" }}
         onClick={e => e.stopPropagation()}>
         <div style={{ ...TITLEBAR, height: 24, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px" }}>
           <span style={{ ...PX, fontSize: 9, color: "var(--titlebar-text)", textTransform: "uppercase" }}>{title}</span>
           <button onClick={handleClose}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--color-error)"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-panel)"; }}
-            style={{ width: 14, height: 14, background: "var(--bg-panel)", border: "1px solid var(--border-color)", cursor: "pointer", fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--color-error)"; (e.currentTarget as HTMLElement).style.color = "var(--bg-window)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-panel)"; (e.currentTarget as HTMLElement).style.color = "var(--text-primary)"; }}
+            style={{ width: 14, height: 14, background: "var(--bg-panel)", color: "var(--text-primary)", border: "1px solid var(--border-color)", cursor: "pointer", fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
         </div>
         {children}
       </div>
@@ -413,7 +463,7 @@ function FatalErrorModal({ onGoToProjects }: { onGoToProjects: () => void }) {
   const { t } = useLang();
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 9000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.65)" }}>
-      <div style={{ width: 340, background: "#1a0000", border: "2px solid #ff3b3b", boxShadow: "0 0 0 4px #000, 6px 6px 0 rgba(0,0,0,0.4)" }}>
+      <div className="modal-box" style={{ width: 340, background: "#1a0000", border: "2px solid #ff3b3b", boxShadow: "0 0 0 4px #000, 6px 6px 0 rgba(0,0,0,0.4)" }}>
         <div style={{ background: "repeating-linear-gradient(90deg,#ff3b3b 0,#ff3b3b 1px,#8a0000 1px,#8a0000 2px)", height: 24, display: "flex", alignItems: "center", padding: "0 8px", gap: 6 }}>
           <AlertTriangle size={12} strokeWidth={2} style={{ color: "#fff" }}/>
           <span style={{ ...PX, fontSize: 9, color: "#fff", letterSpacing: 1 }}>{t.fatalError.title}</span>
@@ -2231,8 +2281,10 @@ export default function App() {
   const [layoutKey, setLayoutKey] = useState(0);
   const [z, setZ] = useState<Record<WinId, number>>(DEFAULT_Z);
 
-  // Language — inherit from 3d-gateway via localStorage, else default ES
+  // Language — inherit from 3d-gateway's ?lang= param first (see URL_LANG),
+  // else this project's own last choice (localStorage), else default ES.
   const [lang, setLang] = useState<Lang>(() => {
+    if (URL_LANG) return URL_LANG;
     const saved = localStorage.getItem("vertigo-lang") as Lang | null;
     return (saved === "es" || saved === "en" || saved === "ca") ? saved : "es";
   });
@@ -2260,8 +2312,9 @@ export default function App() {
   const [contactOpen,  setContactOpen]  = useState(false);
   const [networkOpen,  setNetworkOpen]  = useState(false);
 
-  // Splash + audio unlock
-  const langPreset = !!(localStorage.getItem("vertigo-lang"));
+  // Splash + audio unlock — a resolved language (inherited from the gateway,
+  // or remembered from a previous visit) skips the picker step
+  const langPreset = !!URL_LANG || !!(localStorage.getItem("vertigo-lang"));
   const [splashVisible, setSplashVisible] = useState(!langPreset);
   const [splashExiting, setSplashExiting] = useState(false);
   const [autoplay,      setAutoplay]      = useState(false);
@@ -2360,20 +2413,20 @@ export default function App() {
         <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 998, opacity: 0.038, backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundSize: "140px" }} />
 
         {/* System bar */}
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 20, background: "var(--bg-panel)", borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 12px", zIndex: 100 }}>
+        <div className="system-bar" style={{ position: "fixed", top: 0, left: 0, right: 0, height: 20, background: "var(--bg-panel)", borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 12px", zIndex: 100 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <span style={{ ...PX, fontSize: 9, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-primary)" }}>SYSTEM v2.1</span>
-            <div style={{ display: "flex", gap: 12 }}>
+            <span className="sysbar-decorative" style={{ ...PX, fontSize: 9, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-primary)" }}>SYSTEM v2.1</span>
+            <div className="sysbar-decorative" style={{ display: "flex", gap: 12 }}>
               {[t.systemBar.menuFile, t.systemBar.menuEdit, t.systemBar.menuView, t.systemBar.menuSpecial].map(m => (
                 <button key={m} style={{ ...PX, fontSize: 8, textTransform: "uppercase", background: "transparent", border: "none", cursor: "pointer", color: "var(--text-primary)", padding: "0 2px" }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>{m}</button>
               ))}
-              <button onClick={() => { playClick(); setShowFatalError(true); }} title="Trigger the FATAL ERROR nag manually"
-                style={{ ...PX, fontSize: 8, textTransform: "uppercase", background: "transparent", border: "none", cursor: "pointer", color: "var(--color-error)", padding: "0 2px" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>{t.systemBar.debug}</button>
             </div>
+            <button onClick={() => { playClick(); setShowFatalError(true); }} title="Trigger the FATAL ERROR nag manually"
+              style={{ ...PX, fontSize: 8, textTransform: "uppercase", background: "transparent", border: "none", cursor: "pointer", color: "var(--color-error)", padding: "0 2px" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>{t.systemBar.debug}</button>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{ display: "flex", gap: 2 }}>
@@ -2384,16 +2437,16 @@ export default function App() {
                 </button>
               ))}
             </div>
-            <span style={{ ...PX, fontSize: 8, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 3 }}>
+            <span className="sysbar-decorative" style={{ ...PX, fontSize: 8, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 3 }}>
               <span style={{ animation: "led-blink 2s ease-in-out infinite" }}>●</span> {t.systemBar.online}
             </span>
-            <span style={{ ...PX, fontSize: 8, color: "var(--text-secondary)" }}>guest@desktop</span>
-            <span style={{ ...PX, fontSize: 8, color: "var(--text-primary)" }}>{dateStr}</span>
+            <span className="sysbar-decorative" style={{ ...PX, fontSize: 8, color: "var(--text-secondary)" }}>guest@desktop</span>
+            <span className="sysbar-decorative" style={{ ...PX, fontSize: 8, color: "var(--text-primary)" }}>{dateStr}</span>
             <span style={{ ...PX, fontSize: 9, color: "var(--text-primary)" }}>{timeStr}</span>
           </div>
         </div>
 
-        <div style={{ position: "absolute", top: 20, bottom: 58, left: 0, right: 0 }}>
+        <div className="workspace" style={{ position: "absolute", top: 20, bottom: 58, left: 0, right: 0 }}>
           <div style={{ position: "absolute", top: 22, left: 20, ...SERIF, fontSize: 11, color: "var(--text-tertiary)", letterSpacing: "0.2em", textTransform: "uppercase", userSelect: "none", pointerEvents: "none" }}>
             {t.desktop.label}
           </div>
