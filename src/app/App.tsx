@@ -2093,6 +2093,52 @@ function PetChatWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
   );
 }
 
+// ── Mobile "better on desktop" hint ──────────────────────────────────────────
+// Mobile-only decorative watermark: bounces corner-to-corner like an old
+// screensaver, sitting behind the windows/dock/system-bar (low z-index) so it
+// only peeks through wherever the desktop shows through. Position is driven
+// via a ref + direct style mutation (not React state) since it updates every
+// animation frame — routing that through setState would re-render the whole
+// tree 60x/sec for a purely decorative element.
+function MobileDesktopHint() {
+  const ref = useRef<HTMLDivElement>(null);
+  const { t } = useLang();
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let x = 24, y = 90;
+    let vx = 1.15, vy = 0.85;
+    let raf = 0;
+    const tick = () => {
+      // Defensive: if the text is ever wider/taller than the viewport (long
+      // translation, tiny device), max would go negative — clamp to 0 so it
+      // sticks to a corner instead of drifting off-screen.
+      const maxX = Math.max(0, window.innerWidth - el.offsetWidth);
+      const maxY = Math.max(0, window.innerHeight - el.offsetHeight);
+      x += vx; y += vy;
+      if (x <= 0 || x >= maxX) { vx = -vx; x = Math.min(Math.max(x, 0), maxX); }
+      if (y <= 0 || y >= maxY) { vy = -vy; y = Math.min(Math.max(y, 0), maxY); }
+      el.style.transform = `translate(${x}px, ${y}px)`;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 1, pointerEvents: "none", overflow: "hidden" }}>
+      <div ref={ref} style={{
+        position: "absolute", ...PX, fontSize: 9, letterSpacing: 1.5,
+        textTransform: "uppercase", whiteSpace: "nowrap",
+        color: "var(--text-tertiary)", opacity: 0.4,
+      }}>
+        {t.mobileHint.text}
+      </div>
+    </div>
+  );
+}
+
 function PetWidget({ onOpen }: { onOpen: () => void }) {
   const { t } = useLang();
   const [hov, setHov] = useState(false);
@@ -2451,6 +2497,9 @@ export default function App() {
 
         {/* Noise overlay */}
         <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 998, opacity: 0.038, backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundSize: "140px" }} />
+
+        {/* Mobile-only "better on desktop" bouncing watermark */}
+        {MOBILE && <MobileDesktopHint />}
 
         {/* System bar */}
         <div className="system-bar" style={{ position: "fixed", top: 0, left: 0, right: 0, height: 20, background: "var(--bg-panel)", borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 12px", zIndex: 100 }}>

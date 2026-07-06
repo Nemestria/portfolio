@@ -31,6 +31,9 @@ export interface Strings {
     label: string;
     myProjects: string; music: string; photos: string; about: string; bgGen: string; blog: string; tracker: string; journal: string; feedback: string;
   };
+  mobileHint: {
+    text: string;
+  };
   fatalError: {
     title: string; subtitle: string; body: string; cta: string;
   };
@@ -137,6 +140,9 @@ const ES: Strings = {
   desktop: {
     label: "Escritorio",
     myProjects: "MIS PROYECTOS", music: "MÚSICA", photos: "FOTOS", about: "SOBRE MÍ", bgGen: "GEN. FONDO", blog: "BLOG", tracker: "TRACKER", journal: "DIARIO", feedback: "BUZÓN",
+  },
+  mobileHint: {
+    text: "MEJOR EN ESCRITORIO ;)",
   },
   fatalError: {
     title: "ERROR FATAL",
@@ -390,6 +396,9 @@ const EN: Strings = {
     label: "Desktop",
     myProjects: "MY PROJECTS", music: "MUSIC", photos: "PHOTOS", about: "ABOUT", bgGen: "BG GEN", blog: "BLOG", tracker: "TRACKER", journal: "JOURNAL", feedback: "MAILBOX",
   },
+  mobileHint: {
+    text: "BETTER ON DESKTOP ;)",
+  },
   fatalError: {
     title: "FATAL ERROR",
     subtitle: "UNACCEPTABLE BEHAVIOR DETECTED",
@@ -641,6 +650,9 @@ const CA: Strings = {
   desktop: {
     label: "Escriptori",
     myProjects: "ELS MEUS PROJECTES", music: "MÚSICA", photos: "FOTOS", about: "SOBRE MI", bgGen: "GEN. FONS", blog: "BLOG", tracker: "TRACKER", journal: "DIARI", feedback: "BÚSTIA",
+  },
+  mobileHint: {
+    text: "MILLOR EN ESCRIPTORI ;)",
   },
   fatalError: {
     title: "ERROR FATAL",
