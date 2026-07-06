@@ -269,12 +269,16 @@ type BgPattern = "flat" | "grid" | "dots" | "scanlines";
 
 // ── Hooks ─────────────────────────────────────────────────────────────────────
 
-function useResizable(initW: number, minW = 160, minH = 120) {
+function useResizable(initW: number, minW = 160, minH = 120, initH: number | null = null) {
   const [w, setW] = useState(initW);
   // null = natural/auto height (untouched) — only becomes a fixed px value once
   // the visitor actually drags the corner handle vertically, so windows that
-  // are never resized look pixel-identical to before this existed.
-  const [h, setH] = useState<number | null>(null);
+  // are never resized look pixel-identical to before this existed. A window
+  // whose content used to be capped by its own inner max-height (see Win's
+  // initHeight prop) passes that same number as initH so it keeps its exact
+  // prior default size but is now genuinely resizable rather than internally
+  // double-scrolling.
+  const [h, setH] = useState<number | null>(initH);
   const drag = useRef({ on: false, startX: 0, startY: 0, startW: 0, startH: 0 });
   // Points at the content wrapper so its live rendered height can be used as
   // the drag baseline the first time h is still null.
@@ -374,11 +378,16 @@ interface WinProps {
   zIndex: number; onFocus: () => void; children: React.ReactNode;
   statusBar?: React.ReactNode; open?: boolean; onClose?: () => void;
   resizable?: boolean;
+  // Only for windows whose content used to be capped by its own inner
+  // max-height (NotesWin/AboutWin/BlogWin) — keeps their existing default
+  // size while making the outer chrome (not an inner scroll box) the thing
+  // that actually grows when resized.
+  initHeight?: number;
 }
 
-function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar, open, onClose, resizable }: WinProps) {
+function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar, open, onClose, resizable, initHeight }: WinProps) {
   const { pos, onMouseDown } = useDraggable({ x: initX, y: initY });
-  const { w, h, onResizeDown, boxRef } = useResizable(width, 180);
+  const { w, h, onResizeDown, boxRef } = useResizable(width, 180, 120, initHeight ?? null);
   const [minimized, setMinimized] = useState(false);
   const [internalClosed, setInternalClosed] = useState(false);
 
@@ -1037,7 +1046,7 @@ function NotesWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
   const [fontDelta, setFontDelta] = useState(0);
   const fs = BODY_FS + fontDelta;
   return (
-    <Win title={t.notes.windowTitle} width={268} initX={58} initY={148} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar="LN 28  COL 1 · UTF-8 · CRLF" resizable>
+    <Win title={t.notes.windowTitle} width={268} initX={58} initY={148} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar="LN 28  COL 1 · UTF-8 · CRLF" resizable initHeight={259}>
       <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)", alignItems: "center" }}>
         {[t.fileViewer.fileMenu, t.fileViewer.editMenu, t.fileViewer.formatMenu, t.fileViewer.viewMenu].map(m => (
           <button key={m} style={{ ...PX, fontSize: 8, padding: "3px 6px", background: "transparent", border: "none", cursor: "pointer", color: "var(--text-primary)", textTransform: "uppercase" }}
@@ -1049,7 +1058,7 @@ function NotesWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
           <button onClick={() => setFontDelta(d => Math.min(d + 1, 4))} style={{ ...PX, fontSize: 8, width: 16, height: 14, background: "transparent", border: "none", cursor: "pointer", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "center" }}>A+</button>
         </div>
       </div>
-      <div style={{ padding: "8px 10px", maxHeight: 240, overflowY: "auto", width: "100%", boxSizing: "border-box" }}>
+      <div style={{ padding: "8px 10px", width: "100%", boxSizing: "border-box" }}>
         {t.notes.lines.map((line, i) => (
           <div key={i} style={{ ...MONO, fontSize: fs, lineHeight: 1.8, color: line.type === "comment" ? "var(--text-tertiary)" : line.type === "accent" ? "var(--text-secondary)" : "var(--text-primary)", whiteSpace: "pre-wrap", width: "100%" }}>
             {line.text || " "}
@@ -1289,7 +1298,7 @@ function AboutWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
     { label: "EMAIL", url: "mailto:asanchomarmol@gmail.com", icon: Mail },
   ];
   return (
-    <Win title={t.about.title} width={340} initX={560} initY={80} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar={t.about.lastUpdated} resizable>
+    <Win title={t.about.title} width={340} initX={560} initY={80} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar={t.about.lastUpdated} resizable initHeight={246}>
       {/* Avatar */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 12px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
         <div style={{ width: 44, height: 44, border: "2px solid var(--border-color)", flexShrink: 0, overflow: "hidden" }}>
@@ -1307,7 +1316,7 @@ function AboutWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
       </div>
 
       {/* Bio */}
-      <div style={{ padding: "10px 12px", borderBottom: "1px solid var(--border-color)", maxHeight: 220, overflowY: "auto" }}>
+      <div style={{ padding: "10px 12px", borderBottom: "1px solid var(--border-color)" }}>
         <div style={{ ...MONO, fontSize: fs, color: "var(--text-primary)", lineHeight: 1.75 }}>
           {t.about.bio}
         </div>
@@ -1341,7 +1350,7 @@ function BlogWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: 
 
   return (
     <Win title={t.blog.title} width={420} initX={140} initY={70} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
-      statusBar={t.blog.statusBar} resizable>
+      statusBar={t.blog.statusBar} resizable initHeight={422}>
       {/* Browser toolbar */}
       <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 8px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
         <CtrlBtn onClick={() => setOpenPost(null)} w={22} h={18}><ArrowLeft size={9} strokeWidth={2}/></CtrlBtn>
@@ -1355,7 +1364,7 @@ function BlogWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: 
       </div>
 
       {/* Page content */}
-      <div style={{ padding: "14px 14px 16px", minHeight: 240, maxHeight: 440, overflowY: "auto" }}>
+      <div style={{ padding: "14px 14px 16px", minHeight: 240 }}>
         {post ? (
           <div>
             <button onClick={() => setOpenPost(null)}
@@ -1698,8 +1707,8 @@ function TrackerWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
 
   return (
     <Win title={t.tracker.title} width={920} initX={60} initY={40} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
-      statusBar={t.tracker.statusBar} resizable>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", maxHeight: 580, overflowY: "auto" }}>
+      statusBar={t.tracker.statusBar} resizable initHeight={232}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
         {(t.tracker.lanes as TrackerLane[]).map((lane, li) => (
           <div key={li} style={{ borderRight: li < 3 ? "1px solid var(--border-color)" : "none" }}>
             {/* Lane accent bar + header */}
@@ -1749,7 +1758,7 @@ function JournalWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
   const entries = (t.journal.entries as JournalEntry[]).filter(e => e.type === tab);
 
   return (
-    <Win title={t.journal.title} width={340} initX={420} initY={100} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} resizable>
+    <Win title={t.journal.title} width={340} initX={420} initY={100} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} resizable initHeight={107}>
       {/* Tab bar */}
       <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)" }}>
         {(["movie", "book"] as const).map((type) => {
@@ -1768,7 +1777,7 @@ function JournalWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocu
         })}
       </div>
       {/* Entry list */}
-      <div style={{ maxHeight: 320, overflowY: "auto" }}>
+      <div>
         {entries.map((e, i) => (
           <div key={i}>
             <div
