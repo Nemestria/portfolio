@@ -34,6 +34,10 @@ export interface Strings {
   mobileHint: {
     text: string;
   };
+  onboarding: {
+    title: string; cta: string;
+    body: string[];
+  };
   fatalError: {
     title: string; subtitle: string; body: string; cta: string;
   };
@@ -104,7 +108,6 @@ export interface Strings {
     hate: string; neutral: string; love: string; other: string;
     otherPlaceholder: string; send: string;
     thanks: string; thanksDetail: string;
-    hateTip: string;
   };
   pet: {
     name: string; chatTitle: string; inputPlaceholder: string; greeting: string;
@@ -140,6 +143,17 @@ const ES: Strings = {
   desktop: {
     label: "Escritorio",
     myProjects: "MIS PROYECTOS", music: "MÚSICA", photos: "FOTOS", about: "SOBRE MÍ", bgGen: "GEN. FONDO", blog: "BLOG", tracker: "TRACKER", journal: "DIARIO", feedback: "BUZÓN",
+  },
+  onboarding: {
+    title: "GUIA.TXT — COMO FUNCIONA",
+    cta: "ENTENDIDO →",
+    body: [
+      "Haz clic en los iconos del escritorio para abrir ventanas.",
+      "Arrastra la barra superior de una ventana para moverla.",
+      "– minimiza · □ maximiza · × cierra la ventana.",
+      "En FOTOS, usa las flechas ← → del teclado para navegar.",
+      "El dock de abajo tiene inicio, contacto, redes, ajustes y sistema.",
+    ],
   },
   mobileHint: {
     text: "MEJOR EN ESCRITORIO ;)",
@@ -329,7 +343,6 @@ const ES: Strings = {
     send: "ENVIAR →",
     thanks: "¡Recibido! Gracias por tu feedback.",
     thanksDetail: "Draven lo leerá primero.",
-    hateTip: "(si puedes alcanzarlo)",
   },
   pet: {
     name: "Draven", chatTitle: "DRAVEN.EXE — MI GATO", inputPlaceholder: "pregunta algo...",
@@ -395,6 +408,17 @@ const EN: Strings = {
   desktop: {
     label: "Desktop",
     myProjects: "MY PROJECTS", music: "MUSIC", photos: "PHOTOS", about: "ABOUT", bgGen: "BG GEN", blog: "BLOG", tracker: "TRACKER", journal: "JOURNAL", feedback: "MAILBOX",
+  },
+  onboarding: {
+    title: "GUIDE.TXT — HOW IT WORKS",
+    cta: "GOT IT →",
+    body: [
+      "Click a desktop icon to open its window.",
+      "Drag a window's top bar to move it.",
+      "– minimizes · □ maximizes · × closes the window.",
+      "In PHOTOS, use the ← → arrow keys to browse.",
+      "The dock below has home, contact, network, prefs and system.",
+    ],
   },
   mobileHint: {
     text: "BETTER ON DESKTOP ;)",
@@ -584,7 +608,6 @@ const EN: Strings = {
     send: "SEND →",
     thanks: "Got it! Thanks for the feedback.",
     thanksDetail: "Draven will read it first.",
-    hateTip: "(if you can catch it)",
   },
   pet: {
     name: "Draven", chatTitle: "DRAVEN.EXE — MY CAT", inputPlaceholder: "ask something...",
@@ -650,6 +673,17 @@ const CA: Strings = {
   desktop: {
     label: "Escriptori",
     myProjects: "ELS MEUS PROJECTES", music: "MÚSICA", photos: "FOTOS", about: "SOBRE MI", bgGen: "GEN. FONS", blog: "BLOG", tracker: "TRACKER", journal: "DIARI", feedback: "BÚSTIA",
+  },
+  onboarding: {
+    title: "GUIA.TXT — COM FUNCIONA",
+    cta: "ENTESOS →",
+    body: [
+      "Fes clic a les icones de l'escriptori per obrir finestres.",
+      "Arrossega la barra superior d'una finestra per moure-la.",
+      "– minimitza · □ maximitza · × tanca la finestra.",
+      "A FOTOS, fes servir les fletxes ← → del teclat per navegar.",
+      "El dock de sota té inici, contacte, xarxes, ajustos i sistema.",
+    ],
   },
   mobileHint: {
     text: "MILLOR EN ESCRIPTORI ;)",
@@ -839,7 +873,6 @@ const CA: Strings = {
     send: "ENVIAR →",
     thanks: "Rebut! Gràcies pel feedback.",
     thanksDetail: "En Draven ho llegirà primer.",
-    hateTip: "(si pots atrapar-lo)",
   },
   pet: {
     name: "Draven", chatTitle: "DRAVEN.EXE — EL MEU GAT", inputPlaceholder: "pregunta alguna cosa...",

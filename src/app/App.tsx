@@ -16,6 +16,11 @@ const LanguageContext = createContext<{ lang: Lang; setLang: (l: Lang) => void; 
 });
 const useLang = () => useContext(LanguageContext);
 
+// z-index of whichever open Win is currently on top — lets Win render its
+// own highlight without every wrapper (MusicVisualizer, PhotoViewer, etc.)
+// having to thread an extra "active" prop down just for this.
+const ActiveWinContext = createContext<number>(-1);
+
 // ── Global styles ─────────────────────────────────────────────────────────────
 
 const GLOBAL_CSS = `
@@ -25,6 +30,8 @@ const GLOBAL_CSS = `
   @keyframes splash-fadein { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: translateY(0) } }
   @keyframes splash-exit { from { opacity: 1 } to { opacity: 0 } }
   @keyframes pet-bob { 0%,100% { transform: translateY(0px) } 50% { transform: translateY(-5px) } }
+  @keyframes pet-attn { 0%,100% { transform: translateY(0) rotate(0deg) scale(1) } 25% { transform: translateY(-7px) rotate(-9deg) scale(1.07) } 75% { transform: translateY(-7px) rotate(9deg) scale(1.07) } }
+  @keyframes pet-ping { 0% { transform: scale(1); opacity: 0.9 } 100% { transform: scale(2.6); opacity: 0 } }
   @keyframes draven-think { 0%,66% { opacity: 1 } 33%,100% { opacity: 0.15 } }
 
   button { color: var(--text-primary); font-family: inherit; transition: opacity 0.12s, transform 0.12s ease, background 0.1s, color 0.1s, border-color 0.1s, box-shadow 0.12s; }
@@ -96,6 +103,7 @@ const GLOBAL_CSS = `
     .win-box { height: 100% !important; display: flex !important; flex-direction: column !important; }
     .win-content { flex: 1 1 auto !important; min-height: 0 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; }
     .resize-handle { display: none !important; }
+    .win-maximize-btn { display: none !important; }
 
     .win-titlebar { height: 34px !important; padding: 0 10px !important; }
     .win-title-text { font-size: 12px !important; }
@@ -145,7 +153,9 @@ const URL_LANG = (() => {
 
 const PX: React.CSSProperties = { fontFamily: "'Press Start 2P', monospace" };
 const MONO: React.CSSProperties = { fontFamily: "'Share Tech Mono', monospace" };
-const SERIF: React.CSSProperties = { fontFamily: "'IM Fell English', Georgia, serif" };
+// Matches 3d-gateway's WelcomeSign text font — the project caps itself at 3
+// fonts total (PX, MONO, this one), reused here instead of a 4th one-off.
+const BOLDONSE: React.CSSProperties = { fontFamily: "'Boldonse', sans-serif" };
 
 // ── SFX Engine — synthesized retro UI sounds (no audio files needed) ───────────
 
@@ -421,6 +431,9 @@ function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar,
   const { w, h, onResizeDown, boxRef } = useResizable(width, 180, 120, initHeight ?? null);
   const [minimized, setMinimized] = useState(false);
   const [internalClosed, setInternalClosed] = useState(false);
+  const [maximized, setMaximized] = useState(false);
+  const activeZ = useContext(ActiveWinContext);
+  const isActive = zIndex === activeZ;
 
   useEffect(() => { if (open) setMinimized(false); }, [open]);
 
@@ -428,16 +441,31 @@ function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar,
   if (closed) return null;
   const handleClose = () => { playClose(); if (onClose) onClose(); else setInternalClosed(true); };
   const currentWidth = resizable ? w : width;
+  const toggleMaximize = () => { playClick(); setMaximized(v => !v); };
+
+  const rootStyle: React.CSSProperties = maximized
+    ? { position: "fixed", left: "5vw", top: "5vh", width: "90vw", height: "90vh", zIndex, userSelect: "none" }
+    : { left: pos.x, top: pos.y, width: currentWidth, zIndex, userSelect: "none" };
 
   return (
-    <div className="absolute win-root" style={{ left: pos.x, top: pos.y, width: currentWidth, zIndex, userSelect: "none" }} onMouseDown={onFocus}>
-      <div className="win-box" style={{ border: "1px solid var(--border-color)", background: "var(--bg-window)", position: "relative" }}>
-        <div className="win-titlebar" onMouseDown={onMouseDown} style={{ ...TITLEBAR, height: 22, borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 6px", cursor: "move" }}>
-          <span className="win-title-text" style={{ ...PX, fontSize: 9, color: "var(--titlebar-text)", textTransform: "uppercase", letterSpacing: "0.04em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "calc(100% - 36px)" }}>
+    <div className="absolute win-root" style={rootStyle} onMouseDown={onFocus}>
+      <div className="win-box" style={{
+        border: `1px solid ${isActive ? "var(--bg-active)" : "var(--border-color)"}`,
+        // A same-color border swap alone is invisible in MONO, whose
+        // --bg-active equals --border-color by design — the glow reads
+        // against --bg-main (the desktop behind the window) instead, so it
+        // stays visible even when the border color itself doesn't change.
+        boxShadow: isActive ? "0 0 0 1px var(--bg-active), 0 0 12px 1px var(--bg-active)" : "none",
+        background: "var(--bg-window)", position: "relative",
+        ...(maximized ? { height: "100%", display: "flex", flexDirection: "column" } : {}),
+      }}>
+        <div className="win-titlebar" onMouseDown={maximized ? undefined : onMouseDown} style={{ ...TITLEBAR, height: 22, borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 6px", cursor: maximized ? "default" : "move" }}>
+          <span className="win-title-text" style={{ ...PX, fontSize: 9, color: "var(--titlebar-text)", textTransform: "uppercase", letterSpacing: "0.04em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "calc(100% - 52px)" }}>
             {title}
           </span>
           <div style={{ display: "flex", gap: 2, flexShrink: 0 }}>
             <button className="win-ctrl-btn" onClick={() => { playClick(); setMinimized(v => !v); }} style={{ width: 13, height: 13, background: "var(--bg-panel)", border: "1px solid var(--border-color)", cursor: "pointer", fontSize: 10, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>–</button>
+            <button className="win-ctrl-btn win-maximize-btn" title={maximized ? "Restore" : "Maximize"} onClick={toggleMaximize} style={{ width: 13, height: 13, background: "var(--bg-panel)", border: "1px solid var(--border-color)", cursor: "pointer", fontSize: 9, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>{maximized ? "❐" : "□"}</button>
             <button className="win-ctrl-btn" onClick={handleClose}
               onMouseEnter={e => { e.currentTarget.style.background = "var(--color-error)"; e.currentTarget.style.color = "var(--bg-window)"; e.currentTarget.style.transform = "scale(1.18)"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "var(--bg-panel)"; e.currentTarget.style.color = "var(--text-primary)"; e.currentTarget.style.transform = "scale(1)"; }}
@@ -446,7 +474,7 @@ function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar,
         </div>
         {!minimized && (
           <>
-            <div ref={boxRef} className="win-content" style={resizable && h != null ? { height: h, overflowY: "auto" } : undefined}>
+            <div ref={boxRef} className="win-content" style={maximized ? { flex: "1 1 auto", minHeight: 0, overflowY: "auto" } : (resizable && h != null ? { height: h, overflowY: "auto" } : undefined)}>
               {children}
             </div>
             {statusBar && (
@@ -454,7 +482,7 @@ function Win({ title, width, initX, initY, zIndex, onFocus, children, statusBar,
                 {statusBar}
               </div>
             )}
-            {resizable && (
+            {resizable && !maximized && (
               <div
                 onMouseDown={onResizeDown}
                 title="Resize"
@@ -679,7 +707,7 @@ function MusicVisualizer({ zIndex, onFocus, open, onClose, volume, onVolumeChang
   };
 
   return (
-    <Win title={t.music.title} width={480} initX={90} initY={55} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
+    <Win title={t.music.title} width={480} initX={760} initY={45} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose}
       statusBar={ready ? `${playing ? "▶" : "■"} ${trackName.slice(0, 26)} · ${fmtSecs(elapsed)} / ${fmtSecs(duration)}` : t.music.noSignal}>
       <div style={{ position: "relative", background: "#0a060f", borderBottom: "1px solid var(--border-color)" }}>
         <canvas ref={scopeRef} width={478} height={120} style={{ display: "block", width: "100%", height: 120 }} />
@@ -720,7 +748,7 @@ function MusicVisualizer({ zIndex, onFocus, open, onClose, volume, onVolumeChang
             <button key={i} onClick={() => loadTrack(i)}
               style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: 8, height: 24, padding: "0 8px", background: i === activeIdx ? "var(--bg-active)" : i % 2 === 0 ? "var(--bg-window)" : "var(--bg-panel)", borderBottom: i < BUILTIN_TRACKS.length - 1 ? "1px solid rgba(0,0,0,0.06)" : "none", cursor: "pointer", border: "none", ...PX, fontSize: 8, textTransform: "uppercase" }}>
               <span style={{ color: i === activeIdx ? "var(--bg-window)" : "var(--text-tertiary)", minWidth: 16 }}>{i === activeIdx && playing ? "▶" : `${i + 1}.`}</span>
-              <span style={{ color: i === activeIdx ? "var(--bg-window)" : "var(--text-primary)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.name}</span>
+              <span style={{ color: i === activeIdx ? "var(--bg-window)" : "var(--text-primary)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textTransform: "none" }}>{t.name}</span>
               {t.artist && <span style={{ color: i === activeIdx ? "var(--bg-window)" : "var(--text-secondary)", ...MONO, fontSize: 10 }}>{t.artist}</span>}
             </button>
           ))}
@@ -751,8 +779,24 @@ function PhotoViewer({ zIndex, onFocus, open, onClose }: { zIndex: number; onFoc
   const baseImgHeight = 172;
   const winWidth = baseWidth + (zoom - 1) * 100;
   const imgHeight = baseImgHeight + (zoom - 1) * 80;
+
+  // Left/Right arrows browse photos, but only while this window is the one
+  // actually on top — otherwise arrow keys typed elsewhere (chat input,
+  // another window) would silently flip photos in the background.
+  const activeZ = useContext(ActiveWinContext);
+  const isActive = !!open && zIndex === activeZ;
+  useEffect(() => {
+    if (!isActive) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") { playClick(); setIdx(i => (i - 1 + PHOTOS.length) % PHOTOS.length); }
+      else if (e.key === "ArrowRight") { playClick(); setIdx(i => (i + 1) % PHOTOS.length); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isActive]);
+
   return (
-    <Win title={`PHOTO_VIEWER — ${photo.label}`} width={winWidth} initX={672} initY={106} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar={`${idx + 1} OF ${PHOTOS.length} · ${zoom}× · RGB · 24BIT`}>
+    <Win title={`PHOTO_VIEWER — ${photo.label}`} width={winWidth} initX={110} initY={90} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar={`${idx + 1} OF ${PHOTOS.length} · ${zoom}× · RGB · 24BIT`}>
       <div style={{ height: imgHeight, borderBottom: "1px solid var(--border-color)", overflow: "hidden", background: "var(--bg-dark)", transition: "height 0.15s" }}>
         <img src={photo.src} alt={photo.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
       </div>
@@ -1077,7 +1121,7 @@ function NotesWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus:
   const [fontDelta, setFontDelta] = useState(0);
   const fs = BODY_FS + fontDelta;
   return (
-    <Win title={t.notes.windowTitle} width={268} initX={58} initY={148} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar="LN 28  COL 1 · UTF-8 · CRLF" resizable initHeight={259}>
+    <Win title={t.notes.windowTitle} width={268} initX={500} initY={200} zIndex={zIndex} onFocus={onFocus} open={open} onClose={onClose} statusBar="LN 28  COL 1 · UTF-8 · CRLF" resizable initHeight={259}>
       <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)", alignItems: "center" }}>
         {[t.fileViewer.fileMenu, t.fileViewer.editMenu, t.fileViewer.formatMenu, t.fileViewer.viewMenu].map(m => (
           <button key={m} style={{ ...PX, fontSize: 8, padding: "3px 6px", background: "transparent", border: "none", cursor: "pointer", color: "var(--text-primary)", textTransform: "uppercase" }}
@@ -1110,7 +1154,7 @@ function SysInfo({ zIndex, onFocus, open, onClose }: { zIndex: number; onFocus: 
     [t.sysInfo.lblStyling, "Tailwind 4 + Inline CSS"],
     [t.sysInfo.lblUi, "shadcn/ui + Radix UI"],
     [t.sysInfo.lblAudio, "Web Audio API"],
-    [t.sysInfo.lblFonts, "Press Start 2P · Share Tech Mono"],
+    [t.sysInfo.lblFonts, "Press Start 2P · Share Tech Mono · Boldonse"],
     [t.sysInfo.lblPkgMgr, "pnpm"],
     [t.sysInfo.lblSource, "github.com/Nemestria"],
   ];
@@ -1937,7 +1981,6 @@ function FeedbackWin({ zIndex, onFocus, open, onClose }: { zIndex: number; onFoc
               {/* Hate button in its own overflow-visible container so it can escape */}
               <div style={{ position: "relative", overflow: "visible" }}>
                 <RepelButton label={t.feedback.hate} onClick={() => choose("hate")} />
-                {choice !== "hate" && <div style={{ ...MONO, fontSize: 6, color: "var(--text-tertiary)", textAlign: "center", marginTop: 2, pointerEvents: "none" }}>{t.feedback.hateTip}</div>}
               </div>
               <button style={btnStyle(choice === "neutral")} onClick={() => choose("neutral")}>{t.feedback.neutral}</button>
               <button style={btnStyle(choice === "love")} onClick={() => choose("love")}>{t.feedback.love}</button>
@@ -2139,26 +2182,60 @@ function MobileDesktopHint() {
   );
 }
 
-function PetWidget({ onOpen }: { onOpen: () => void }) {
+function PetWidget({ onOpen, attention }: { onOpen: () => void; attention: boolean }) {
   const { t } = useLang();
   const [hov, setHov] = useState(false);
+  // Periodic "hey, check me" pulse — a stronger wiggle plus a notification-dot
+  // ping, distinct from the ambient pet-bob float. Purely visual (no copy),
+  // per request: it should read as a nudge, not say anything literally.
+  // Stops entirely once the visitor opens the chat for the first time
+  // (attention flips false from the parent) — never re-nags a session.
+  const [pulse, setPulse] = useState(false);
+
+  useEffect(() => {
+    if (!attention) { setPulse(false); return; }
+    let onT: ReturnType<typeof setTimeout>, offT: ReturnType<typeof setTimeout>;
+    let cancelled = false;
+    const cycle = () => {
+      onT = setTimeout(() => {
+        if (cancelled) return;
+        setPulse(true);
+        offT = setTimeout(() => {
+          if (cancelled) return;
+          setPulse(false);
+          cycle();
+        }, 2200);
+      }, 7000);
+    };
+    cycle();
+    return () => { cancelled = true; clearTimeout(onT); clearTimeout(offT); };
+  }, [attention]);
+
   return (
     <div
-      onClick={() => { playOpen(); onOpen(); }}
+      onClick={() => { playOpen(); setPulse(false); onOpen(); }}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       title={`Chat with ${t.pet.name}`}
       style={{ position: "fixed", bottom: 68, right: 16, cursor: "pointer", userSelect: "none", zIndex: 99, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}
     >
-      <pre style={{
-        ...MONO, fontSize: 11, lineHeight: 1.3, margin: 0, padding: "4px 6px",
-        background: hov ? "var(--bg-hover)" : "var(--bg-window)",
-        border: "1px solid var(--border-color)",
-        color: "var(--text-primary)",
-        animation: "pet-bob 2.4s ease-in-out infinite",
-        transition: "background 0.1s",
-      }}>
-        {"/\\_/\\\n( •ω•)\n > ♥ <"}
-      </pre>
+      <div style={{ position: "relative" }}>
+        <pre style={{
+          ...MONO, fontSize: 11, lineHeight: 1.3, margin: 0, padding: "4px 6px",
+          background: hov ? "var(--bg-hover)" : "var(--bg-window)",
+          border: `1px solid ${pulse ? "var(--color-error)" : "var(--border-color)"}`,
+          boxShadow: pulse ? "0 0 10px var(--color-error)" : "none",
+          color: "var(--text-primary)",
+          animation: pulse ? "pet-attn 0.7s ease-in-out infinite" : "pet-bob 2.4s ease-in-out infinite",
+          transition: "background 0.1s, border-color 0.15s, box-shadow 0.15s",
+        }}>
+          {"/\\_/\\\n( •ω•)\n > ♥ <"}
+        </pre>
+        {pulse && (
+          <span style={{ position: "absolute", top: -3, right: -3, width: 9, height: 9, borderRadius: "50%", background: "var(--color-error)" }}>
+            <span style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "var(--color-error)", animation: "pet-ping 1.3s ease-out infinite" }} />
+          </span>
+        )}
+      </div>
       <span style={{ ...PX, fontSize: 6, color: "var(--text-secondary)" }}>{t.pet.name}</span>
     </div>
   );
@@ -2391,6 +2468,11 @@ export default function App() {
   const [journalOpen,  setJournalOpen]  = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
+  // First-run onboarding — shown once per session right after the splash
+  // screen exits, dismissible; not persisted (matches the rest of the app's
+  // no-localStorage-for-layout stance).
+  const [onboardingOpen, setOnboardingOpen] = useState(true);
+
   // SVG background from generator
   const [bgSvg, setBgSvg] = useState<BgSvgCfg | null>(null);
 
@@ -2428,6 +2510,11 @@ export default function App() {
 
   useEffect(() => { setSfxVolumeGain(sfxVolume); }, [sfxVolume]);
   useEffect(() => { localStorage.setItem("vertigo-lang", lang); }, [lang]);
+
+  // Draven's "check me" pulse should only ever nag once per visit — once the
+  // chat has been opened for the first time, it's off for the rest of the session.
+  const [petEverOpened, setPetEverOpened] = useState(false);
+  useEffect(() => { if (chatOpen) setPetEverOpened(true); }, [chatOpen]);
   // Single monotonic z-counter shared by every window in the app, including
   // file-viewer popups spawned inside MyProjectsWin — guarantees whatever was
   // clicked last is always strictly on top, regardless of window type.
@@ -2483,8 +2570,19 @@ export default function App() {
   const timeStr = clock.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", hour12: false });
   const dateStr = clock.toLocaleDateString(locale, { year: "numeric", month: "2-digit", day: "2-digit" });
 
+  // Highest z-index among currently-open windows only — a closed window can
+  // still hold the numerically-highest z from its last focus, so it must be
+  // excluded or nothing would end up highlighted as "active".
+  const openMap: Record<WinId, boolean> = {
+    visualizer: vizOpen, photo: photoOpen, notes: notesOpen, sysinfo: sysinfoOpen,
+    prefs: prefsOpen, about: aboutOpen, bggen: bggenOpen, projects: projOpen,
+    blog: blogOpen, tracker: trackerOpen, chat: chatOpen, journal: journalOpen, feedback: feedbackOpen,
+  };
+  const activeZ = (Object.keys(z) as WinId[]).reduce((best, id) => (openMap[id] && z[id] > best ? z[id] : best), -1);
+
   return (
     <LanguageContext.Provider value={{ lang, setLang, t }}>
+    <ActiveWinContext.Provider value={activeZ}>
       <style>{GLOBAL_CSS}</style>
       <div className="app-root" style={{ width: "100vw", height: "100vh", background: "var(--bg-main)", position: "relative", overflow: "hidden", ...(bgSvg ? {} : bgStyle(bgPattern)) }}>
 
@@ -2536,7 +2634,7 @@ export default function App() {
         </div>
 
         <div className="workspace" style={{ position: "absolute", top: 20, bottom: 58, left: 0, right: 0 }}>
-          <div style={{ position: "absolute", top: 22, left: 20, ...SERIF, fontSize: 11, color: "var(--text-tertiary)", letterSpacing: "0.2em", textTransform: "uppercase", userSelect: "none", pointerEvents: "none" }}>
+          <div style={{ position: "absolute", top: 22, left: 20, ...BOLDONSE, fontSize: 11, color: "var(--text-tertiary)", letterSpacing: "0.2em", textTransform: "uppercase", userSelect: "none", pointerEvents: "none" }}>
             {t.desktop.label}
           </div>
 
@@ -2574,11 +2672,26 @@ export default function App() {
         {/* Fatal error nag */}
         {showFatalError && <FatalErrorModal onGoToProjects={handleGoToProjects} />}
 
+        {/* First-run onboarding, once the splash has exited */}
+        {!splashVisible && onboardingOpen && (
+          <Modal title={t.onboarding.title} onClose={() => setOnboardingOpen(false)} width={360}>
+            <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ ...MONO, fontSize: 11, color: "var(--text-primary)", lineHeight: 1.7 }}>
+                {t.onboarding.body.map((line, i) => <div key={i} style={{ marginBottom: 6 }}>• {line}</div>)}
+              </div>
+              <button onClick={() => { playClick(); setOnboardingOpen(false); }}
+                style={{ ...PX, fontSize: 9, padding: "9px 0", background: "var(--bg-active)", color: "var(--bg-window)", border: "1px solid var(--bg-active)", cursor: "pointer" }}>
+                {t.onboarding.cta}
+              </button>
+            </div>
+          </Modal>
+        )}
+
         {/* Splash */}
         {splashVisible && <SplashScreen onEnter={handleEnter} exiting={splashExiting} skipLanguage={langPreset} />}
 
         {/* Pet — always visible after splash */}
-        {!splashVisible && <PetWidget onOpen={() => { if (!chatOpen) { playOpen(); setChatOpen(true); focus("chat"); } else focus("chat"); }} />}
+        {!splashVisible && <PetWidget attention={!petEverOpened} onOpen={() => { if (!chatOpen) { playOpen(); setChatOpen(true); focus("chat"); } else focus("chat"); }} />}
 
         {/* Dock */}
         <div className="dock" style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 58, background: "var(--bg-panel)", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "center", gap: 18, zIndex: 100 }}>
@@ -2590,6 +2703,7 @@ export default function App() {
           <DockIcon icon={User}             label={t.dock.about}   onClick={() => toggle("about", aboutOpen, setAboutOpen)}   active={aboutOpen} />
         </div>
       </div>
+    </ActiveWinContext.Provider>
     </LanguageContext.Provider>
   );
 }

@@ -49,11 +49,20 @@
 - Fixed invisible window-close "×" on hover: it only flipped `background` to `var(--color-error)` without swapping `color`, so in MONO (light and dark) — where `--color-error` equals `--text-primary` by design — the glyph vanished; also marginal in the other palettes' dark variants. Now pairs with `var(--bg-window)` on hover, verified across all 5 palettes × light/dark
 - `Win` chrome (shared by NotesWin, BlogWin, TrackerWin, JournalWin, AboutWin, file viewers) now resizes vertically, not just horizontally — drag the corner handle; content area switches to fixed-height + internal scroll only after first touched, so untouched windows are unaffected
 - Mobile pass (CSS-only, `@media (max-width: 768px)` in `GLOBAL_CSS`, all desktop layout untouched above that breakpoint): windows (some sit at desktop pixel coords fully off-screen on a phone, e.g. PhotoViewer's `initX=672`) now pin edge-to-edge and stack by z-index instead — the idiomatic single-screen-at-a-time mobile pattern, since free drag/resize was mouse-only anyway; resize handles hidden; modals/FatalError capped to viewport width; decorative system-bar chrome (File/Edit/View/Special, SYSTEM v2.1, online/guest/date) hidden, keeping DEBUG + language toggle + clock. `../3d-gateway` now skips its 3D experience entirely on phones and redirects straight here (see its own TASKS-equivalent notes)
+- Mobile-only bouncing "better on desktop" watermark (`MobileDesktopHint`), `pointer-events:none`, corner-to-corner DVD-style animation
+- `Win` chrome now has a maximize/restore button (`□`/`❐`) alongside minimize/close — snaps to 90vw × 90vh centered, restores to exact prior size/position, hidden on mobile (that breakpoint already forces its own sizing)
+- Whichever open window is topmost now gets a visible highlight (border + glow using `--bg-active`) via a lightweight `ActiveWinContext` — works even in the MONO palette where `--bg-active` equals `--border-color`, since the glow reads against `--bg-main` instead
+- PhotoViewer: ← → arrow keys browse photos, active only while that window is the focused one (reuses `ActiveWinContext`)
+- Boot layout reordered per feedback: MUSIC top-right, SOBRE MÍ (NotesWin) center, FOTOS left. Added a one-time dismissible onboarding modal (`GUIA.TXT`) shown right after the splash exits, explaining the desktop's controls
+- Removed the "(si puedes alcanzarlo)" hint under the feedback window's "La odio" button per feedback — the repelling-button joke stands on its own
+- Music track list now shows Y2K-style filenames (`invertedvariable-anhedonia.mp3` etc.) instead of generic "SONG 01"–"04"; 2 real titles supplied, 2 still placeholders (see Content Gaps)
+- Swapped the desktop-label font from `IM Fell English` (serif, no longer used anywhere) to `Boldonse` — matches `../3d-gateway`'s `WelcomeSign` text font, keeping the project capped at exactly 3 fonts total (Press Start 2P, Share Tech Mono, Boldonse)
+- Draven's dock widget (`PetWidget`) now periodically nudges for attention — a stronger wiggle (`pet-attn`) plus a small notification-dot ping, firing every ~7s for ~2.2s, purely visual (no copy). Stops permanently for the session the first time the visitor opens the chat (`petEverOpened` in `App()`)
 
 ## Remaining — Content Gaps (what's left to call the site "done")
 
 - [ ] `OVERVIEW.MP4` or YouTube ID — for all 3 projects, drop file into `public/projects/PROJECT_0{1,2,3}/` (or send YouTube links to wire `youtubeId`)
-- [ ] Music track names — currently generic "SONG 01"–"SONG 04" in `src/app/data/tracks.ts`, need real titles/artists
+- [ ] Music track names — song3/song4 still placeholder (`untitled-track-0{3,4}.mp3`) in `src/app/data/tracks.ts`, song1/song2 have real Y2K-style names now, need the other 2 real titles
 - [ ] AboutWin (dock card) bio — still original placeholder text vs. the real bio already written for the desktop NotesWin. Reconcile or intentionally keep them different.
 - [ ] NotesWin "here you will find:" list — only has one bullet ("my portfolio"), confirm with Alejandro if more items are wanted
 - [ ] BLOG post #1 — image placeholder pending a desktop screenshot
@@ -66,6 +75,7 @@
 - [ ] Project filtering or additional projects beyond the current 3
 - [ ] Testimonials/recommendations window
 - [ ] Keyboard shortcuts
+- [ ] Draven (pet chat) avatar — currently ASCII cat art; explicitly deprioritized by Alejandro, revisit later as either a small 3D critter or a nicer ASCII/pixel piece
 - [x] Mobile/narrow-viewport layout pass — lightweight CSS-only reflow (see "Recent fixes" above), not a ground-up mobile redesign: windows go full-screen/stacked, decorative chrome hidden, resize disabled. Room for a deeper pass later (touch-drag, a real mobile nav) if wanted
 
 ## Checkpoints to Call the Site Complete

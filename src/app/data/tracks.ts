@@ -5,8 +5,8 @@ export interface Track {
 }
 
 export const BUILTIN_TRACKS: Track[] = [
-  { src: "/music/song1.mp3", name: "SONG 01" },
-  { src: "/music/song2.mp3", name: "SONG 02" },
-  { src: "/music/song3.mp3", name: "SONG 03" },
-  { src: "/music/song4.mp3", name: "SONG 04" },
+  { src: "/music/song1.mp3", name: "invertedvariable-anhedonia.mp3" },
+  { src: "/music/song2.mp3", name: "myownsummer_shoveit-deftones-lofi-earthting-x-aliencakemusic.wav" },
+  { src: "/music/song3.mp3", name: "untitled-track-03.mp3" },
+  { src: "/music/song4.mp3", name: "untitled-track-04.mp3" },
 ];
