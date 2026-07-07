@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://portfolio-ashen-sigma-63gx2gi92g.vercel.app/sitemap.xml

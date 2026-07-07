@@ -76,7 +76,7 @@ Per Alejandro: any file dropped into `public/music/`, `public/photos/`, or `publ
 - State: `useState`, keep scope tight
 - Animations: CSS keyframes in `GLOBAL_CSS` (top of App.tsx)
 - Styling: inline for dynamic, Tailwind for static layout
-- Fonts: `PX`, `MONO`, `SERIF` constants in App.tsx
+- Fonts: `PX`, `MONO`, `BOLDONSE` constants in App.tsx
 
 ## References
 - [DESIGN.md](DESIGN.md) — color token mappings, typography, palette system

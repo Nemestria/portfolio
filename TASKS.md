@@ -40,6 +40,7 @@
 **Metadata & deploy**
 - Real `<title>`, description, OG/Twitter tags, favicon
 - GitHub repo (`Nemestria/portfolio`) + Vercel, linked for auto-deploy on push to `master`
+- SEO/head pass: `<html lang>` fixed to match the actual default UI language (was `en`, site defaults to Spanish); `og:image`/`twitter:image` now point at a real photo (`/photos/002.png`, 1240×1240 — no image-generation tooling available to make a proper 1200×630 share card, revisit later); added `og:url`, canonical link, `og:locale` (+ alternates for en/ca), `theme-color` (`#00b9be`), explicit `robots` meta, `public/robots.txt` + `public/sitemap.xml`. Same pass applied to `../3d-gateway`'s `index.html`, which has no photo of its own so its OG/Twitter image cross-references this site's live URL
 
 **Workflow**
 - Standing auto-wire: new files dropped into `public/music/`, `public/photos/`, `public/projects/PROJECT_0X/` get wired into their data structures proactively, no need to ask each time
