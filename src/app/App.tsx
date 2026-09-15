@@ -35,6 +35,7 @@ const GLOBAL_CSS = `
   @keyframes draven-think { 0%,66% { opacity: 1 } 33%,100% { opacity: 0.15 } }
 
   button { color: var(--text-primary); font-family: inherit; transition: opacity 0.12s, transform 0.12s ease, background 0.1s, color 0.1s, border-color 0.1s, box-shadow 0.12s; }
+  button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
   input[type=range] {
     -webkit-appearance: none; appearance: none;
@@ -2346,6 +2347,8 @@ function SplashScreen({ onEnter, exiting, skipLanguage }: { onEnter: (withSound:
             </div>
             <button
               onClick={() => pickLanguage("es")}
+              onFocus={e => { e.currentTarget.style.outline = "2px solid #fff"; e.currentTarget.style.outlineOffset = "3px"; }}
+              onBlur={e => { e.currentTarget.style.outline = "none"; }}
               style={{
                 display: "block", width: "100%", marginBottom: 12, cursor: "pointer",
                 ...PX, fontSize: 8, letterSpacing: 1,
@@ -2358,6 +2361,10 @@ function SplashScreen({ onEnter, exiting, skipLanguage }: { onEnter: (withSound:
             </button>
             <button
               onClick={() => pickLanguage("en")}
+              onFocus={e => { e.currentTarget.style.outline = "2px solid #fff"; e.currentTarget.style.outlineOffset = "3px"; }}
+              onBlur={e => { e.currentTarget.style.outline = "none"; }}
+              onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
               style={{
                 display: "block", width: "100%", marginBottom: 12, cursor: "pointer",
                 ...PX, fontSize: 8, letterSpacing: 1,
@@ -2365,13 +2372,15 @@ function SplashScreen({ onEnter, exiting, skipLanguage }: { onEnter: (withSound:
                 border: "1px solid rgba(255,255,255,0.3)", padding: "14px 0",
                 transition: "color 0.15s, border-color 0.15s",
               }}
-              onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)"; }}
-              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
             >
               ENGLISH
             </button>
             <button
               onClick={() => pickLanguage("ca")}
+              onFocus={e => { e.currentTarget.style.outline = "2px solid #fff"; e.currentTarget.style.outlineOffset = "3px"; }}
+              onBlur={e => { e.currentTarget.style.outline = "none"; }}
+              onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
               style={{
                 display: "block", width: "100%", cursor: "pointer",
                 ...PX, fontSize: 8, letterSpacing: 1,
@@ -2379,8 +2388,6 @@ function SplashScreen({ onEnter, exiting, skipLanguage }: { onEnter: (withSound:
                 border: "1px solid rgba(255,255,255,0.3)", padding: "14px 0",
                 transition: "color 0.15s, border-color 0.15s",
               }}
-              onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)"; }}
-              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
             >
               CATALÀ
             </button>
