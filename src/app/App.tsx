@@ -2293,6 +2293,43 @@ function bgStyle(pattern: BgPattern): React.CSSProperties {
   return {};
 }
 
+// ── Splash Buttons ────────────────────────────────────────────────────────────
+// Splash always has a fixed dark background (#04040a) and never depends on
+// the runtime palette — so these use hardcoded colors, not CSS vars, to
+// guarantee contrast regardless of when the JS palette useEffect fires.
+
+function SplashBtnPrimary({ children, onClick, mb = 12, style }: {
+  children: React.ReactNode; onClick: () => void; mb?: number; style?: React.CSSProperties;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      onFocus={e => { e.currentTarget.style.outline = "2px solid #04040a"; e.currentTarget.style.outlineOffset = "3px"; }}
+      onBlur={e => { e.currentTarget.style.outline = "none"; }}
+      onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+      onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+      style={{ display: "block", width: "100%", marginBottom: mb, cursor: "pointer", ...PX, fontSize: 8, letterSpacing: 1, background: "#fff", color: "#04040a", border: "2px solid #fff", padding: "14px 0", transition: "opacity 0.15s", ...style }}
+    >{children}</button>
+  );
+}
+
+function SplashBtnGhost({ children, onClick, mb = 0, dim = false, style }: {
+  children: React.ReactNode; onClick: () => void; mb?: number; dim?: boolean; style?: React.CSSProperties;
+}) {
+  const tc = dim ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.7)";
+  const bc = dim ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.3)";
+  return (
+    <button
+      onClick={onClick}
+      onFocus={e => { e.currentTarget.style.outline = "2px solid #fff"; e.currentTarget.style.outlineOffset = "3px"; }}
+      onBlur={e => { e.currentTarget.style.outline = "none"; }}
+      onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = dim ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.8)"; }}
+      onMouseLeave={e => { e.currentTarget.style.color = tc; e.currentTarget.style.borderColor = bc; }}
+      style={{ display: "block", width: "100%", marginBottom: mb, cursor: "pointer", ...PX, fontSize: 8, letterSpacing: 1, background: "transparent", color: tc, border: `1px solid ${bc}`, padding: "14px 0", transition: "color 0.15s, border-color 0.15s", ...style }}
+    >{children}</button>
+  );
+}
+
 // ── Splash Screen ─────────────────────────────────────────────────────────────
 
 function SplashScreen({ onEnter, exiting, skipLanguage }: { onEnter: (withSound: boolean) => void; exiting: boolean; skipLanguage?: boolean }) {
@@ -2345,53 +2382,9 @@ function SplashScreen({ onEnter, exiting, skipLanguage }: { onEnter: (withSound:
             <div style={{ ...MONO, fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 22, letterSpacing: 1 }}>
               ELIGE IDIOMA / SELECT LANGUAGE / TRIA IDIOMA
             </div>
-            <button
-              onClick={() => pickLanguage("es")}
-              onFocus={e => { e.currentTarget.style.outline = "2px solid #04040a"; e.currentTarget.style.outlineOffset = "3px"; }}
-              onBlur={e => { e.currentTarget.style.outline = "none"; }}
-              style={{
-                display: "block", width: "100%", marginBottom: 12, cursor: "pointer",
-                ...PX, fontSize: 8, letterSpacing: 1,
-                background: lang === "es" ? "#fff" : "transparent",
-                color: lang === "es" ? "#04040a" : "rgba(255,255,255,0.7)",
-                border: "2px solid #fff", padding: "14px 0",
-                transition: "background 0.15s, color 0.15s",
-              }}
-            >
-              ESPAÑOL
-            </button>
-            <button
-              onClick={() => pickLanguage("en")}
-              onFocus={e => { e.currentTarget.style.outline = "2px solid #fff"; e.currentTarget.style.outlineOffset = "3px"; }}
-              onBlur={e => { e.currentTarget.style.outline = "none"; }}
-              onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.8)"; }}
-              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
-              style={{
-                display: "block", width: "100%", marginBottom: 12, cursor: "pointer",
-                ...PX, fontSize: 8, letterSpacing: 1,
-                background: "transparent", color: "rgba(255,255,255,0.7)",
-                border: "1px solid rgba(255,255,255,0.3)", padding: "14px 0",
-                transition: "color 0.15s, border-color 0.15s",
-              }}
-            >
-              ENGLISH
-            </button>
-            <button
-              onClick={() => pickLanguage("ca")}
-              onFocus={e => { e.currentTarget.style.outline = "2px solid #fff"; e.currentTarget.style.outlineOffset = "3px"; }}
-              onBlur={e => { e.currentTarget.style.outline = "none"; }}
-              onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.8)"; }}
-              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
-              style={{
-                display: "block", width: "100%", cursor: "pointer",
-                ...PX, fontSize: 8, letterSpacing: 1,
-                background: "transparent", color: "rgba(255,255,255,0.7)",
-                border: "1px solid rgba(255,255,255,0.3)", padding: "14px 0",
-                transition: "color 0.15s, border-color 0.15s",
-              }}
-            >
-              CATALÀ
-            </button>
+            <SplashBtnPrimary onClick={() => pickLanguage("es")} mb={12}>ESPAÑOL</SplashBtnPrimary>
+            <SplashBtnGhost onClick={() => pickLanguage("en")} mb={12}>ENGLISH</SplashBtnGhost>
+            <SplashBtnGhost onClick={() => pickLanguage("ca")}>CATALÀ</SplashBtnGhost>
           </div>
         ) : phase === "loading" ? (
           <div style={{ animation: "splash-fadein 0.3s ease" }}>
@@ -2408,34 +2401,12 @@ function SplashScreen({ onEnter, exiting, skipLanguage }: { onEnter: (withSound:
             <div style={{ ...MONO, fontSize: 11, color: "#4dffaa", marginBottom: 36, letterSpacing: 2 }}>
               {t.splash.systemReady}
             </div>
-            <button
-              onClick={() => onEnter(true)}
-              style={{
-                display: "block", width: "100%", marginBottom: 12, cursor: "pointer",
-                ...PX, fontSize: 7, letterSpacing: 1,
-                background: "var(--bg-active)", color: "#fff",
-                border: "2px solid var(--bg-active)", padding: "16px 0",
-                transition: "opacity 0.15s",
-              }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = "0.82")}
-              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-            >
+            <SplashBtnPrimary onClick={() => onEnter(true)} mb={12} style={{ fontSize: 7, padding: "16px 0" }}>
               {t.splash.enterSound}
-            </button>
-            <button
-              onClick={() => onEnter(false)}
-              style={{
-                display: "block", width: "100%", cursor: "pointer",
-                ...MONO, fontSize: 11,
-                background: "transparent", color: "rgba(255,255,255,0.3)",
-                border: "1px solid rgba(255,255,255,0.1)", padding: "11px 0",
-                transition: "color 0.15s, border-color 0.15s",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.color = "rgba(255,255,255,0.6)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
-              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.3)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
-            >
+            </SplashBtnPrimary>
+            <SplashBtnGhost onClick={() => onEnter(false)} dim style={{ ...MONO, fontSize: 11, padding: "11px 0" }}>
               {t.splash.enterNoSound}
-            </button>
+            </SplashBtnGhost>
           </div>
         )}
 
