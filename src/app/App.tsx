@@ -2347,13 +2347,14 @@ function SplashScreen({ onEnter, exiting, skipLanguage }: { onEnter: (withSound:
             </div>
             <button
               onClick={() => pickLanguage("es")}
-              onFocus={e => { e.currentTarget.style.outline = "2px solid #fff"; e.currentTarget.style.outlineOffset = "3px"; }}
+              onFocus={e => { e.currentTarget.style.outline = "2px solid #04040a"; e.currentTarget.style.outlineOffset = "3px"; }}
               onBlur={e => { e.currentTarget.style.outline = "none"; }}
               style={{
                 display: "block", width: "100%", marginBottom: 12, cursor: "pointer",
                 ...PX, fontSize: 8, letterSpacing: 1,
-                background: lang === "es" ? "var(--bg-active)" : "transparent", color: lang === "es" ? "#fff" : "rgba(255,255,255,0.7)",
-                border: "2px solid var(--bg-active)", padding: "14px 0",
+                background: lang === "es" ? "#fff" : "transparent",
+                color: lang === "es" ? "#04040a" : "rgba(255,255,255,0.7)",
+                border: "2px solid #fff", padding: "14px 0",
                 transition: "background 0.15s, color 0.15s",
               }}
             >
@@ -2363,7 +2364,7 @@ function SplashScreen({ onEnter, exiting, skipLanguage }: { onEnter: (withSound:
               onClick={() => pickLanguage("en")}
               onFocus={e => { e.currentTarget.style.outline = "2px solid #fff"; e.currentTarget.style.outlineOffset = "3px"; }}
               onBlur={e => { e.currentTarget.style.outline = "none"; }}
-              onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)"; }}
+              onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.8)"; }}
               onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
               style={{
                 display: "block", width: "100%", marginBottom: 12, cursor: "pointer",
@@ -2379,7 +2380,7 @@ function SplashScreen({ onEnter, exiting, skipLanguage }: { onEnter: (withSound:
               onClick={() => pickLanguage("ca")}
               onFocus={e => { e.currentTarget.style.outline = "2px solid #fff"; e.currentTarget.style.outlineOffset = "3px"; }}
               onBlur={e => { e.currentTarget.style.outline = "none"; }}
-              onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)"; }}
+              onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.8)"; }}
               onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
               style={{
                 display: "block", width: "100%", cursor: "pointer",
